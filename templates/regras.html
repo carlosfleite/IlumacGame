@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Regras — Quiz SDAI Ilumac</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="page-regras">
+  <div class="screen screen-regras">
+    <div class="topbar">
+      <div class="brand-lockup">
+        <img class="brand-logo" src="/static/img/logo-ilumac-branco.svg" alt="Ilumac">
+        <span class="brand-divider" aria-hidden="true"></span>
+        <img class="brand-logo-fs" src="/static/img/logo-fireshow-branco.png" alt="Fire Show 2026">
+      </div>
+      <span class="tag">Regras</span>
+    </div>
+
+    <header class="brand-header">
+      <p class="brand-eyebrow">Fire Show 2026 · Stand D73/D124</p>
+      <h1 class="brand-title">COMO JOGAR</h1>
+    </header>
+
+    <ul class="regras-lista">
+      <li>
+        <span class="regras-num">01</span>
+        <div>
+          <strong>5 perguntas</strong>
+          <p>Sorteadas do banco SDAI — sem repetir na mesma partida.</p>
+        </div>
+      </li>
+      <li>
+        <span class="regras-num">02</span>
+        <div>
+          <strong>2 pontos por acerto</strong>
+          <p>Pontuação máxima: 10 pontos.</p>
+        </div>
+      </li>
+      <li>
+        <span class="regras-num">03</span>
+        <div>
+          <strong>Cronômetro ligado</strong>
+          <p>O tempo conta em cada pergunta — fique de olho embaixo da tela.</p>
+        </div>
+      </li>
+      <li>
+        <span class="regras-num">04</span>
+        <div>
+          <strong>Desempate por tempo</strong>
+          <p>Mesma pontuação? Ganha quem respondeu mais rápido.</p>
+        </div>
+      </li>
+    </ul>
+
+    <button type="button" class="btn btn-primary btn-block" id="btn-iniciar">
+      Começar o quiz
+    </button>
+  </div>
+
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var pid = params.get("pid") || sessionStorage.getItem("participante_id");
+      if (!pid) {
+        window.location.replace("/");
+        return;
+      }
+      sessionStorage.setItem("participante_id", String(pid));
+      document.getElementById("btn-iniciar").addEventListener("click", function () {
+        window.location.href = "/quiz?pid=" + encodeURIComponent(pid);
+      });
+    })();
+  </script>
+</body>
+</html>

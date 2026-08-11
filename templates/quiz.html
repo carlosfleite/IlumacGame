@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Quiz — SDAI Ilumac</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="page-quiz">
+  <div class="screen screen-quiz">
+    <div class="topbar">
+      <div class="brand-lockup">
+        <img class="brand-logo" src="/static/img/logo-ilumac-branco.svg" alt="Ilumac">
+        <span class="brand-divider" aria-hidden="true"></span>
+        <img class="brand-logo-fs" src="/static/img/logo-fireshow-branco.png" alt="Fire Show 2026">
+      </div>
+      <span class="tag" id="quiz-tag">Quiz SDAI</span>
+    </div>
+
+    <!-- Loop track: progresso em circuito, um nó por pergunta -->
+    <div class="loop-track" id="loop-track">
+      <div class="loop-fill" id="loop-fill"></div>
+    </div>
+
+    <header class="quiz-top">
+      <div class="quiz-meta">
+        <span id="quiz-progresso">Pergunta 1 / 5</span>
+        <span id="quiz-pontos">0 pts</span>
+      </div>
+    </header>
+
+    <section class="quiz-corpo" id="quiz-corpo">
+      <h2 class="quiz-pergunta" id="quiz-pergunta">Carregando…</h2>
+      <div class="quiz-alternativas" id="quiz-alternativas" role="group" aria-label="Alternativas"></div>
+    </section>
+
+    <!-- Cronômetro fixo na base — não sobrepõe as alternativas (padding no corpo) -->
+    <footer class="quiz-timer-bar" aria-live="polite">
+      <span class="timer-label">Tempo</span>
+      <span class="timer-valor" id="quiz-timer">00:00</span>
+      <span class="timer-hint">da pergunta atual</span>
+    </footer>
+  </div>
+
+  <!-- Overlay Ilumaquinho — troque os PNG em static/img/ilumaquinho/ -->
+  <div id="feedback-overlay" class="feedback-overlay" hidden>
+    <div class="feedback-card" id="feedback-card">
+      <div class="feedback-pulse">
+        <img id="feedback-img" class="feedback-img" src="" alt="Ilumaquinho">
+      </div>
+      <p id="feedback-msg" class="feedback-msg"></p>
+      <p class="feedback-tap">Toque para continuar</p>
+    </div>
+  </div>
+
+  <script src="/static/js/quiz.js"></script>
+</body>
+</html>

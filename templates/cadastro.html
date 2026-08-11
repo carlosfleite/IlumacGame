@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Cadastro — Quiz SDAI Ilumac</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="page-cadastro">
+  <div class="screen">
+    <div class="topbar">
+      <div class="brand-lockup">
+        <img class="brand-logo" src="/static/img/logo-ilumac-branco.svg" alt="Ilumac">
+        <span class="brand-divider" aria-hidden="true"></span>
+        <img class="brand-logo-fs" src="/static/img/logo-fireshow-branco.png" alt="Fire Show 2026">
+      </div>
+      <span class="tag">Cadastro</span>
+    </div>
+
+    <header class="brand-header">
+      <p class="brand-eyebrow">Fire Show 2026 · Stand D73/D124</p>
+      <h1 class="brand-title">QUIZ SDAI</h1>
+      <p class="brand-sub">Cadastre-se para jogar</p>
+    </header>
+
+    <form id="form-cadastro" class="form-cadastro" novalidate>
+      <label class="field">
+        <span>Nome *</span>
+        <input type="text" name="nome" id="nome" required autocomplete="name" enterkeyhint="next">
+      </label>
+
+      <label class="field">
+        <span>Empresa</span>
+        <input type="text" name="empresa" id="empresa" autocomplete="organization" enterkeyhint="next">
+      </label>
+
+      <label class="field">
+        <span>E-mail</span>
+        <input type="email" name="email" id="email" autocomplete="email" enterkeyhint="next" inputmode="email">
+      </label>
+
+      <label class="field">
+        <span>Telefone</span>
+        <input type="tel" name="telefone" id="telefone" autocomplete="tel" enterkeyhint="next" inputmode="tel">
+      </label>
+
+      <label class="field">
+        <span>Cargo</span>
+        <input type="text" name="cargo" id="cargo" autocomplete="organization-title" enterkeyhint="done">
+      </label>
+
+      <label class="consent">
+        <input type="checkbox" name="consentimento_lgpd" id="consentimento_lgpd" required>
+        <span>
+          Li e concordo com o uso dos meus dados pessoais pela Ilumac para fins do evento
+          Fire Show 2026 (cadastro, ranking e contato relacionado à premiação),
+          conforme a Lei Geral de Proteção de Dados (LGPD). *
+        </span>
+      </label>
+
+      <p id="erro-cadastro" class="form-error" hidden></p>
+
+      <button type="submit" class="btn btn-primary btn-block" id="btn-cadastrar">
+        Continuar
+      </button>
+    </form>
+  </div>
+  <script src="/static/js/cadastro.js"></script>
+</body>
+</html>

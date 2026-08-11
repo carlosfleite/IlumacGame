@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Ranking — Quiz SDAI Ilumac</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="page-ranking">
+  <div class="screen screen-ranking">
+    <div class="topbar">
+      <div class="brand-lockup">
+        <img class="brand-logo" src="/static/img/logo-ilumac-branco.svg" alt="Ilumac">
+        <span class="brand-divider" aria-hidden="true"></span>
+        <img class="brand-logo-fs" src="/static/img/logo-fireshow-branco.png" alt="Fire Show 2026">
+      </div>
+      <span class="tag">Ranking</span>
+    </div>
+
+    <header class="brand-header">
+      <p class="brand-eyebrow">Ao vivo · Fire Show 2026</p>
+      <h1 class="brand-title">RANKING</h1>
+      <p class="brand-sub">Pontos · desempate por tempo</p>
+    </header>
+
+    <div class="ranking-wrap">
+      <ol class="ranking-lista" id="ranking-lista">
+        <li class="ranking-vazio">Carregando…</li>
+      </ol>
+    </div>
+
+    <a class="btn btn-primary btn-block" href="/" id="btn-reiniciar">Novo jogador</a>
+  </div>
+  <script src="/static/js/ranking.js"></script>
+</body>
+</html>

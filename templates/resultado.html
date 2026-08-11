@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Resultado — Quiz SDAI Ilumac</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="page-resultado">
+  <div class="screen screen-resultado">
+    <div class="topbar">
+      <div class="brand-lockup">
+        <img class="brand-logo" src="/static/img/logo-ilumac-branco.svg" alt="Ilumac">
+        <span class="brand-divider" aria-hidden="true"></span>
+        <img class="brand-logo-fs" src="/static/img/logo-fireshow-branco.png" alt="Fire Show 2026">
+      </div>
+      <span class="tag">Resultado</span>
+    </div>
+
+    <header class="brand-header">
+      <p class="brand-eyebrow">Quiz concluído</p>
+      <h1 class="brand-title">RESULTADO</h1>
+      <p class="brand-sub" id="resultado-nome">—</p>
+    </header>
+
+    <div class="resultado-score">
+      <p class="resultado-label">Pontuação</p>
+      <p class="resultado-pontos" id="resultado-pontos">0</p>
+      <p class="resultado-max">de 10</p>
+    </div>
+
+    <div class="resultado-grid">
+      <div>
+        <p class="resultado-label">Tempo total</p>
+        <p class="resultado-dado" id="resultado-tempo">00:00</p>
+      </div>
+      <div>
+        <p class="resultado-label">Seu prêmio</p>
+        <p class="resultado-dado" id="resultado-premio">—</p>
+        <p class="resultado-desc" id="resultado-premio-desc"></p>
+      </div>
+    </div>
+
+    <div class="btn-stack">
+      <a class="btn btn-primary btn-block" href="/ranking">Ver ranking</a>
+      <a class="btn btn-ghost btn-block" href="/" id="btn-novo">Novo participante</a>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var raw = sessionStorage.getItem("ultimo_resultado");
+      if (!raw) {
+        window.location.replace("/");
+        return;
+      }
+      var r;
+      try { r = JSON.parse(raw); } catch (e) {
+        window.location.replace("/");
+        return;
+      }
+
+      function fmt(ms) {
+        var s = Math.floor((ms || 0) / 1000);
+        var m = Math.floor(s / 60);
+        s = s % 60;
+        return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+      }
+
+      document.getElementById("resultado-nome").textContent = r.nome || "Participante";
+      document.getElementById("resultado-pontos").textContent = String(r.pontuacao);
+      document.getElementById("resultado-tempo").textContent = fmt(r.tempo_total_ms);
+      document.getElementById("resultado-premio").textContent =
+        (r.premio && r.premio.nome) ? r.premio.nome : "Sem prêmio";
+      document.getElementById("resultado-premio-desc").textContent =
+        (r.premio && r.premio.descricao) ? r.premio.descricao : "";
+
+      document.getElementById("btn-novo").addEventListener("click", function () {
+        sessionStorage.removeItem("participante_id");
+        sessionStorage.removeItem("ultimo_resultado");
+      });
+    })();
+  </script>
+</body>
+</html>

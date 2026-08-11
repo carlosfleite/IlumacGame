@@ -1,0 +1,911 @@
+/* ==========================================================================
+   Quiz SDAI — Ilumac Fire Show 2026
+   Direção: meio-termo — base escura/técnica (ref. protótipo do Carlos)
+   com o VERMELHO SÓLIDO de marca (#C31922, extraído do logo oficial)
+   em vez do neon com glow, e o logo real da Ilumac no cabeçalho.
+
+   Totem 23" em RETRATO (1080x1920) · touch · 100% offline, sem CDN.
+   Fontes locais do Windows — nada de Google Fonts.
+   ========================================================================== */
+
+:root {
+  /* Marca */
+  --vermelho: #c31922;          /* vermelho oficial Ilumac (do logo vetorial) */
+  --vermelho-claro: #e02533;    /* só para gradiente sutil de botão */
+  --vermelho-escuro: #7d0f16;
+  --vermelho-veu: rgba(195, 25, 34, 0.10);
+
+  /* Base escura (Carlos) */
+  --preto: #0b0c0d;
+  --carvao: #121316;
+  --painel: #1a1c20;
+  --painel-2: #212429;
+  --aco: #33363d;
+  --aco-suave: #292c31;
+
+  /* Texto */
+  --off-white: #f2f1ed;
+  --mudo: #9da1aa;
+  --mudo-fraco: #6b6f78;
+
+  /* Estados */
+  --ok: #33c481;
+  --erro: #ff4747;
+
+  --radius: 12px;
+  --timer-h: 132px;
+  --safe-top: 28px;
+  --safe-side: 34px;
+
+  /* Fontes locais — Bahnschrift e Segoe UI vêm no Windows 10 */
+  --font-display: "Bahnschrift Condensed", "Bahnschrift", "Segoe UI Semibold", "Segoe UI", sans-serif;
+  --font-body: "Segoe UI", Tahoma, sans-serif;
+  --font-mono: "Consolas", "Cascadia Mono", "Courier New", monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--preto);
+  color: var(--off-white);
+  font-family: var(--font-body);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  background-image:
+    radial-gradient(circle at 18% 8%, rgba(195, 25, 34, 0.10), transparent 42%),
+    radial-gradient(circle at 84% 94%, rgba(195, 25, 34, 0.07), transparent 42%);
+}
+
+/* Grade técnica de fundo — sem markup extra, vale em todas as telas */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.030) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.030) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+.screen {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 860px;
+  height: 100%;
+  padding: var(--safe-top) var(--safe-side) 30px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---- Cabeçalho de marca (logo real + selo da tela) ---- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--aco-suave);
+}
+
+/* Lockup: logo Ilumac + régua + logo Fire Show */
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.brand-logo {
+  height: 42px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+}
+
+.brand-divider {
+  width: 1px;
+  height: 34px;
+  background: var(--aco);
+  flex-shrink: 0;
+}
+
+/* Fire Show é mais "alto" que o Ilumac por causa da assinatura embaixo,
+   então entra menor para as duas marcas pesarem igual. */
+.brand-logo-fs {
+  height: 34px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+  opacity: 0.92;
+}
+
+.tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mudo);
+  border: 1px solid var(--aco);
+  border-radius: 999px;
+  padding: 7px 14px;
+  white-space: nowrap;
+}
+
+.brand-header {
+  text-align: left;
+  margin-bottom: 22px;
+  flex-shrink: 0;
+}
+
+.brand-eyebrow {
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--vermelho);
+  font-weight: 600;
+}
+
+.brand-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 7.5vw, 3.6rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--off-white);
+  font-weight: 700;
+}
+
+.brand-sub {
+  margin: 12px 0 0;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--mudo);
+}
+
+/* ---- Botões (touch grandes) ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
+  padding: 16px 28px;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, var(--vermelho-claro), var(--vermelho));
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.btn-primary:active {
+  background: var(--vermelho-escuro);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1.5px solid var(--aco);
+  color: var(--mudo);
+}
+
+.btn-ghost:active {
+  border-color: var(--vermelho);
+  color: var(--off-white);
+}
+
+.btn-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 22px;
+  flex-shrink: 0;
+}
+
+/* ---- Cadastro ---- */
+.form-cadastro {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  /* centraliza o grupo {campos + botão}; "safe" evita clipping no topo
+     quando o conteúdo é maior que o espaço disponível */
+  justify-content: safe center;
+  gap: 14px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mudo-fraco);
+}
+
+.field input {
+  min-height: 64px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--aco);
+  border-radius: var(--radius);
+  font-size: 1.15rem;
+  font-family: var(--font-body);
+  letter-spacing: normal;
+  text-transform: none;
+  background: var(--painel-2);
+  color: var(--off-white);
+  user-select: text;
+}
+
+.field input::placeholder {
+  color: var(--mudo-fraco);
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--vermelho);
+  box-shadow: 0 0 0 3px rgba(195, 25, 34, 0.16);
+}
+
+.consent {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin: 10px 0 4px;
+  padding: 16px;
+  background: var(--vermelho-veu);
+  border: 1px solid rgba(195, 25, 34, 0.28);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--off-white);
+}
+
+.consent input {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  accent-color: var(--vermelho);
+}
+
+.form-error {
+  margin: 0;
+  padding: 12px 14px;
+  background: rgba(255, 71, 71, 0.10);
+  border: 1px solid rgba(255, 71, 71, 0.35);
+  color: #ff8a8a;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+#btn-cadastrar {
+  margin-top: 18px;
+  flex-shrink: 0;
+}
+
+/* ---- Regras ---- */
+.screen-regras {
+  justify-content: center;
+}
+
+.regras-lista {
+  list-style: none;
+  margin: 8px 0 26px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.regras-lista li {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  padding: 20px 4px;
+  border-bottom: 1px solid var(--aco-suave);
+}
+
+.regras-lista li:last-child {
+  border-bottom: none;
+}
+
+.regras-num {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--painel-2);
+  border: 1px solid var(--aco);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--vermelho);
+  line-height: 1;
+}
+
+.regras-lista strong {
+  display: block;
+  font-size: 1.15rem;
+  margin-bottom: 5px;
+  color: var(--off-white);
+}
+
+.regras-lista p {
+  margin: 0;
+  color: var(--mudo);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.screen-regras .btn {
+  flex-shrink: 0;
+}
+
+/* ---- Loop track (progresso em circuito) ---- */
+.loop-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+  height: 26px;
+}
+
+.loop-track::before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 50%;
+  height: 2px;
+  background: var(--aco);
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+.loop-fill {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  height: 2px;
+  width: 0;
+  background: var(--vermelho);
+  transform: translateY(-50%);
+  z-index: 0;
+  transition: width 0.4s ease;
+}
+
+.node {
+  position: relative;
+  z-index: 1;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--carvao);
+  border: 2px solid var(--aco);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--mudo-fraco);
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.node.done {
+  background: var(--vermelho);
+  border-color: var(--vermelho);
+  color: #fff;
+}
+
+.node.current {
+  border-color: var(--vermelho);
+  color: var(--off-white);
+  box-shadow: 0 0 0 5px rgba(195, 25, 34, 0.16);
+}
+
+/* ---- Quiz ---- */
+.screen-quiz {
+  padding-bottom: calc(var(--timer-h) + 14px);
+}
+
+.quiz-top {
+  flex-shrink: 0;
+}
+
+.quiz-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mudo-fraco);
+}
+
+#quiz-pontos {
+  color: var(--vermelho);
+  font-weight: 700;
+}
+
+.quiz-corpo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  /* centraliza {pergunta + alternativas} na área livre entre o loop track
+     e o dock do cronômetro — no totem 1920 de altura isso evita um vão
+     de ~1000px embaixo das alternativas */
+  justify-content: safe center;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.quiz-pergunta {
+  margin: 0 0 22px;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 3.6vw, 1.95rem);
+  font-weight: 600;
+  line-height: 1.28;
+  color: var(--off-white);
+  flex-shrink: 0;
+}
+
+.quiz-alternativas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.alt-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 84px;
+  padding: 16px 18px;
+  text-align: left;
+  border: 1.5px solid var(--aco);
+  border-radius: var(--radius);
+  background: var(--painel-2);
+  color: var(--off-white);
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  line-height: 1.35;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+
+.alt-btn:active:not(:disabled) {
+  transform: scale(0.99);
+  border-color: var(--vermelho);
+  background: var(--vermelho-veu);
+}
+
+.alt-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.alt-letra {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--aco);
+  background: var(--carvao);
+  color: var(--mudo);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.alt-texto {
+  flex: 1;
+}
+
+/* Dock do cronômetro */
+.quiz-timer-bar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  z-index: 20;
+  width: 100%;
+  max-width: 860px;
+  height: var(--timer-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 var(--safe-side);
+  background: linear-gradient(180deg, rgba(11, 12, 13, 0.85), var(--carvao));
+  border-top: 1px solid var(--aco-suave);
+  backdrop-filter: blur(2px);
+}
+
+.timer-label,
+.timer-hint {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mudo-fraco);
+}
+
+.timer-valor {
+  font-family: var(--font-mono);
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  color: var(--off-white);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Feedback Ilumaquinho ---- */
+.feedback-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  background: rgba(8, 9, 10, 0.90);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.feedback-overlay.is-visible {
+  opacity: 1;
+}
+
+.feedback-card {
+  width: min(100%, 470px);
+  padding: 34px 28px 26px;
+  border-radius: 18px;
+  background: var(--painel);
+  border: 1px solid var(--aco);
+  text-align: center;
+  transform: translateY(16px) scale(0.96);
+  transition: transform 0.28s ease;
+}
+
+.feedback-overlay.is-visible .feedback-card {
+  transform: translateY(0) scale(1);
+}
+
+.feedback-card.is-bom {
+  border-color: rgba(51, 196, 129, 0.5);
+}
+
+.feedback-card.is-ruim {
+  border-color: rgba(255, 71, 71, 0.5);
+}
+
+/* Pulse rings atrás do mascote */
+.feedback-img {
+  position: relative;
+  z-index: 1;
+  width: 172px;
+  height: 172px;
+  object-fit: contain;
+  margin: 0 auto 16px;
+  display: block;
+}
+
+.feedback-pulse {
+  position: relative;
+  width: 172px;
+  height: 172px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feedback-pulse .feedback-img {
+  margin: 0;
+}
+
+.feedback-pulse::before,
+.feedback-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--vermelho);
+  opacity: 0;
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+.feedback-pulse::after {
+  animation-delay: 0.6s;
+}
+
+.is-bom .feedback-pulse::before,
+.is-bom .feedback-pulse::after {
+  border-color: var(--ok);
+}
+
+.is-ruim .feedback-pulse::before,
+.is-ruim .feedback-pulse::after {
+  border-color: var(--erro);
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(0.55); opacity: 0.8; }
+  100% { transform: scale(1.15); opacity: 0; }
+}
+
+.feedback-msg {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.is-bom .feedback-msg { color: var(--ok); }
+.is-ruim .feedback-msg { color: var(--erro); }
+
+.feedback-tap {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mudo-fraco);
+}
+
+/* ---- Resultado ---- */
+.screen-resultado {
+  justify-content: center;
+}
+
+.resultado-score {
+  text-align: center;
+  padding: 30px 18px;
+  margin: 8px 0 20px;
+  background: var(--painel-2);
+  border: 1px solid var(--aco);
+  border-top: 3px solid var(--vermelho);
+  border-radius: 16px;
+}
+
+.resultado-label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mudo-fraco);
+}
+
+.resultado-pontos {
+  margin: 10px 0 0;
+  font-family: var(--font-mono);
+  font-size: 4.6rem;
+  font-weight: 700;
+  line-height: 0.95;
+  color: var(--off-white);
+  font-variant-numeric: tabular-nums;
+}
+
+.resultado-max {
+  margin: 6px 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: var(--mudo);
+}
+
+.resultado-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.resultado-grid > div {
+  padding: 18px;
+  background: var(--painel-2);
+  border: 1px solid var(--aco);
+  border-radius: var(--radius);
+}
+
+.resultado-grid .resultado-label {
+  color: var(--vermelho);
+}
+
+.resultado-dado {
+  margin: 8px 0 0;
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--off-white);
+}
+
+.resultado-desc {
+  margin: 8px 0 0;
+  color: var(--mudo);
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+/* ---- Ranking ---- */
+.ranking-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 18px;
+}
+
+.ranking-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.ranking-item {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 15px 16px;
+  background: var(--painel-2);
+  border: 1px solid var(--aco);
+  border-radius: var(--radius);
+}
+
+.ranking-item.top-1 {
+  border-color: var(--vermelho);
+  background: var(--vermelho-veu);
+}
+
+.ranking-pos {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--mudo);
+  text-align: center;
+}
+
+.ranking-item.top-1 .ranking-pos {
+  color: var(--vermelho);
+}
+
+.ranking-nome {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--off-white);
+}
+
+.ranking-empresa {
+  margin: 3px 0 0;
+  font-size: 0.88rem;
+  color: var(--mudo-fraco);
+}
+
+.ranking-stats {
+  text-align: right;
+}
+
+.ranking-pts {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--off-white);
+}
+
+.ranking-tempo {
+  margin: 3px 0 0;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--mudo-fraco);
+  font-variant-numeric: tabular-nums;
+}
+
+.ranking-vazio {
+  text-align: center;
+  color: var(--mudo-fraco);
+  padding: 46px 16px;
+  list-style: none;
+}
+
+/* ---- Totem alto (1080x1920) ---- */
+@media (min-height: 1200px) {
+  :root {
+    --timer-h: 156px;
+    --safe-top: 44px;
+    --safe-side: 48px;
+  }
+
+  .brand-logo { height: 54px; }
+  .brand-logo-fs { height: 44px; }
+  .brand-divider { height: 44px; }
+  .brand-title { font-size: clamp(3rem, 6vw, 4rem); }
+  .alt-btn { min-height: 100px; font-size: 1.25rem; }
+  .btn { min-height: 86px; font-size: 1.5rem; }
+  .field input { min-height: 72px; font-size: 1.25rem; }
+  .node { width: 32px; height: 32px; font-size: 0.78rem; }
+  .loop-track { height: 32px; }
+  .timer-valor { font-size: 3rem; }
+  .resultado-pontos { font-size: 5.6rem; }
+}
+
+@media (max-width: 420px) {
+  :root { --safe-side: 18px; }
+  .ranking-item { grid-template-columns: 38px 1fr auto; }
+  .brand-logo { height: 32px; }
+}

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="300" viewBox="0 0 240 300" role="img" aria-label="Ilumaquinho comemorando — deu bom">
+  <!-- Ilumaquinho — redesenho vetorial da referência do briefing.
+       Vermelho de marca #C31922. Sem fundo: usa o fundo escuro do app. -->
+  
+  <g stroke="#141414" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <!-- antenas -->
+    <path d="M156 46 L176 20" stroke-width="13" stroke="#4a4e56"/>
+    <path d="M176 52 L196 32" stroke-width="11" stroke="#4a4e56"/>
+    <!-- alça -->
+    <path d="M84 48 A20 20 0 1 1 62 74" fill="none" stroke="#9aa0a8" stroke-width="9"/>
+
+    <!-- braços -->
+    <path d="M52 108 q-16 6 -16 26 l0 32 q0 14 14 14" fill="none" stroke="#4a4e56" stroke-width="20"/>
+    <path d="M188 108 q16 6 16 26 l0 32 q0 14 -14 14" fill="none" stroke="#4a4e56" stroke-width="20"/>
+
+    <!-- pernas -->
+    <rect x="82" y="196" width="26" height="34" fill="#3a3d44"/>
+    <rect x="132" y="196" width="26" height="34" fill="#3a3d44"/>
+    <!-- botas -->
+    <path d="M74 228 h42 v28 q0 10 -12 10 H74 q-8 0 -8 -9 z" fill="#c31922"/>
+    <path d="M124 228 h42 v29 q0 9 -8 9 h-22 q-12 0 -12 -10 z" fill="#c31922"/>
+
+    <!-- corpo octogonal -->
+    <path d="M76 40 h88 l36 36 v88 l-36 36 h-88 l-36 -36 v-88 z" fill="#c31922"/>
+    <path d="M88 58 h64 l26 26 v56 l-26 26 h-64 l-26 -26 v-56 z" fill="none" stroke="#8d1017" stroke-width="3"/>
+
+    <!-- olhos felizes -->
+    <path d="M78 108 q0 -20 20 -20 t20 20 q-20 -9 -40 0 z" fill="#f2f1ed" stroke-width="3.5"/>
+    <path d="M122 108 q0 -20 20 -20 t20 20 q-20 -9 -40 0 z" fill="#f2f1ed" stroke-width="3.5"/>
+
+    <!-- sorrisão -->
+    <path d="M76 126 h88 q0 40 -44 40 t-44 -40 z" fill="#f2f1ed" stroke-width="4"/>
+
+    <!-- queixo / painel -->
+    <path d="M84 176 h72 v14 q0 10 -12 10 h-48 q-12 0 -12 -10 z" fill="#8d1017"/>
+
+    <!-- extintor na mão esquerda -->
+    <rect x="24" y="182" width="34" height="56" rx="9" fill="#c31922"/>
+    <path d="M41 182 v-10" stroke="#9aa0a8" stroke-width="6"/>
+    <path d="M36 172 h18" stroke="#9aa0a8" stroke-width="6"/>
+    <path d="M41 205 q-7 -10 0 -18 q9 8 3 18 z" fill="#f5c518" stroke-width="2.5"/>
+
+    <!-- chave inglesa na mão direita -->
+    <path d="M196 190 a13 13 0 1 0 0 26 a13 13 0 1 0 0 -26 z" fill="none" stroke="#9aa0a8" stroke-width="8"/>
+
+    <!-- selo ILUMAC -->
+    <g transform="rotate(-16 174 158)">
+      <rect x="150" y="148" width="48" height="19" rx="3" fill="#8d1017" stroke-width="3"/>
+      <text x="174" y="162" text-anchor="middle" fill="#f2f1ed" stroke="none"
+            font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="700"
+            letter-spacing="0.5">ILUMAC</text>
+    </g>
+  </g>
+</svg>

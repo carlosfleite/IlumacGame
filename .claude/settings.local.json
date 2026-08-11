@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find \"C:\\\\Users\\\\usuario\\\\OneDrive\\\\Documentos\\\\QUIZ-ILUMAC\" -maxdepth 3 2>/dev/null | head -100)",
+      "Bash(python -c ' *)",
+      "Bash(C:/Users/usuario/OneDrive/Documentos/QUIZ-ILUMAC/quiz_sdai/.venv/Scripts/python.exe -c ' *)"
+    ]
+  }
+}
