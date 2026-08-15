@@ -14,42 +14,40 @@
         <span class="brand-divider" aria-hidden="true"></span>
         <img class="brand-logo-fs" src="/static/img/logo-fireshow-branco.png" alt="Fire Show 2026">
       </div>
-      <span class="tag" id="quiz-tag">Quiz SDAI</span>
-    </div>
-
-    <!-- Loop track: progresso em circuito, um nó por pergunta -->
-    <div class="loop-track" id="loop-track">
-      <div class="loop-fill" id="loop-fill"></div>
-    </div>
-
-    <header class="quiz-top">
-      <div class="quiz-meta">
-        <span id="quiz-progresso">Pergunta 1 / 5</span>
-        <span id="quiz-pontos">0 pts</span>
+      <!-- Cronômetro compacto: a base da tela agora é da barra de fogo -->
+      <div class="timer-topo" aria-live="off">
+        <span class="rotulo">Tempo</span>
+        <span class="valor" id="quiz-timer">00:00</span>
       </div>
-    </header>
+    </div>
+
+    <div class="quiz-meta">
+      <span id="quiz-progresso">Pergunta 1 / 5</span>
+      <span id="quiz-pontos">0 pts</span>
+    </div>
 
     <section class="quiz-corpo" id="quiz-corpo">
       <h2 class="quiz-pergunta" id="quiz-pergunta">Carregando…</h2>
       <div class="quiz-alternativas" id="quiz-alternativas" role="group" aria-label="Alternativas"></div>
     </section>
-
-    <!-- Cronômetro fixo na base — não sobrepõe as alternativas (padding no corpo) -->
-    <footer class="quiz-timer-bar" aria-live="polite">
-      <span class="timer-label">Tempo</span>
-      <span class="timer-valor" id="quiz-timer">00:00</span>
-      <span class="timer-hint">da pergunta atual</span>
-    </footer>
   </div>
 
-  <!-- Overlay Ilumaquinho — sprites em static/img/ilumaquinho/ -->
+  <!-- Barra de fogo: um bloco por pergunta. Acende no acerto, apaga no erro. -->
+  <footer class="barra-fogo">
+    <div class="barra-trilho" id="barra-trilho" role="img" aria-label="Progresso da partida"></div>
+    <div class="chama" id="chama" data-nivel="0" aria-hidden="true"></div>
+  </footer>
+
+  <!-- Feedback: o Llumaquinho entra puxando o card pela corda -->
   <div id="feedback-overlay" class="feedback-overlay" hidden>
-    <div class="feedback-card" id="feedback-card">
-      <div class="feedback-pulse">
-        <img id="feedback-img" class="feedback-img" src="" alt="Ilumaquinho">
+    <div class="fb-reboque" id="fb-reboque">
+      <div class="fb-card" id="fb-card">
+        <p id="feedback-msg" class="feedback-msg"></p>
+        <p id="feedback-pontos" class="feedback-pontos"></p>
+        <p class="feedback-tap">Toque para continuar</p>
       </div>
-      <p id="feedback-msg" class="feedback-msg"></p>
-      <p class="feedback-tap">Toque para continuar</p>
+      <span class="fb-corda" aria-hidden="true"></span>
+      <div class="fb-mascote" id="fb-mascote" role="img" aria-label="Llumaquinho"></div>
     </div>
   </div>
 

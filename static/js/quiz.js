@@ -1,17 +1,20 @@
 /**
- * Quiz — timer, perguntas, feedback do Ilumaquinho, finalização.
+ * Quiz — cronômetro, perguntas, barra de fogo e feedback do Llumaquinho.
  *
- * SPRITES: troque os arquivos em /static/img/ilumaquinho/
- *   deu-bom.png  → sprite "acertou"  (Ilumaquinho comemorando)
- *   deu-ruim.png → sprite "errou"    (Ilumaquinho triste)
- * Gerados a partir dos PNG de marca em img/, redimensionados para 280px
- * de altura (2x do tamanho exibido) para não pesar no totem.
+ * SPRITES: gerados por tools/gerar_pixel_assets.py em /static/img/
+ *   ilumaquinho/andando.png  → folha de 2 quadros (entrada puxando o card)
+ *   ilumaquinho/deu-bom.png  → acertou
+ *   ilumaquinho/deu-ruim.png → errou
  */
 (function () {
-  var FEEDBACK_MS = 2500; // 2–3 s; toque pula antes
+  "use strict";
+
+  var FEEDBACK_MS = 2200; // contado só depois que o card termina de entrar
+  var ENTRADA_MS = 800;   // deve casar com a duração de reboque-entra no CSS
 
   var params = new URLSearchParams(window.location.search);
-  var participanteId = parseInt(params.get("pid") || sessionStorage.getItem("participante_id"), 10);
+  var participanteId = parseInt(
+    params.get("pid") || sessionStorage.getItem("participante_id"), 10);
 
   if (!participanteId) {
     window.location.replace("/");
@@ -24,19 +27,33 @@
   var elPergunta = document.getElementById("quiz-pergunta");
   var elAlts = document.getElementById("quiz-alternativas");
   var elTimer = document.getElementById("quiz-timer");
+  var elTrilho = document.getElementById("barra-trilho");
+  var elChama = document.getElementById("chama");
+
   var overlay = document.getElementById("feedback-overlay");
-  var feedbackCard = document.getElementById("feedback-card");
-  var feedbackImg = document.getElementById("feedback-img");
-  var feedbackMsg = document.getElementById("feedback-msg");
+  var reboque = document.getElementById("fb-reboque");
+  var fbCard = document.getElementById("fb-card");
+  var fbMascote = document.getElementById("fb-mascote");
+  var fbMsg = document.getElementById("feedback-msg");
+  var fbPontos = document.getElementById("feedback-pontos");
 
   var perguntas = [];
   var indice = 0;
   var pontuacao = 0;
+  var acertos = 0;
   var pontosPorAcerto = 2;
+
   var timerId = null;
   var perguntaInicio = 0;
+  // Soma do tempo das perguntas já respondidas. O cronômetro mostra
+  // acumulado + pergunta atual, e congela durante o feedback — assim o
+  // número na tela é exatamente o tempo que o servidor usa no desempate.
+  var tempoAcumuladoMs = 0;
+
   var respondendo = false;
   var feedbackTimer = null;
+  var entradaTimer = null;
+  var chegou = false;
   var avancarFn = null;
 
   function fmtMs(ms) {
@@ -44,6 +61,10 @@
     var m = Math.floor(s / 60);
     s = s % 60;
     return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+  }
+
+  function pintarTimer() {
+    elTimer.textContent = fmtMs(tempoAcumuladoMs + (Date.now() - perguntaInicio));
   }
 
   function pararTimer() {
@@ -56,43 +77,47 @@
   function iniciarTimer() {
     pararTimer();
     perguntaInicio = Date.now();
-    elTimer.textContent = "00:00";
-    timerId = setInterval(function () {
-      elTimer.textContent = fmtMs(Date.now() - perguntaInicio);
-    }, 200);
+    pintarTimer();
+    timerId = setInterval(pintarTimer, 250);
   }
 
-  // Loop track — um nó por pergunta; acende conforme avança.
-  function montarLoopTrack(total) {
-    var track = document.getElementById("loop-track");
-    if (!track) return;
-    var antigos = track.querySelectorAll(".node");
-    for (var i = 0; i < antigos.length; i++) antigos[i].remove();
-    for (var n = 0; n < total; n++) {
-      var no = document.createElement("div");
-      no.className = "node";
-      no.dataset.idx = String(n);
-      no.textContent = String(n + 1);
-      track.appendChild(no);
+  // ---------------------------------------------------------------------
+  // Barra de fogo
+  // ---------------------------------------------------------------------
+
+  function montarBarra(total) {
+    elTrilho.innerHTML = "";
+    for (var i = 0; i < total; i++) {
+      var b = document.createElement("span");
+      b.className = "barra-bloco";
+      elTrilho.appendChild(b);
     }
+    elChama.setAttribute("data-nivel", "0");
   }
 
-  function atualizarLoopTrack() {
-    var nos = document.querySelectorAll("#loop-track .node");
-    for (var i = 0; i < nos.length; i++) {
-      nos[i].classList.remove("done", "current");
-      if (i < indice) nos[i].classList.add("done");
-      else if (i === indice) nos[i].classList.add("current");
+  function marcarBloco(i, acertou) {
+    var blocos = elTrilho.querySelectorAll(".barra-bloco");
+    if (blocos[i]) {
+      blocos[i].classList.add(acertou ? "aceso" : "apagado");
     }
-    var fill = document.getElementById("loop-fill");
-    if (fill && perguntas.length) {
-      fill.style.width = (indice / perguntas.length * 100) + "%";
-    }
+    // a chama cresce com os acertos, não com o número de perguntas
+    elChama.setAttribute("data-nivel", String(acertos));
+  }
+
+  // ---------------------------------------------------------------------
+  // Perguntas
+  // ---------------------------------------------------------------------
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 
   function renderPergunta() {
     var p = perguntas[indice];
-    atualizarLoopTrack();
     elProgresso.textContent = "Pergunta " + (indice + 1) + " / " + perguntas.length;
     elPontos.textContent = pontuacao + " pts";
     elPergunta.textContent = p.texto;
@@ -116,14 +141,6 @@
     iniciarTimer();
   }
 
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-  }
-
   function desabilitarAlts() {
     var buttons = elAlts.querySelectorAll(".alt-btn");
     for (var i = 0; i < buttons.length; i++) {
@@ -131,33 +148,71 @@
     }
   }
 
-  function mostrarFeedback(acertou, mensagem) {
-    feedbackCard.classList.remove("is-bom", "is-ruim");
-    feedbackCard.classList.add(acertou ? "is-bom" : "is-ruim");
-    // PLACEHOLDER: troque os SVGs pelos sprites oficiais do Ilumaquinho
-    feedbackImg.src = acertou
-      ? "/static/img/ilumaquinho/deu-bom.png"
-      : "/static/img/ilumaquinho/deu-ruim.png";
-    feedbackImg.alt = acertou ? "Ilumaquinho — deu bom" : "Ilumaquinho — deu ruim";
-    feedbackMsg.textContent = mensagem;
+  // ---------------------------------------------------------------------
+  // Feedback: o mascote entra puxando o card
+  // ---------------------------------------------------------------------
 
+  /**
+   * Fim da entrada: o mascote para de andar e assume a expressão, e só
+   * então começa a contagem para avançar sozinho.
+   *
+   * Chamado por dois caminhos de propósito. O navegador congela animações
+   * quando a página fica oculta (visibilityState "hidden") — se a janela
+   * do totem for encoberta ou a máquina bloquear a tela no meio de uma
+   * partida, o animationend nunca dispara e o participante ficaria preso
+   * no card de feedback. O temporizador de reserva garante a saída.
+   * Idempotente: vale quem chegar primeiro.
+   */
+  function aoChegar() {
+    if (chegou) return;
+    chegou = true;
+    if (entradaTimer) {
+      clearTimeout(entradaTimer);
+      entradaTimer = null;
+    }
+    fbMascote.classList.add("parado");
+    if (feedbackTimer) clearTimeout(feedbackTimer);
+    feedbackTimer = setTimeout(continuarAposFeedback, FEEDBACK_MS);
+  }
+
+  reboque.addEventListener("animationend", function (ev) {
+    if (ev.animationName === "reboque-entra") aoChegar();
+  });
+
+  function mostrarFeedback(acertou, mensagem, pontos) {
+    var classe = acertou ? "is-bom" : "is-ruim";
+
+    fbCard.className = "fb-card " + classe;
+    fbMsg.textContent = mensagem;
+    fbPontos.textContent = acertou ? "+" + pontos + " pontos" : "sem pontos";
+
+    // volta o mascote para o ciclo de caminhada antes de entrar de novo
+    fbMascote.className = "fb-mascote " + classe;
+
+    chegou = false;
     overlay.hidden = false;
-    // força reflow para animar
-    void overlay.offsetWidth;
+    overlay.classList.remove("is-visible");
+    void overlay.offsetWidth; // reflow: reinicia a animação de entrada
     overlay.classList.add("is-visible");
+
+    // reserva, caso o animationend não venha (ver aoChegar)
+    if (entradaTimer) clearTimeout(entradaTimer);
+    entradaTimer = setTimeout(aoChegar, ENTRADA_MS + 300);
   }
 
   function esconderFeedback() {
     overlay.classList.remove("is-visible");
-    setTimeout(function () {
-      overlay.hidden = true;
-    }, 250);
+    overlay.hidden = true;
   }
 
   function continuarAposFeedback() {
     if (feedbackTimer) {
       clearTimeout(feedbackTimer);
       feedbackTimer = null;
+    }
+    if (entradaTimer) {
+      clearTimeout(entradaTimer);
+      entradaTimer = null;
     }
     esconderFeedback();
     if (typeof avancarFn === "function") {
@@ -169,6 +224,8 @@
 
   overlay.addEventListener("click", continuarAposFeedback);
 
+  // ---------------------------------------------------------------------
+
   function responder(letra) {
     if (respondendo) return;
     respondendo = true;
@@ -177,6 +234,7 @@
 
     var tempoMs = Date.now() - perguntaInicio;
     var pergunta = perguntas[indice];
+    var indiceAtual = indice;
 
     fetch("/api/quiz/responder", {
       method: "POST",
@@ -188,20 +246,25 @@
         tempo_resposta_ms: tempoMs,
       }),
     })
-      .then(function (res) {
-        return res.json().then(function (data) {
-          return { status: res.status, data: data };
-        });
-      })
-      .then(function (result) {
-        if (!result.data.ok) {
-          throw new Error(result.data.erro || "Erro ao registrar resposta.");
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (!data.ok) {
+          throw new Error(data.erro || "Erro ao registrar resposta.");
         }
-        if (result.data.acertou) {
-          pontuacao += result.data.pontos || pontosPorAcerto;
+
+        // o tempo desta pergunta entra no acumulado; o relógio fica parado
+        // enquanto o feedback está na tela
+        tempoAcumuladoMs += tempoMs;
+        elTimer.textContent = fmtMs(tempoAcumuladoMs);
+
+        var pontos = data.pontos || pontosPorAcerto;
+        if (data.acertou) {
+          acertos += 1;
+          pontuacao += pontos;
           elPontos.textContent = pontuacao + " pts";
         }
-        mostrarFeedback(result.data.acertou, result.data.mensagem);
+        marcarBloco(indiceAtual, data.acertou);
+        mostrarFeedback(data.acertou, data.mensagem, pontos);
 
         avancarFn = function () {
           indice += 1;
@@ -211,66 +274,54 @@
             renderPergunta();
           }
         };
-
-        feedbackTimer = setTimeout(continuarAposFeedback, FEEDBACK_MS);
       })
       .catch(function (err) {
         respondendo = false;
-        alert(err.message || "Erro local ao responder.");
-        // reabilita para tentar de novo
+        elPergunta.textContent = err.message || "Erro local ao responder.";
         var buttons = elAlts.querySelectorAll(".alt-btn");
-        for (var i = 0; i < buttons.length; i++) {
-          buttons[i].disabled = false;
-        }
+        for (var i = 0; i < buttons.length; i++) buttons[i].disabled = false;
         iniciarTimer();
       });
   }
 
   function finalizar() {
+    pararTimer();
     fetch("/api/quiz/finalizar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         participante_id: participanteId,
         pontuacao: pontuacao,
-        tempo_total_ms: 0, // servidor recalcula a partir das respostas
+        tempo_total_ms: tempoAcumuladoMs, // servidor recalcula mesmo assim
       }),
     })
-      .then(function (res) {
-        return res.json().then(function (data) {
-          return { status: res.status, data: data };
-        });
-      })
-      .then(function (result) {
-        if (!result.data.ok) {
-          throw new Error(result.data.erro || "Erro ao finalizar.");
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (!data.ok) {
+          throw new Error(data.erro || "Erro ao finalizar.");
         }
-        sessionStorage.setItem("ultimo_resultado", JSON.stringify(result.data));
+        sessionStorage.setItem("ultimo_resultado", JSON.stringify(data));
         window.location.href = "/resultado";
       })
       .catch(function (err) {
-        alert(err.message || "Erro ao finalizar o quiz.");
+        elPergunta.textContent = err.message || "Erro ao finalizar o quiz.";
       });
   }
 
   // Boot
   elPergunta.textContent = "Sorteando perguntas…";
   fetch("/api/quiz/iniciar?participante_id=" + encodeURIComponent(participanteId))
-    .then(function (res) {
-      return res.json().then(function (data) {
-        return { status: res.status, data: data };
-      });
-    })
-    .then(function (result) {
-      if (!result.data.ok) {
-        throw new Error(result.data.erro || "Não foi possível iniciar o quiz.");
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (!data.ok) {
+        throw new Error(data.erro || "Não foi possível iniciar o quiz.");
       }
-      perguntas = result.data.perguntas || [];
-      pontosPorAcerto = result.data.pontos_por_acerto || 2;
+      perguntas = data.perguntas || [];
+      pontosPorAcerto = data.pontos_por_acerto || 2;
       if (perguntas.length === 0) {
         throw new Error("Nenhuma pergunta retornada.");
       }
-      montarLoopTrack(perguntas.length);
+      montarBarra(perguntas.length);
       renderPergunta();
     })
     .catch(function (err) {
