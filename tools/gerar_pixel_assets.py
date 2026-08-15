@@ -199,153 +199,69 @@ def folha_de_caminhada(quadros, destino):
 # ---------------------------------------------------------------------------
 
 # . = transparente
-# a = amarelo claro (nucleo)  b = laranja  c = vermelho  d = vermelho escuro
-CHAMA_QUADROS = [
-    [
-        "....dd....",
-        "...dccd...",
-        "..dcbbcd..",
-        "..dcbbcd..",
-        ".dcbaabcd.",
-        ".dcbaabcd.",
-        "dcbaaaabcd",
-        "dcbaaaabcd",
-        ".dcbaabcd.",
-        "..dccccd..",
-        "...dccd...",
-        "....dd....",
-    ],
-    [
-        "...ddd....",
-        "..ddccd...",
-        "..dcbbcd..",
-        ".dcbbbcd..",
-        ".dcbaabcd.",
-        "dcbaaabcd.",
-        "dcbaaaabcd",
-        ".dcbaaabcd",
-        "..dcbaabcd",
-        "..dccccd..",
-        "...dccd...",
-        "....dd....",
-    ],
-    [
-        "....ddd...",
-        "...dccdd..",
-        "..dcbbcd..",
-        "..dcbbbcd.",
-        ".dcbaabcd.",
-        ".dcbaaabcd",
-        "dcbaaaabcd",
-        "dcbaaabcd.",
-        "dcbaabcd..",
-        "..dccccd..",
-        "...dccd...",
-        "....dd....",
-    ],
+# a = nucleo claro   b = laranja   c = vermelho   d = contorno escuro
+CHAMA_BASE = [
+    ".......dd.......",
+    "......dccd......",
+    "......dccd......",
+    ".....dcbbcd.....",
+    ".....dcbbcd.....",
+    "....dcbaabcd....",
+    "....dcbaabcd....",
+    "...dcbaaaabcd...",
+    "...dcbaaaabcd...",
+    "..dcbaaaaaabcd..",
+    "..dcbaaaaaabcd..",
+    ".dcbaaaaaaaabcd.",
+    ".dcbaaaaaaaabcd.",
+    "dcbaaaaaaaaaabcd",
+    "dcbaaaaaaaaaabcd",
+    "dcbaaaaaaaaaabcd",
+    ".dcbaaaaaaaabcd.",
+    "..dcbbbbbbbbcd..",
+    "...dcccccccd....",
+    "....ddddddd.....",
 ]
 
 PALETA_CHAMA = {
-    "a": (255, 236, 170, 255),
-    "b": (255, 168, 46, 255),
-    "c": (229, 57, 34, 255),
-    "d": (138, 20, 26, 255),
+    "a": (255, 240, 186, 255),
+    "b": (255, 166, 40, 255),
+    "c": (226, 51, 32, 255),
+    "d": (122, 14, 21, 255),
     ".": (0, 0, 0, 0),
 }
 
+# A ponta balanca: os quadros so deslocam as linhas de cima, o que mantem
+# a base plantada e da o movimento de labareda sem redesenhar tudo.
+INCLINACAO = (0, -1, 1)
+LINHAS_DA_PONTA = 7
+
+
+def _desloca(linha, dx):
+    if dx == 0:
+        return linha
+    if dx < 0:
+        return linha[-dx:] + "." * (-dx)
+    return "." * dx + linha[:-dx]
+
 
 def gerar_chama(destino):
-    """Folha horizontal com os 3 quadros da chama."""
-    alt = len(CHAMA_QUADROS[0])
-    larg = len(CHAMA_QUADROS[0][0])
-    folha = Image.new("RGBA", (larg * len(CHAMA_QUADROS), alt), (0, 0, 0, 0))
+    """Folha horizontal com os quadros da chama."""
+    alt = len(CHAMA_BASE)
+    larg = len(CHAMA_BASE[0])
+    assert all(len(l) == larg for l in CHAMA_BASE), "linhas de tamanhos diferentes"
+
+    folha = Image.new("RGBA", (larg * len(INCLINACAO), alt), (0, 0, 0, 0))
     px = folha.load()
-    for i, quadro in enumerate(CHAMA_QUADROS):
-        for y, linha in enumerate(quadro):
-            for x, ch in enumerate(linha):
+    for i, dx in enumerate(INCLINACAO):
+        for y, linha in enumerate(CHAMA_BASE):
+            atual = _desloca(linha, dx) if y < LINHAS_DA_PONTA else linha
+            for x, ch in enumerate(atual):
                 px[i * larg + x, y] = PALETA_CHAMA[ch]
     folha.save(destino, "PNG", optimize=True)
     _relatar(destino)
     return larg, alt
 
-
-# ---------------------------------------------------------------------------
-# 3. Fundo: o brasao em pixels
-# ---------------------------------------------------------------------------
-
-def _contorno_brasao(d, cx, cy, w, h, cor, espessura):
-    """Desenha o contorno do escudo como polilinha (vira degrau na grade baixa)."""
-    pontos = []
-    meio = w / 2
-    ombro = cy + h * 0.16
-    pontos.append((cx - meio, cy - h / 2))
-    pontos.append((cx + meio, cy - h / 2))
-    pontos.append((cx + meio, ombro))
-    # ponta inferior arredondada, amostrada em poucos passos
-    for i in range(1, 13):
-        t = i / 12
-        x = cx + meio * (1 - t) ** 2 + cx * 0 + (cx - cx) * t
-        # bezier quadratica: P0=(cx+meio,ombro) P1=(cx+meio,cy+h/2) P2=(cx,cy+h/2)
-        bx = (1 - t) ** 2 * (cx + meio) + 2 * (1 - t) * t * (cx + meio) + t ** 2 * cx
-        by = (1 - t) ** 2 * ombro + 2 * (1 - t) * t * (cy + h / 2) + t ** 2 * (cy + h / 2)
-        pontos.append((bx, by))
-    for i in range(1, 13):
-        t = i / 12
-        bx = (1 - t) ** 2 * cx + 2 * (1 - t) * t * (cx - meio) + t ** 2 * (cx - meio)
-        by = (1 - t) ** 2 * (cy + h / 2) + 2 * (1 - t) * t * (cy + h / 2) + t ** 2 * ombro
-        pontos.append((bx, by))
-    pontos.append((cx - meio, cy - h / 2))
-    d.line(pontos, fill=cor, width=espessura, joint=None)
-
-
-def gerar_fundo(destino, larg=108, alt=192):
-    """
-    Padrao do brasao numa grade baixa (108x192 = 1/10 do totem).
-
-    Exibido com background-size: cover e image-rendering: pixelated, cada
-    pixel daqui vira um bloco de 10x10 na tela. O arquivo fica na casa de
-    poucos KB e o navegador rasteriza uma vez so.
-    """
-    im = Image.new("RGBA", (larg, alt), VERMELHO + (255,))
-    d = ImageDraw.Draw(im)
-
-    claro = (214, 62, 70, 255)   # vermelho levemente mais claro
-    escuro = (168, 20, 28, 255)  # vermelho levemente mais escuro
-
-    # dois escudos concentricos grandes
-    _contorno_brasao(d, larg * 0.5, alt * 0.46, larg * 0.62, alt * 0.60, claro, 1)
-    _contorno_brasao(d, larg * 0.5, alt * 0.46, larg * 0.44, alt * 0.44, escuro, 1)
-
-    # riscos longos acompanhando a curvatura do escudo
-    for (x0, y0, x1, y1, x2, y2) in [
-        (-20, 18, 34, 52, 44, 190),
-        (128, 12, 74, 46, 66, 196),
-        (-14, 70, 32, 84, 54, 122),
-        (122, 62, 78, 76, 58, 116),
-    ]:
-        pts = []
-        for i in range(41):
-            t = i / 40
-            bx = (1 - t) ** 2 * x0 + 2 * (1 - t) * t * x1 + t ** 2 * x2
-            by = (1 - t) ** 2 * y0 + 2 * (1 - t) * t * y1 + t ** 2 * y2
-            pts.append((bx, by))
-        d.line(pts, fill=claro, width=1)
-
-    # dithering leve nos cantos: textura de pixel art sem custo de render
-    px = im.load()
-    for y in range(alt):
-        for x in range(larg):
-            borda = min(x, larg - 1 - x) / (larg / 2)
-            topo = min(y, alt - 1 - y) / (alt / 2)
-            if (x + y) % 2 == 0 and borda < 0.32 and topo < 0.42:
-                r, g, b, a = px[x, y]
-                px[x, y] = (max(0, r - 14), max(0, g - 6), max(0, b - 6), a)
-
-    im.save(destino, "PNG", optimize=True)
-    _relatar(destino)
-
-
-# ---------------------------------------------------------------------------
 
 def main():
     os.makedirs(DESTINO_SPRITE, exist_ok=True)
@@ -377,8 +293,6 @@ def main():
     clarg, calt = gerar_chama(os.path.join(DESTINO_IMG, "chama.png"))
     print("    -> celula da folha: %dx%d" % (clarg, calt))
 
-    print("Fundo do brasao em pixels:")
-    gerar_fundo(os.path.join(DESTINO_IMG, "padrao-brasao.png"))
 
 
 if __name__ == "__main__":
