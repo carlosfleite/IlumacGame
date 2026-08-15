@@ -1,0 +1,231 @@
+{
+  "_leia_me": [
+    "Banco de perguntas do Quiz SDAI. Este arquivo e a FONTE DA VERDADE do",
+    "conteudo: edite aqui, salve e reinicie o totem. Nao e preciso mexer em",
+    "codigo nem apagar o banco (os cadastros da feira sao preservados).",
+    "",
+    "Regras de edicao:",
+    "- 'chave' identifica a pergunta e NAO deve ser alterada depois do evento",
+    "  comecar: e por ela que o historico de respostas se liga a pergunta.",
+    "- 'correta' aceita apenas: a, b, c ou d.",
+    "- 'ativa': false tira a pergunta do sorteio sem apagar o historico dela.",
+    "- E preciso ter pelo menos 'perguntas_por_partida' perguntas ativas.",
+    "",
+    "REVISAR ANTES DO EVENTO: as perguntas abaixo foram redigidas sobre",
+    "fundamentos de SDAI e categorias de produto da Ilumac. As que citam",
+    "numero de norma tecnica estao marcadas com \"revisar\": true — confirme",
+    "com a equipe tecnica antes da feira."
+  ],
+
+  "pontos_por_acerto": 2,
+  "perguntas_por_partida": 5,
+
+  "perguntas": [
+    {
+      "chave": "sdai-sigla",
+      "texto": "O que significa a sigla SDAI?",
+      "alternativas": {
+        "a": "Sistema de Detecção e Alarme de Incêndio",
+        "b": "Sistema de Distribuição de Água Interna",
+        "c": "Sensor de Densidade Ambiental Inteligente",
+        "d": "Sistema de Dutos Antifumaça Industrial"
+      },
+      "correta": "a",
+      "ativa": true
+    },
+    {
+      "chave": "central-funcao",
+      "texto": "Qual é a função da central de alarme em um SDAI?",
+      "alternativas": {
+        "a": "Apenas registrar o histórico de manutenções do prédio",
+        "b": "Supervisionar os dispositivos, processar os sinais e comandar os alarmes",
+        "c": "Substituir o sistema de sprinklers em caso de incêndio",
+        "d": "Controlar a climatização e a iluminação do edifício"
+      },
+      "correta": "b",
+      "ativa": true
+    },
+    {
+      "chave": "convencional-vs-enderecavel",
+      "texto": "Qual é a principal vantagem de um sistema endereçável sobre um convencional?",
+      "alternativas": {
+        "a": "Dispensa o uso de detectores no ambiente",
+        "b": "Funciona sem qualquer alimentação elétrica",
+        "c": "Identifica exatamente qual dispositivo gerou o alarme",
+        "d": "Elimina a necessidade de manutenção periódica"
+      },
+      "correta": "c",
+      "ativa": true
+    },
+    {
+      "chave": "detector-optico-principio",
+      "texto": "O detector óptico de fumaça identifica um princípio de incêndio por meio de:",
+      "alternativas": {
+        "a": "Partículas de fumaça que dispersam a luz dentro da câmara do sensor",
+        "b": "Aumento da pressão atmosférica no ambiente",
+        "c": "Variação do nível de umidade do piso",
+        "d": "Ruído produzido pelas chamas"
+      },
+      "correta": "a",
+      "ativa": true
+    },
+    {
+      "chave": "detector-termico-principio",
+      "texto": "Um detector térmico atua respondendo principalmente a:",
+      "alternativas": {
+        "a": "Presença de gás combustível no ar",
+        "b": "Temperatura fixa ou taxa de elevação da temperatura",
+        "c": "Cor da fumaça gerada pelo material em combustão",
+        "d": "Corrente elétrica consumida pelo circuito"
+      },
+      "correta": "b",
+      "ativa": true
+    },
+    {
+      "chave": "detector-linear-aplicacao",
+      "texto": "O detector linear de fumaça (feixe óptico) é especialmente indicado para:",
+      "alternativas": {
+        "a": "Armários elétricos e espaços muito pequenos",
+        "b": "Áreas externas sem cobertura",
+        "c": "Grandes áreas e ambientes de pé-direito alto, como galpões",
+        "d": "Dutos de ar-condicionado residenciais"
+      },
+      "correta": "c",
+      "ativa": true
+    },
+    {
+      "chave": "acionador-manual-funcao",
+      "texto": "Para que serve o acionador manual (botoeira) de um SDAI?",
+      "alternativas": {
+        "a": "Permitir que uma pessoa dispare o alarme ao perceber o incêndio",
+        "b": "Desligar a energia elétrica de todo o prédio",
+        "c": "Silenciar definitivamente as sirenes do sistema",
+        "d": "Ajustar a sensibilidade dos detectores do ambiente"
+      },
+      "correta": "a",
+      "ativa": true
+    },
+    {
+      "chave": "isolador-curto-circuito",
+      "texto": "Qual é a função do isolador de curto-circuito em um laço endereçável?",
+      "alternativas": {
+        "a": "Aumentar o volume sonoro das sirenes do laço",
+        "b": "Isolar o trecho em curto, mantendo o restante do laço em operação",
+        "c": "Converter o laço endereçável em convencional",
+        "d": "Armazenar energia para alimentar a central"
+      },
+      "correta": "b",
+      "ativa": true
+    },
+    {
+      "chave": "modulo-entrada-saida",
+      "texto": "Em um sistema endereçável, qual é a diferença entre módulo de entrada e módulo de saída?",
+      "alternativas": {
+        "a": "Não há diferença: são nomes comerciais do mesmo produto",
+        "b": "O de entrada alimenta a central e o de saída alimenta os detectores",
+        "c": "O de entrada monitora sinais de outros equipamentos; o de saída comanda dispositivos externos",
+        "d": "O de entrada funciona de dia e o de saída apenas à noite"
+      },
+      "correta": "c",
+      "ativa": true
+    },
+    {
+      "chave": "sirene-audiovisual",
+      "texto": "Por que uma sirene audiovisual combina sinal sonoro e sinal visual?",
+      "alternativas": {
+        "a": "Para reduzir o consumo de energia do sistema",
+        "b": "Apenas por questão estética do projeto",
+        "c": "Para funcionar como iluminação de emergência do ambiente",
+        "d": "Para alertar também em locais ruidosos e pessoas com deficiência auditiva"
+      },
+      "correta": "d",
+      "ativa": true
+    },
+    {
+      "chave": "iluminacao-emergencia-funcao",
+      "texto": "Qual é a finalidade da iluminação de emergência em uma edificação?",
+      "alternativas": {
+        "a": "Garantir visibilidade para a saída segura das pessoas na falta de energia",
+        "b": "Substituir a iluminação normal durante a madrugada",
+        "c": "Sinalizar a localização dos extintores durante o dia",
+        "d": "Economizar energia elétrica no horário de pico"
+      },
+      "correta": "a",
+      "ativa": true
+    },
+    {
+      "chave": "balizamento-rota-fuga",
+      "texto": "O balizamento de rota de fuga tem como objetivo:",
+      "alternativas": {
+        "a": "Delimitar as vagas do estacionamento do edifício",
+        "b": "Indicar o caminho a ser seguido até a saída de emergência",
+        "c": "Iluminar as áreas de trabalho fora do expediente",
+        "d": "Marcar o ponto de instalação dos detectores no teto"
+      },
+      "correta": "b",
+      "ativa": true
+    },
+    {
+      "chave": "repetidor-wireless",
+      "texto": "Em um sistema wireless de detecção, para que serve um repetidor de sinal?",
+      "alternativas": {
+        "a": "Aumentar a sensibilidade dos detectores instalados",
+        "b": "Gravar em vídeo o ambiente monitorado",
+        "c": "Estender o alcance da comunicação entre os dispositivos e a central",
+        "d": "Substituir a bateria dos dispositivos automaticamente"
+      },
+      "correta": "c",
+      "ativa": true
+    },
+    {
+      "chave": "manutencao-importancia",
+      "texto": "Por que a manutenção periódica de um SDAI é indispensável?",
+      "alternativas": {
+        "a": "Porque garante que os dispositivos vão funcionar quando forem realmente necessários",
+        "b": "Porque reduz o valor do condomínio do edifício",
+        "c": "Porque dispensa a realização de treinamentos de abandono",
+        "d": "Porque substitui a vistoria do Corpo de Bombeiros"
+      },
+      "correta": "a",
+      "ativa": true
+    },
+    {
+      "chave": "obstrucao-detector",
+      "texto": "Qual destas práticas compromete o funcionamento de um SDAI?",
+      "alternativas": {
+        "a": "Realizar testes funcionais programados no sistema",
+        "b": "Cobrir ou obstruir detectores por questão estética ou durante reformas",
+        "c": "Manter o plano de emergência do local atualizado",
+        "d": "Registrar as ocorrências de alarme em relatório"
+      },
+      "correta": "b",
+      "ativa": true
+    },
+    {
+      "chave": "norma-sdai",
+      "texto": "Qual norma da ABNT trata de sistemas de detecção e alarme de incêndio?",
+      "alternativas": {
+        "a": "NBR 5410",
+        "b": "NBR 17240",
+        "c": "NBR 6118",
+        "d": "NBR 14280"
+      },
+      "correta": "b",
+      "ativa": true,
+      "revisar": true
+    },
+    {
+      "chave": "norma-iluminacao-emergencia",
+      "texto": "Qual norma da ABNT trata do sistema de iluminação de emergência?",
+      "alternativas": {
+        "a": "NBR 10898",
+        "b": "NBR 9050",
+        "c": "NBR 5626",
+        "d": "NBR 8800"
+      },
+      "correta": "a",
+      "ativa": true,
+      "revisar": true
+    }
+  ]
+}
