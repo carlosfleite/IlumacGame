@@ -6,7 +6,7 @@
   <title>Regras — Quiz SDAI Ilumac</title>
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body class="page-regras">
+<body class="page-regras" data-kiosk-timeout="60">
   <div class="screen screen-regras">
     <div class="topbar">
       <div class="brand-lockup">
@@ -58,6 +58,7 @@
     </button>
   </div>
 
+  <script src="/static/js/kiosk.js"></script>
   <script>
     (function () {
       var params = new URLSearchParams(window.location.search);

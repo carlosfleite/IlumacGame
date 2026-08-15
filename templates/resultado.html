@@ -6,7 +6,7 @@
   <title>Resultado — Quiz SDAI Ilumac</title>
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body class="page-resultado">
+<body class="page-resultado" data-kiosk-timeout="60">
   <div class="screen screen-resultado">
     <div class="topbar">
       <div class="brand-lockup">
@@ -47,6 +47,7 @@
     </div>
   </div>
 
+  <script src="/static/js/kiosk.js"></script>
   <script>
     (function () {
       var raw = sessionStorage.getItem("ultimo_resultado");

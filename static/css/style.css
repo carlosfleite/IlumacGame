@@ -909,3 +909,58 @@ body::before {
   .ranking-item { grid-template-columns: 38px 1fr auto; }
   .brand-logo { height: 32px; }
 }
+
+/* ==========================================================================
+   Aviso de inatividade (kiosk.js)
+   Sem blur nem animação contínua — a GPU do AIO de 2011 não dá conta.
+   ========================================================================== */
+
+.kiosk-inatividade {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--safe-side);
+  background: rgba(11, 12, 13, 0.92);
+}
+
+.kiosk-inatividade[hidden] {
+  display: none;
+}
+
+.kiosk-inatividade-card {
+  width: 100%;
+  max-width: 640px;
+  padding: 48px 40px;
+  border: 1px solid var(--aco);
+  border-top: 4px solid var(--vermelho);
+  border-radius: var(--radius);
+  background: var(--painel);
+  text-align: center;
+}
+
+.kiosk-inatividade-titulo {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.kiosk-inatividade-texto {
+  margin: 0 0 32px;
+  color: var(--mudo);
+  font-size: 1.15rem;
+}
+
+.kiosk-inatividade-contador {
+  color: var(--vermelho);
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+}
+
+.kiosk-inatividade-btn {
+  width: 100%;
+}
