@@ -14,10 +14,22 @@ DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "quiz.db")
 
 
 def get_connection():
-    """Retorna conexão sqlite3 com Row factory (acesso por nome de coluna)."""
-    conn = sqlite3.connect(DB_PATH)
+    """
+    Retorna conexão sqlite3 com Row factory (acesso por nome de coluna).
+
+    PRAGMAs escolhidos para um totem que roda 3 dias sem supervisão:
+    - journal_mode=WAL: leitura (ranking) não bloqueia escrita (finalizar
+      partida). Sem isso, consultar o ranking enquanto alguém termina o quiz
+      pode devolver "database is locked".
+    - busy_timeout: em vez de falhar na hora, espera o lock por até 5 s.
+    - synchronous=NORMAL: seguro sob WAL e bem mais leve no disco que FULL.
+    """
+    conn = sqlite3.connect(DB_PATH, timeout=5.0)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute("PRAGMA journal_mode = WAL")
+    conn.execute("PRAGMA busy_timeout = 5000")
+    conn.execute("PRAGMA synchronous = NORMAL")
     return conn
 
 
