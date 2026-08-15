@@ -1,91 +1,94 @@
 /* ==========================================================================
    Quiz SDAI — Ilumac Fire Show 2026
-   Estética PIXEL ART sobre o campo vermelho institucional.
 
-   Regras que sustentam o visual (quebrar uma delas estraga o conjunto):
+   DIREÇÃO: campo vermelho institucional com a textura do brasão, interface
+   em pixel art e tipografia mista.
 
-   1. Grade de 4px. Todo espaçamento, borda e tamanho é múltiplo de --px.
-      Pixel art não tem meio pixel.
-   2. Cantos retos. Nenhum border-radius em lugar nenhum.
-   3. Sombra sólida deslocada, nunca desfocada. Além de ser a linguagem
-      certa, blur é o efeito mais caro para a GPU Intel HD de 2011.
-   4. Toda animação usa steps(). Movimento contínuo denuncia que não é
-      pixel art; o serrilhado do steps() é o que dá vida ao sprite.
-   5. Toda imagem com image-rendering: pixelated. Os sprites são gerados
-      em 64px por tools/gerar_pixel_assets.py e ampliados pelo navegador
-      em nearest-neighbor.
+   Regra tipográfica (a mais importante deste arquivo):
+   Press Start 2P é uma fonte de 8px por glifo. Ela só é legível em corpo
+   grande e frase curta — em texto corrido ela vira ruído. Por isso:
+
+     · PIXEL  → título de tela, número grande, mensagem de feedback,
+                botão, posição do ranking. Sempre curto e grande.
+     · MONTSERRAT → tudo que o participante precisa LER com atenção:
+                enunciado da pergunta, alternativas, rótulos de campo,
+                descrições, nomes. Sem exceção.
+
+   Demais regras que sustentam o visual:
+   1. Grade de 4px (--px). Todo espaçamento é múltiplo dela.
+   2. Cantos retos, zero border-radius.
+   3. Sombra sólida deslocada, nunca desfocada (e blur é o efeito mais
+      caro para a GPU Intel HD de 2011).
+   4. Animação em steps(). Movimento contínuo denuncia que não é pixel art.
+   5. image-rendering: pixelated em todo sprite.
 
    Totem 23" em RETRATO (1080x1920) · touch · 100% offline, sem CDN.
    ========================================================================== */
 
-/* ---- Fontes locais (subconjunto WOFF2, licença OFL em static/fonts/) ---- */
 @font-face {
   font-family: "Press Start 2P";
   src: url("/static/fonts/pressstart2p.woff2") format("woff2");
   font-weight: 400;
-  font-display: block; /* nunca mostrar fallback: quebraria a estética */
+  font-display: block;
 }
 @font-face {
-  font-family: "Pixelify Sans";
-  src: url("/static/fonts/pixelifysans-400.woff2") format("woff2");
+  font-family: "Montserrat";
+  src: url("/static/fonts/montserrat-400.woff2") format("woff2");
   font-weight: 400;
-  font-display: block;
+  font-display: swap;
 }
 @font-face {
-  font-family: "Pixelify Sans";
-  src: url("/static/fonts/pixelifysans-700.woff2") format("woff2");
+  font-family: "Montserrat";
+  src: url("/static/fonts/montserrat-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Montserrat";
+  src: url("/static/fonts/montserrat-700.woff2") format("woff2");
   font-weight: 700;
-  font-display: block;
+  font-display: swap;
 }
 
 :root {
-  /* Unidade base. Todo o layout é múltiplo dela. */
   --px: 4px;
 
-  /* Marca */
   --vermelho: #c31922;
   --vermelho-claro: #d92330;
   --vermelho-escuro: #a5141c;
   --vermelho-profundo: #7a0e15;
+  --vermelho-noite: #560a0f;
 
-  /* Superfícies */
   --cartao: #ffffff;
   --cartao-2: #ece7e4;
   --contorno: #1c1517;
 
-  /* Texto sobre cartão claro */
   --tinta: #1c1517;
   --tinta-media: #5d5052;
   --tinta-fraca: #857779;
 
-  /* Texto e linhas sobre o vermelho.
-     Contraste medido com composição de alpha sobre #c31922:
-     branco 6.03 · 0.92 → 5.28 · 0.82 → 4.43 (reprova AA) · 0.62 → 3.04.
-     Por isso o texto secundário para em 0.92. */
+  /* Contraste medido com composição de alpha sobre #c31922:
+     branco 6.03 · 0.92 → 5.28 · 0.82 → 4.43 (reprova AA) · 0.62 → 3.04. */
   --sobre-vermelho: #ffffff;
   --sobre-vermelho-medio: rgba(255, 255, 255, 0.92);
   --sobre-vermelho-fraco: rgba(255, 255, 255, 0.72);
-  --linha-vermelho: rgba(255, 255, 255, 0.30);
+  --linha-vermelho: rgba(255, 255, 255, 0.28);
   --veu-branco: rgba(255, 255, 255, 0.12);
 
-  /* Fogo — paleta da chama, reusada na barra de progresso */
-  --fogo-nucleo: #ffecaa;
-  --fogo-medio: #ffa82e;
-  --fogo-borda: #e53922;
-  --cinza-apagado: #6b5254;
+  --fogo-nucleo: #fff0ba;
+  --fogo-medio: #ffa628;
+  --fogo-borda: #e23320;
+  --cinza-apagado: #6d5a5c;
 
-  /* Estados */
   --ok: #1c8a5a;
   --erro: #b01521;
 
-  --sombra: 0 0 0 var(--px) var(--contorno), calc(var(--px) * 2) calc(var(--px) * 2) 0 0 rgba(28, 21, 23, 0.45);
-
-  --timer-h: 132px;
   --safe-top: 28px;
   --safe-side: 32px;
+  --barra-h: 132px;
 
   --font-display: "Press Start 2P", "Courier New", monospace;
-  --font-body: "Pixelify Sans", "Segoe UI", Tahoma, sans-serif;
+  --font-body: "Montserrat", "Segoe UI", Tahoma, sans-serif;
 }
 
 *,
@@ -94,7 +97,6 @@
   box-sizing: border-box;
 }
 
-/* Sprites sempre em nearest-neighbor */
 img,
 .sprite {
   image-rendering: pixelated;
@@ -114,20 +116,18 @@ html, body {
   overflow: hidden;
 }
 
-/* Campo vermelho + brasão em pixels.
-   O PNG tem 108x192 (1/10 do totem) e sobe para a tela com background-size
-   cover: cada pixel do arquivo vira um bloco de ~10px. Arquivo de 1,4 KB,
-   rasterizado uma vez. */
+/* Campo vermelho + brasão. O SVG é vetorial de propósito: em blocos a
+   curva do brasão vira ruído diagonal. A pixel art fica nos sprites e nos
+   componentes; o fundo continua sendo peça de marca. */
 body {
   display: flex;
   justify-content: center;
   position: relative;
   background-color: var(--vermelho);
-  background-image: url("/static/img/padrao-brasao.png");
+  background-image: url("/static/img/padrao-brasao.svg");
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  image-rendering: pixelated;
 }
 
 .screen {
@@ -142,13 +142,6 @@ body {
   overflow: hidden;
 }
 
-/* ---- Caixa pixel: base de todo cartão claro ---- */
-.px-caixa {
-  background: var(--cartao);
-  border: var(--px) solid var(--contorno);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 rgba(28, 21, 23, 0.45);
-}
-
 /* ---- Cabeçalho ---- */
 .topbar {
   display: flex;
@@ -157,7 +150,7 @@ body {
   gap: 16px;
   flex-shrink: 0;
   padding-bottom: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   border-bottom: var(--px) solid var(--linha-vermelho);
 }
 
@@ -168,12 +161,8 @@ body {
   min-width: 0;
 }
 
-.brand-logo {
-  height: 40px;
-  width: auto;
-  display: block;
-  flex-shrink: 0;
-}
+.brand-logo { height: 40px; width: auto; display: block; flex-shrink: 0; }
+.brand-logo-fs { height: 32px; width: auto; display: block; flex-shrink: 0; }
 
 .brand-divider {
   width: var(--px);
@@ -182,60 +171,59 @@ body {
   flex-shrink: 0;
 }
 
-.brand-logo-fs {
-  height: 32px;
-  width: auto;
-  display: block;
-  flex-shrink: 0;
-}
-
 .tag {
-  font-family: var(--font-display);
-  font-size: 0.5rem;
-  line-height: 1;
-  letter-spacing: 0.06em;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--sobre-vermelho);
   border: var(--px) solid var(--sobre-vermelho);
   background: var(--veu-branco);
-  padding: 8px 12px;
+  padding: 8px 14px;
   white-space: nowrap;
 }
 
-/* Cronômetro compacto no topo (o dock da base virou barra de fogo) */
+/* Cronômetro: rótulo em Montserrat, dígitos em pixel (curto e grande) */
 .timer-topo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex-shrink: 0;
-  font-family: var(--font-display);
-  font-size: 0.5rem;
-  color: var(--sobre-vermelho);
   border: var(--px) solid var(--sobre-vermelho);
   background: var(--vermelho-profundo);
-  padding: 8px 12px;
+  padding: 8px 14px;
   white-space: nowrap;
 }
 
 .timer-topo .rotulo {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--sobre-vermelho-fraco);
 }
 
 .timer-topo .valor {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--sobre-vermelho);
   font-variant-numeric: tabular-nums;
 }
 
 .brand-header {
   text-align: left;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   flex-shrink: 0;
 }
 
 .brand-eyebrow {
-  margin: 0 0 12px;
-  font-family: var(--font-display);
-  font-size: 0.5rem;
-  line-height: 1.6;
+  margin: 0 0 14px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--sobre-vermelho-medio);
 }
@@ -244,17 +232,16 @@ body {
   margin: 0;
   font-family: var(--font-display);
   font-size: clamp(1.5rem, 5.2vw, 2.4rem);
-  line-height: 1.15;
+  line-height: 1.2;
   text-transform: uppercase;
   color: var(--sobre-vermelho);
-  /* sombra sólida: o "relevo" clássico de título em pixel art */
-  text-shadow: var(--px) var(--px) 0 var(--vermelho-profundo);
+  text-shadow: var(--px) var(--px) 0 var(--vermelho-noite);
 }
 
 .brand-sub {
   margin: 16px 0 0;
-  font-size: 1.15rem;
-  line-height: 1.45;
+  font-size: 1.05rem;
+  line-height: 1.5;
   color: var(--sobre-vermelho-medio);
 }
 
@@ -263,42 +250,37 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 68px;
+  min-height: 72px;
   padding: 16px 24px;
   border: var(--px) solid var(--contorno);
   font-family: var(--font-display);
   font-size: 0.8rem;
-  line-height: 1.3;
+  line-height: 1.4;
   text-transform: uppercase;
   text-decoration: none;
   text-align: center;
   cursor: pointer;
-  /* transição em steps: o botão "pula" um pixel em vez de deslizar */
   transition: transform 0.08s steps(2), background 0.08s steps(1);
 }
 
-.btn-block {
-  width: 100%;
-}
+.btn-block { width: 100%; }
 
 .btn-primary {
   background: var(--cartao);
   color: var(--vermelho);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-profundo);
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
 }
 
 .btn-primary:active {
   background: var(--cartao-2);
-  /* afunda exatamente o tamanho da sombra: a peça "encosta" na tela */
   transform: translate(var(--px), var(--px));
-  box-shadow: var(--px) var(--px) 0 0 var(--vermelho-profundo);
+  box-shadow: var(--px) var(--px) 0 0 var(--vermelho-noite);
 }
 
 .btn-ghost {
   background: transparent;
   border-color: var(--sobre-vermelho);
   color: var(--sobre-vermelho-medio);
-  box-shadow: none;
 }
 
 .btn-ghost:active {
@@ -321,7 +303,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: safe center;
-  gap: 16px;
+  gap: 20px;
   min-height: 0;
   overflow-y: auto;
   padding-bottom: 8px;
@@ -331,21 +313,25 @@ body {
 .field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  font-family: var(--font-display);
-  font-size: 0.5rem;
-  line-height: 1.4;
+  gap: 10px;
+}
+
+.field > span {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--sobre-vermelho-medio);
 }
 
 .field input {
-  min-height: 60px;
+  min-height: 64px;
   padding: 12px 16px;
   border: var(--px) solid var(--contorno);
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-family: var(--font-body);
-  text-transform: none;
+  font-weight: 600;
   background: var(--cartao);
   color: var(--tinta);
   user-select: text;
@@ -354,6 +340,7 @@ body {
 
 .field input::placeholder {
   color: var(--tinta-fraca);
+  font-weight: 400;
 }
 
 .field input:focus {
@@ -361,16 +348,32 @@ body {
   box-shadow: inset 0 0 0 var(--px) var(--vermelho);
 }
 
+/* Campo reprovado na validação */
+.field.invalido input {
+  box-shadow: inset 0 0 0 var(--px) var(--erro);
+}
+
+.field .dica {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--sobre-vermelho);
+  background: var(--vermelho-noite);
+  padding: 6px 10px;
+  border-left: var(--px) solid var(--sobre-vermelho);
+}
+
+.field .dica[hidden] { display: none; }
+
 .consent {
   display: flex;
   gap: 16px;
   align-items: flex-start;
-  margin: 8px 0 4px;
   padding: 16px;
   background: var(--veu-branco);
   border: var(--px) solid var(--linha-vermelho);
-  font-size: 1rem;
-  line-height: 1.4;
+  font-size: 0.98rem;
+  line-height: 1.45;
   color: var(--sobre-vermelho);
 }
 
@@ -378,101 +381,99 @@ body {
   width: 32px;
   height: 32px;
   flex-shrink: 0;
-  accent-color: var(--vermelho-profundo);
+  accent-color: var(--vermelho-noite);
 }
 
 .form-error {
   margin: 0;
-  padding: 12px 16px;
+  padding: 14px 16px;
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
   border-left-width: calc(var(--px) * 3);
   border-left-color: var(--vermelho);
   color: var(--erro);
   font-weight: 700;
+  font-size: 0.98rem;
 }
 
-#btn-cadastrar {
-  margin-top: 16px;
+/* ---- Regras: 4 cards, não lista ---- */
+.screen-regras { justify-content: center; }
+
+.regras-grade {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
   flex-shrink: 0;
 }
 
-/* ---- Regras ---- */
-.screen-regras {
-  justify-content: center;
-}
-
-.regras-lista {
-  list-style: none;
-  margin: 4px 0 24px;
-  padding: 0;
+.regras-card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  flex: 0 1 auto;
-  min-height: 0;
-  overflow-y: auto;
+  gap: 10px;
+  padding: 24px 18px 20px;
+  background: var(--cartao);
+  border: var(--px) solid var(--contorno);
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
 }
 
-.regras-lista li {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  padding: 16px 0;
-  border-bottom: var(--px) solid var(--linha-vermelho);
-}
-
-.regras-lista li:last-child {
-  border-bottom: none;
-}
-
+/* número em selo, saindo da quina do card */
 .regras-num {
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+  position: absolute;
+  top: calc(var(--px) * -3);
+  left: calc(var(--px) * -3);
+  min-width: 48px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--cartao);
+  padding: 0 8px;
+  background: var(--vermelho);
   border: var(--px) solid var(--contorno);
   font-family: var(--font-display);
-  font-size: 0.7rem;
-  color: var(--vermelho);
-}
-
-.regras-lista strong {
-  display: block;
-  font-family: var(--font-display);
-  font-size: 0.7rem;
-  line-height: 1.4;
-  margin-bottom: 8px;
+  font-size: 0.72rem;
   color: var(--sobre-vermelho);
 }
 
-.regras-lista p {
+.regras-card strong {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--vermelho);
+  margin-top: 12px;
+}
+
+.regras-card p {
   margin: 0;
-  color: var(--sobre-vermelho-medio);
-  font-size: 1.05rem;
-  line-height: 1.4;
+  color: var(--tinta-media);
+  font-size: 0.98rem;
+  line-height: 1.45;
 }
 
 /* ---- Quiz ---- */
-.screen-quiz {
-  padding-bottom: calc(var(--timer-h) + 16px);
-}
+.screen-quiz { padding-bottom: calc(var(--barra-h) + 20px); }
 
 .quiz-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  font-family: var(--font-display);
-  font-size: 0.55rem;
+  margin-bottom: 20px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--sobre-vermelho-medio);
   flex-shrink: 0;
 }
 
 #quiz-pontos {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0;
   color: var(--sobre-vermelho);
 }
 
@@ -485,20 +486,23 @@ body {
   overflow: hidden;
 }
 
+/* Enunciado em Montserrat: é o texto que exige leitura atenta.
+   Em Press Start 2P ficava bonito e ilegível. */
 .quiz-pergunta {
-  margin: 0 0 20px;
-  font-family: var(--font-display);
-  font-size: clamp(0.8rem, 2.3vw, 1.05rem);
-  line-height: 1.7;
+  margin: 0 0 24px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(1.3rem, 3.4vw, 1.75rem);
+  line-height: 1.32;
   color: var(--sobre-vermelho);
-  text-shadow: var(--px) var(--px) 0 var(--vermelho-profundo);
+  text-shadow: calc(var(--px) / 2) calc(var(--px) / 2) 0 var(--vermelho-noite);
   flex-shrink: 0;
 }
 
 .quiz-alternativas {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   flex: 0 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -511,17 +515,18 @@ body {
   align-items: center;
   gap: 16px;
   width: 100%;
-  min-height: 80px;
-  padding: 12px 16px;
+  min-height: 84px;
+  padding: 14px 16px;
   text-align: left;
   border: var(--px) solid var(--contorno);
   background: var(--cartao);
   color: var(--tinta);
   font-family: var(--font-body);
-  font-size: 1.15rem;
-  line-height: 1.3;
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.35;
   cursor: pointer;
-  box-shadow: var(--px) var(--px) 0 0 var(--vermelho-profundo);
+  box-shadow: var(--px) var(--px) 0 0 var(--vermelho-noite);
   transition: transform 0.08s steps(2), background 0.08s steps(1);
 }
 
@@ -531,15 +536,12 @@ body {
   box-shadow: none;
 }
 
-.alt-btn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
+.alt-btn:disabled { opacity: 0.5; cursor: default; }
 
 .alt-letra {
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -547,20 +549,20 @@ body {
   border: var(--px) solid var(--contorno);
   color: var(--sobre-vermelho);
   font-family: var(--font-display);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
-.alt-texto {
-  flex: 1;
-}
+.alt-texto { flex: 1; }
 
 /* ==========================================================================
-   Barra de fogo — base da tela, no lugar do antigo dock do cronômetro
+   Barra de fogo — base da tela
 
    Um bloco por pergunta: acende em fogo no acerto, vira cinza no erro.
-   A chama no fim é uma folha de 3 quadros de 10x12px animada por
-   background-position com steps(3) — repinta uma área minúscula, e o
-   chacoalho é só transform, que o compositor resolve sem repintar nada.
+   Desenhada como um painel de equipamento: moldura branca sobre trilho
+   escuro, segmentos com brilho no topo e sombra na base, chama grande
+   na ponta. A chama é uma folha de 3 quadros de 16x20px animada por
+   background-position — repinta uma área minúscula, e o chacoalho é só
+   transform, resolvido pelo compositor.
    ========================================================================== */
 
 .barra-fogo {
@@ -571,32 +573,63 @@ body {
   z-index: 20;
   width: 100%;
   max-width: 860px;
-  height: var(--timer-h);
+  height: var(--barra-h);
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   padding: 0 var(--safe-side);
-  background: var(--vermelho-profundo);
+  background: var(--vermelho-noite);
   border-top: var(--px) solid var(--contorno);
+  /* filete claro logo abaixo do contorno: dá espessura de painel */
+  box-shadow: inset 0 var(--px) 0 0 rgba(255, 255, 255, 0.18);
+}
+
+.barra-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.barra-rotulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sobre-vermelho-fraco);
+}
+
+.barra-rotulo b {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0;
+  color: var(--fogo-medio);
 }
 
 .barra-trilho {
-  flex: 1;
   display: flex;
   gap: var(--px);
-  height: 44px;
+  height: 40px;
   padding: var(--px);
-  background: var(--contorno);
+  background: var(--vermelho-noite);
   border: var(--px) solid var(--contorno);
+  box-shadow: inset 0 0 0 var(--px) rgba(0, 0, 0, 0.45);
 }
 
 .barra-bloco {
   flex: 1;
-  background: rgba(255, 255, 255, 0.10);
-  /* acende/apaga em degraus, como um pixel que troca de cor */
+  background: rgba(0, 0, 0, 0.34);
+  box-shadow: inset 0 var(--px) 0 0 rgba(255, 255, 255, 0.06);
   transition: background 0.2s steps(3);
 }
 
+/* aceso: brasa com núcleo claro em cima e borda quente embaixo */
 .barra-bloco.aceso {
   background: var(--fogo-medio);
   box-shadow: inset 0 var(--px) 0 0 var(--fogo-nucleo),
@@ -605,16 +638,27 @@ body {
 
 .barra-bloco.apagado {
   background: var(--cinza-apagado);
+  box-shadow: inset 0 var(--px) 0 0 rgba(255, 255, 255, 0.10),
+              inset 0 calc(var(--px) * -1) 0 0 rgba(0, 0, 0, 0.35);
 }
 
-/* O tamanho vem de variáveis para os keyframes acompanharem: a folha tem
-   3 quadros, então cada passo desloca exatamente uma largura de quadro.
-   Sem isso, o sprite sai do lugar quando a chama cresce ou quando o media
-   query do totem aumenta a escala. */
-.chama {
-  --chama-w: 40px;   /* 10px do sprite * 4 */
-  --chama-h: 48px;   /* 12px do sprite * 4 */
+/* Nicho da chama: mesma moldura dos demais componentes */
+.chama-caixa {
   flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  border: var(--px) solid var(--contorno);
+  box-shadow: inset 0 var(--px) 0 0 rgba(255, 255, 255, 0.08);
+}
+
+.chama {
+  --chama-w: 51.2px;  /* 16px do sprite * 3.2 */
+  --chama-h: 64px;    /* 20px do sprite * 3.2 */
   width: var(--chama-w);
   height: var(--chama-h);
   background-image: url("/static/img/chama.png");
@@ -634,20 +678,19 @@ body {
 
 @keyframes chama-chacoalho {
   0%  { transform: translateX(0) scaleY(1); }
-  50% { transform: translateX(-2px) scaleY(1.06); }
+  50% { transform: translateX(-2px) scaleY(1.05); }
 }
 
-/* A chama nasce fraca e cresce conforme a barra enche; no 10/10 ela
-   aumenta e acelera. Ampliar um sprite pixelado mantém o serrilhado. */
-.chama[data-nivel="0"] { opacity: 0.35; }
-.chama[data-nivel="1"] { opacity: 0.55; }
-.chama[data-nivel="2"] { opacity: 0.75; }
-.chama[data-nivel="3"] { opacity: 0.90; }
+/* Cresce com os acertos; no 10/10 aumenta e acelera */
+.chama[data-nivel="0"] { opacity: 0.30; }
+.chama[data-nivel="1"] { opacity: 0.5; }
+.chama[data-nivel="2"] { opacity: 0.68; }
+.chama[data-nivel="3"] { opacity: 0.84; }
 .chama[data-nivel="4"] { opacity: 1; }
 .chama[data-nivel="5"] {
   opacity: 1;
-  --chama-w: 60px;
-  --chama-h: 72px;
+  --chama-w: 64px;
+  --chama-h: 80px;
   animation-duration: 0.24s, 0.48s;
 }
 
@@ -663,23 +706,17 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(122, 14, 21, 0.94);
+  background: rgba(86, 10, 15, 0.95);
   overflow: hidden;
 }
 
-.feedback-overlay[hidden] {
-  display: none;
-}
+.feedback-overlay[hidden] { display: none; }
 
-/* O reboque é o conjunto {card + mascote}: entra inteiro pela esquerda,
-   com o mascote na frente puxando. steps(12) dá o arrasto engasgado de
-   pixel art em vez de um deslize suave. */
 .fb-reboque {
   display: flex;
   align-items: flex-end;
-  gap: 0;
-  width: min(100%, 560px);
-  transform: translateX(-150%);
+  width: min(100%, 700px);
+  transform: translateX(-160%);
 }
 
 .feedback-overlay.is-visible .fb-reboque {
@@ -687,7 +724,7 @@ body {
 }
 
 @keyframes reboque-entra {
-  from { transform: translateX(-150%); }
+  from { transform: translateX(-160%); }
   to   { transform: translateX(0); }
 }
 
@@ -696,35 +733,91 @@ body {
   min-width: 0;
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 rgba(0, 0, 0, 0.4);
-  padding: 24px 20px 20px;
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 rgba(0, 0, 0, 0.5);
   text-align: center;
+  overflow: hidden;
 }
 
-.fb-card.is-bom  { border-top: calc(var(--px) * 4) solid var(--ok); }
-.fb-card.is-ruim { border-top: calc(var(--px) * 4) solid var(--tinta-media); }
+/* Faixa superior: diz o resultado antes mesmo de ler a mensagem */
+.fb-faixa {
+  padding: 12px 16px;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--sobre-vermelho);
+  background: var(--tinta-media);
+  border-bottom: var(--px) solid var(--contorno);
+}
 
-/* A corda que liga o card ao mascote — dois pixels de traço, nada mais */
+.fb-card.is-bom  .fb-faixa { background: var(--ok); }
+.fb-card.is-ruim .fb-faixa { background: var(--vermelho); }
+
+.fb-corpo { padding: 28px 24px 22px; }
+
+.feedback-msg {
+  margin: 0 0 18px;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  line-height: 1.45;
+  text-transform: uppercase;
+  color: var(--tinta);
+}
+
+.fb-card.is-bom  .feedback-msg { color: var(--ok); }
+.fb-card.is-ruim .feedback-msg { color: var(--erro); }
+
+/* Pontos ganhos como selo, não como texto solto */
+.feedback-pontos {
+  display: inline-block;
+  margin: 0 0 20px;
+  padding: 10px 18px;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  color: var(--sobre-vermelho);
+  background: var(--contorno);
+  border: var(--px) solid var(--contorno);
+}
+
+.fb-card.is-bom .feedback-pontos { background: var(--ok); }
+
+.feedback-tap {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tinta-fraca);
+  animation: pisca 1.2s steps(1) infinite;
+}
+
+@keyframes pisca {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.25; }
+}
+
+/* Corda entre o card e o mascote */
 .fb-corda {
   flex-shrink: 0;
-  width: 28px;
+  width: 32px;
   height: var(--px);
   background: repeating-linear-gradient(
     90deg,
-    var(--contorno) 0, var(--contorno) 8px,
-    transparent 8px, transparent 12px
+    var(--sobre-vermelho) 0, var(--sobre-vermelho) 8px,
+    transparent 8px, transparent 14px
   );
-  margin-bottom: 40px;
+  margin-bottom: 56px;
 }
 
-/* O mascote: durante a entrada roda o ciclo de caminhada (folha de 2
-   quadros); ao encostar, o JS troca para o sprite de acerto ou erro. */
+/* Mascote: caminha durante a entrada, assume a expressão ao encostar */
 .fb-mascote {
   flex-shrink: 0;
-  width: 116px;   /* 58px * 2 */
-  height: 128px;  /* 64px * 2 */
+  width: 174px;   /* 58px * 3 */
+  height: 192px;  /* 64px * 3 */
   background-image: url("/static/img/ilumaquinho/andando.png");
-  background-size: 232px 128px;
+  background-size: 348px 192px;
   background-repeat: no-repeat;
   background-position: 0 0;
   animation: mascote-anda 0.24s steps(1) infinite;
@@ -732,10 +825,9 @@ body {
 
 @keyframes mascote-anda {
   0%  { background-position: 0 0; }
-  50% { background-position: -116px 0; }
+  50% { background-position: -174px 0; }
 }
 
-/* Chegou: para de andar e assume a expressão */
 .fb-mascote.parado {
   animation: none;
   background-size: contain;
@@ -745,68 +837,32 @@ body {
 .fb-mascote.parado.is-bom  { background-image: url("/static/img/ilumaquinho/deu-bom.png"); }
 .fb-mascote.parado.is-ruim { background-image: url("/static/img/ilumaquinho/deu-ruim.png"); }
 
-.feedback-msg {
-  margin: 0 0 12px;
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  line-height: 1.4;
-  text-transform: uppercase;
-  color: var(--tinta);
-}
-
-.is-bom .feedback-msg  { color: var(--ok); }
-.is-ruim .feedback-msg { color: var(--erro); }
-
-.feedback-pontos {
-  margin: 0 0 12px;
-  font-family: var(--font-display);
-  font-size: 0.7rem;
-  color: var(--tinta-media);
-}
-
-.feedback-tap {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 0.5rem;
-  line-height: 1.4;
-  text-transform: uppercase;
-  color: var(--tinta-fraca);
-  /* pisca em steps: nada de fade suave */
-  animation: pisca 1.2s steps(1) infinite;
-}
-
-@keyframes pisca {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0.25; }
-}
-
 /* ---- Resultado ---- */
-.screen-resultado {
-  justify-content: center;
-}
+.screen-resultado { justify-content: center; }
 
 .resultado-score {
   text-align: center;
-  padding: 24px 16px;
+  padding: 28px 16px;
   margin: 4px 0 16px;
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
   border-top-width: calc(var(--px) * 4);
   border-top-color: var(--vermelho);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 rgba(28, 21, 23, 0.45);
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
 }
 
 .resultado-label {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: 0.5rem;
-  line-height: 1.4;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.74rem;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--tinta-fraca);
 }
 
 .resultado-pontos {
-  margin: 16px 0 0;
+  margin: 18px 0 0;
   font-family: var(--font-display);
   font-size: 3rem;
   line-height: 1;
@@ -815,40 +871,36 @@ body {
 }
 
 .resultado-max {
-  margin: 12px 0 0;
-  font-family: var(--font-display);
-  font-size: 0.6rem;
+  margin: 14px 0 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.9rem;
   color: var(--tinta-media);
 }
 
-.resultado-grid {
-  display: grid;
-  gap: 12px;
-}
+.resultado-grid { display: grid; gap: 12px; }
 
 .resultado-grid > div {
-  padding: 16px;
+  padding: 18px;
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 rgba(28, 21, 23, 0.45);
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
 }
 
-.resultado-grid .resultado-label {
-  color: var(--vermelho);
-}
+.resultado-grid .resultado-label { color: var(--vermelho); }
 
 .resultado-dado {
   margin: 12px 0 0;
   font-family: var(--font-display);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--tinta);
 }
 
 .resultado-desc {
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   color: var(--tinta-media);
   font-size: 1rem;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 /* ---- Ranking ---- */
@@ -872,37 +924,32 @@ body {
 
 .ranking-item {
   display: grid;
-  grid-template-columns: 56px 1fr auto;
-  gap: 12px;
+  grid-template-columns: 60px 1fr auto;
+  gap: 14px;
   align-items: center;
-  padding: 12px 16px;
+  padding: 14px 16px;
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
-  box-shadow: var(--px) var(--px) 0 0 rgba(28, 21, 23, 0.45);
+  box-shadow: var(--px) var(--px) 0 0 var(--vermelho-noite);
 }
 
-.ranking-item.top-1 {
-  border-left-width: calc(var(--px) * 3);
-  border-left-color: var(--vermelho);
-}
+.ranking-item.top-1 { border-left-width: calc(var(--px) * 3); border-left-color: var(--vermelho); }
 
 .ranking-pos {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--tinta-fraca);
   text-align: center;
 }
 
-.ranking-item.top-1 .ranking-pos {
-  color: var(--vermelho);
-  font-size: 0.95rem;
-}
+.ranking-item.top-1 .ranking-pos { color: var(--vermelho); font-size: 1rem; }
 
 .ranking-nome {
   margin: 0;
-  font-size: 1.1rem;
+  font-family: var(--font-body);
+  font-size: 1.08rem;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.25;
   color: var(--tinta);
 }
 
@@ -912,21 +959,20 @@ body {
   color: var(--tinta-fraca);
 }
 
-.ranking-stats {
-  text-align: right;
-}
+.ranking-stats { text-align: right; }
 
 .ranking-pts {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   color: var(--vermelho);
 }
 
 .ranking-tempo {
-  margin: 6px 0 0;
-  font-family: var(--font-display);
-  font-size: 0.5rem;
+  margin: 8px 0 0;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.82rem;
   color: var(--tinta-fraca);
   font-variant-numeric: tabular-nums;
 }
@@ -948,12 +994,10 @@ body {
   align-items: center;
   justify-content: center;
   padding: var(--safe-side);
-  background: rgba(122, 14, 21, 0.95);
+  background: rgba(86, 10, 15, 0.96);
 }
 
-.kiosk-inatividade[hidden] {
-  display: none;
-}
+.kiosk-inatividade[hidden] { display: none; }
 
 .kiosk-inatividade-card {
   width: 100%;
@@ -963,15 +1007,15 @@ body {
   border: var(--px) solid var(--contorno);
   border-top-width: calc(var(--px) * 4);
   border-top-color: var(--vermelho);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 rgba(0, 0, 0, 0.4);
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 rgba(0, 0, 0, 0.5);
   text-align: center;
 }
 
 .kiosk-inatividade-titulo {
-  margin: 0 0 16px;
+  margin: 0 0 18px;
   font-family: var(--font-display);
   font-size: 1.1rem;
-  line-height: 1.4;
+  line-height: 1.45;
   text-transform: uppercase;
   color: var(--tinta);
 }
@@ -979,13 +1023,14 @@ body {
 .kiosk-inatividade-texto {
   margin: 0 0 28px;
   color: var(--tinta-media);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
+  line-height: 1.5;
 }
 
 .kiosk-inatividade-contador {
-  color: var(--vermelho);
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: 1rem;
+  color: var(--vermelho);
 }
 
 .kiosk-inatividade-btn {
@@ -995,15 +1040,13 @@ body {
   box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--contorno);
 }
 
-.kiosk-inatividade-btn:active {
-  background: var(--vermelho-escuro);
-}
+.kiosk-inatividade-btn:active { background: var(--vermelho-escuro); }
 
 /* ---- Totem alto (1080x1920) ---- */
 @media (min-height: 1200px) {
   :root {
     --px: 6px;
-    --timer-h: 168px;
+    --barra-h: 176px;
     --safe-top: 40px;
     --safe-side: 44px;
   }
@@ -1014,20 +1057,26 @@ body {
   .brand-logo-fs { height: 44px; }
   .brand-divider { height: 44px; }
   .brand-title { font-size: clamp(2rem, 4.6vw, 2.9rem); }
-  .quiz-pergunta { font-size: clamp(1rem, 2.1vw, 1.3rem); }
-  .alt-btn { min-height: 104px; font-size: 1.3rem; }
-  .alt-letra { width: 56px; height: 56px; font-size: 0.85rem; }
-  .btn { min-height: 88px; font-size: 1rem; }
-  .field input { min-height: 76px; font-size: 1.35rem; }
-  .barra-trilho { height: 56px; }
-  .chama { --chama-w: 50px; --chama-h: 60px; }
-  .chama[data-nivel="5"] { --chama-w: 78px; --chama-h: 94px; }
+  .quiz-pergunta { font-size: clamp(1.5rem, 3vw, 2rem); }
+  .alt-btn { min-height: 108px; font-size: 1.3rem; }
+  .alt-letra { width: 60px; height: 60px; font-size: 0.9rem; }
+  .btn { min-height: 92px; font-size: 1rem; }
+  .field input { min-height: 78px; font-size: 1.35rem; }
+  .barra-trilho { height: 52px; }
+  .chama-caixa { width: 124px; height: 124px; }
+  .chama { --chama-w: 64px; --chama-h: 80px; }
+  .chama[data-nivel="5"] { --chama-w: 80px; --chama-h: 100px; }
   .resultado-pontos { font-size: 4rem; }
-  .fb-mascote { width: 174px; height: 192px; background-size: 348px 192px; }
+  .fb-mascote { width: 232px; height: 256px; background-size: 464px 256px; }
+  @keyframes mascote-anda {
+    0%  { background-position: 0 0; }
+    50% { background-position: -232px 0; }
+  }
 }
 
 @media (max-width: 420px) {
   :root { --safe-side: 16px; }
   .ranking-item { grid-template-columns: 44px 1fr auto; }
   .brand-logo { height: 30px; }
+  .regras-grade { grid-template-columns: 1fr; }
 }
