@@ -12,6 +12,12 @@ __pycache__/
 *.db-wal
 *.db-shm
 
+# Logs do totem e do watchdog (gerados em runtime)
+logs/
+
+# Sinalizador de parada limpa do watchdog
+PARAR.flag
+
 # Exportações geradas pelo painel de dados
 export/
 *.csv
