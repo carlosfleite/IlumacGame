@@ -1,4 +1,21 @@
-﻿.venv
-__pycache__
-*.pyc
-quiz.db
+# Ambiente virtual
+.venv/
+
+# Bytecode Python
+__pycache__/
+*.py[cod]
+
+# Banco de dados local do totem — contém dados pessoais dos participantes
+# (LGPD) e é a fonte da verdade durante o evento. NUNCA versionar: um
+# `git pull` no totem sobrescreveria os cadastros reais da feira.
+*.db
+*.db-wal
+*.db-shm
+
+# Exportações geradas pelo painel de dados
+export/
+*.csv
+
+# Sistema operacional
+Thumbs.db
+desktop.ini
