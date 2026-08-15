@@ -2,8 +2,10 @@
  * Quiz — timer, perguntas, feedback do Ilumaquinho, finalização.
  *
  * SPRITES: troque os arquivos em /static/img/ilumaquinho/
- *   deu-bom.svg  → sprite "acertou"
- *   deu-ruim.svg → sprite "errou"
+ *   deu-bom.png  → sprite "acertou"  (Ilumaquinho comemorando)
+ *   deu-ruim.png → sprite "errou"    (Ilumaquinho triste)
+ * Gerados a partir dos PNG de marca em img/, redimensionados para 280px
+ * de altura (2x do tamanho exibido) para não pesar no totem.
  */
 (function () {
   var FEEDBACK_MS = 2500; // 2–3 s; toque pula antes
@@ -134,8 +136,8 @@
     feedbackCard.classList.add(acertou ? "is-bom" : "is-ruim");
     // PLACEHOLDER: troque os SVGs pelos sprites oficiais do Ilumaquinho
     feedbackImg.src = acertou
-      ? "/static/img/ilumaquinho/deu-bom.svg"
-      : "/static/img/ilumaquinho/deu-ruim.svg";
+      ? "/static/img/ilumaquinho/deu-bom.png"
+      : "/static/img/ilumaquinho/deu-ruim.png";
     feedbackImg.alt = acertou ? "Ilumaquinho — deu bom" : "Ilumaquinho — deu ruim";
     feedbackMsg.textContent = mensagem;
 
