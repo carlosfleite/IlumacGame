@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" preserveAspectRatio="xMidYMid slice" role="presentation">
+  <!--
+    Textura de fundo da marca Ilumac: linhas curvas sutis derivadas do
+    contorno do brasao, em escala grande.
+
+    Decisoes tecnicas (totem com GPU Intel HD de 2011):
+    - SVG unico, sem repeticao e sem filtros: o navegador rasteriza uma
+      vez e nao repinta mais. Bem mais barato que gradientes animados ou
+      um PNG de tela cheia.
+    - Somente stroke, sem fill: pouquissimos pixels alterados.
+    - Contraste baixo de proposito (alpha 0.05 a 0.10). O padrao e uma
+      textura, nao um elemento de leitura: nao pode competir com o texto
+      branco que fica por cima.
+  -->
+  <defs>
+    <clipPath id="quadro">
+      <rect width="1080" height="1920"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#quadro)" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- Brasao central, bem grande, levemente deslocado do eixo -->
+    <g stroke-opacity="0.085" stroke-width="3">
+      <path d="M 250 250 L 830 250 L 830 1120 Q 830 1400 540 1560 Q 250 1400 250 1120 Z"/>
+      <path d="M 330 340 L 750 340 L 750 1095 Q 750 1310 540 1435 Q 330 1310 330 1095 Z"/>
+    </g>
+
+    <!-- Contornos concentricos internos, mais tenues -->
+    <g stroke-opacity="0.055" stroke-width="2">
+      <path d="M 405 425 L 675 425 L 675 1070 Q 675 1225 540 1315 Q 405 1225 405 1070 Z"/>
+      <path d="M 470 505 L 610 505 L 610 1045 Q 610 1145 540 1200 Q 470 1145 470 1045 Z"/>
+    </g>
+
+    <!-- Riscos longos varrendo a tela, sugerindo o mesmo arco do brasao -->
+    <g stroke-opacity="0.07" stroke-width="2.5">
+      <path d="M -160 205 Q 300 470 470 1015 Q 610 1470 445 2040"/>
+      <path d="M 1240 130 Q 800 415 645 970 Q 515 1450 690 2010"/>
+      <path d="M -120 690 Q 340 800 540 1195"/>
+      <path d="M 1210 600 Q 760 730 570 1140"/>
+    </g>
+
+    <!-- Arcos amplos de apoio, quase imperceptiveis -->
+    <g stroke-opacity="0.045" stroke-width="2">
+      <path d="M -220 1290 Q 240 1120 540 1660 Q 760 2050 700 2180"/>
+      <path d="M 1300 1215 Q 850 1075 585 1585"/>
+      <path d="M -80 -110 Q 480 175 1160 65"/>
+      <path d="M -80 1870 Q 480 1690 1160 1830"/>
+    </g>
+
+  </g>
+</svg>

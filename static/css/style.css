@@ -1,36 +1,55 @@
 /* ==========================================================================
    Quiz SDAI — Ilumac Fire Show 2026
-   Direção: meio-termo — base escura/técnica (ref. protótipo do Carlos)
-   com o VERMELHO SÓLIDO de marca (#C31922, extraído do logo oficial)
-   em vez do neon com glow, e o logo real da Ilumac no cabeçalho.
+
+   Direção visual: campo VERMELHO institucional (#c31922) com a textura de
+   linhas curvas do brasão ao fundo, exatamente como as peças de marca do
+   estande. O conteúdo que exige leitura (perguntas, campos, ranking) vive
+   em cartões brancos sobre esse campo — é o que garante contraste num
+   ambiente de feira, com luz alta e leitura em pé.
 
    Totem 23" em RETRATO (1080x1920) · touch · 100% offline, sem CDN.
    Fontes locais do Windows — nada de Google Fonts.
+
+   Orçamento de performance (Intel HD Graphics de 2011 + 4 GB RAM):
+   sem backdrop-filter, sem box-shadow difuso em elemento grande e sem
+   animação infinita. Transições são curtas e só em transform/opacity.
    ========================================================================== */
 
 :root {
-  /* Marca */
+  /* Marca — aqui o vermelho é o CAMPO, não o acento */
   --vermelho: #c31922;          /* vermelho oficial Ilumac (do logo vetorial) */
-  --vermelho-claro: #e02533;    /* só para gradiente sutil de botão */
-  --vermelho-escuro: #7d0f16;
-  --vermelho-veu: rgba(195, 25, 34, 0.10);
+  --vermelho-claro: #d92330;
+  --vermelho-escuro: #a5141c;
+  --vermelho-profundo: #7a0e15;
 
-  /* Base escura (Carlos) */
-  --preto: #0b0c0d;
-  --carvao: #121316;
-  --painel: #1a1c20;
-  --painel-2: #212429;
-  --aco: #33363d;
-  --aco-suave: #292c31;
+  /* Superfícies claras sobre o campo vermelho */
+  --cartao: #ffffff;
+  --cartao-2: #f5f2f0;
+  --linha-cartao: rgba(28, 21, 23, 0.14);
 
-  /* Texto */
-  --off-white: #f2f1ed;
-  --mudo: #9da1aa;
-  --mudo-fraco: #6b6f78;
+  /* Texto sobre cartão claro */
+  --tinta: #1c1517;
+  --tinta-media: #625457;
+  --tinta-fraca: #8b7d80;
+
+  /* Texto e linhas sobre o vermelho.
+     O vermelho da marca é escuro o bastante para o branco puro render 6.03:1,
+     mas cai rápido com transparência. Medido sobre #c31922:
+       branco puro .... 6.03  (AA)
+       0.92 ........... 5.28  (AA)
+       0.82 ........... 4.43  (reprova AA por pouco)
+       0.62 ........... 3.04  (reprova)
+     Por isso o texto secundário para em 0.92. O tom 'fraco' só é usado
+     sobre o dock vermelho-profundo (onde dá 4.94) e em número decorativo. */
+  --sobre-vermelho: #ffffff;
+  --sobre-vermelho-medio: rgba(255, 255, 255, 0.92);
+  --sobre-vermelho-fraco: rgba(255, 255, 255, 0.72);
+  --linha-vermelho: rgba(255, 255, 255, 0.26);
+  --veu-branco: rgba(255, 255, 255, 0.12);
 
   /* Estados */
-  --ok: #33c481;
-  --erro: #ff4747;
+  --ok: #1c8a5a;
+  --erro: #b01521;
 
   --radius: 12px;
   --timer-h: 132px;
@@ -53,8 +72,7 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: var(--preto);
-  color: var(--off-white);
+  color: var(--sobre-vermelho);
   font-family: var(--font-body);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -62,26 +80,20 @@ html, body {
   overflow: hidden;
 }
 
+/* Campo vermelho + textura do brasão.
+   Um único SVG, sem repetição: o navegador rasteriza uma vez e não
+   repinta. A versão anterior usava dois gradientes radiais mais uma grade
+   de 34px repetida na tela inteira — bem mais caro e sem relação com a
+   identidade da marca. */
 body {
   display: flex;
   justify-content: center;
   position: relative;
-  background-image:
-    radial-gradient(circle at 18% 8%, rgba(195, 25, 34, 0.10), transparent 42%),
-    radial-gradient(circle at 84% 94%, rgba(195, 25, 34, 0.07), transparent 42%);
-}
-
-/* Grade técnica de fundo — sem markup extra, vale em todas as telas */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.030) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.030) 1px, transparent 1px);
-  background-size: 34px 34px;
+  background-color: var(--vermelho);
+  background-image: url("/static/img/padrao-brasao.svg");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
 }
 
 .screen {
@@ -105,7 +117,7 @@ body::before {
   flex-shrink: 0;
   padding-bottom: 18px;
   margin-bottom: 22px;
-  border-bottom: 1px solid var(--aco-suave);
+  border-bottom: 1px solid var(--linha-vermelho);
 }
 
 /* Lockup: logo Ilumac + régua + logo Fire Show */
@@ -126,7 +138,7 @@ body::before {
 .brand-divider {
   width: 1px;
   height: 34px;
-  background: var(--aco);
+  background: var(--linha-vermelho);
   flex-shrink: 0;
 }
 
@@ -145,8 +157,9 @@ body::before {
   font-size: 0.72rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--mudo);
-  border: 1px solid var(--aco);
+  color: var(--sobre-vermelho);
+  border: 1px solid var(--linha-vermelho);
+  background: var(--veu-branco);
   border-radius: 999px;
   padding: 7px 14px;
   white-space: nowrap;
@@ -164,7 +177,7 @@ body::before {
   font-size: 0.78rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--vermelho);
+  color: var(--sobre-vermelho-medio);
   font-weight: 600;
 }
 
@@ -175,7 +188,7 @@ body::before {
   line-height: 1;
   letter-spacing: 0.01em;
   text-transform: uppercase;
-  color: var(--off-white);
+  color: var(--sobre-vermelho);
   font-weight: 700;
 }
 
@@ -183,10 +196,12 @@ body::before {
   margin: 12px 0 0;
   font-size: 1.05rem;
   line-height: 1.5;
-  color: var(--mudo);
+  color: var(--sobre-vermelho-medio);
 }
 
-/* ---- Botões (touch grandes) ---- */
+/* ---- Botões (touch grandes) ----
+   Sobre o campo vermelho, o botão primário se inverte: fundo branco e
+   texto vermelho. Um botão vermelho sobre fundo vermelho sumiria. */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -213,24 +228,24 @@ body::before {
 }
 
 .btn-primary {
-  background: linear-gradient(180deg, var(--vermelho-claro), var(--vermelho));
-  color: #fff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  background: var(--cartao);
+  color: var(--vermelho);
+  font-weight: 700;
 }
 
 .btn-primary:active {
-  background: var(--vermelho-escuro);
+  background: var(--cartao-2);
 }
 
 .btn-ghost {
   background: transparent;
-  border: 1.5px solid var(--aco);
-  color: var(--mudo);
+  border: 1.5px solid var(--linha-vermelho);
+  color: var(--sobre-vermelho-medio);
 }
 
 .btn-ghost:active {
-  border-color: var(--vermelho);
-  color: var(--off-white);
+  border-color: var(--sobre-vermelho);
+  color: var(--sobre-vermelho);
 }
 
 .btn-stack {
@@ -264,31 +279,30 @@ body::before {
   font-size: 0.72rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--mudo-fraco);
+  color: var(--sobre-vermelho-medio);
 }
 
 .field input {
   min-height: 64px;
   padding: 14px 16px;
-  border: 1.5px solid var(--aco);
+  border: 1.5px solid transparent;
   border-radius: var(--radius);
   font-size: 1.15rem;
   font-family: var(--font-body);
   letter-spacing: normal;
   text-transform: none;
-  background: var(--painel-2);
-  color: var(--off-white);
+  background: var(--cartao);
+  color: var(--tinta);
   user-select: text;
 }
 
 .field input::placeholder {
-  color: var(--mudo-fraco);
+  color: var(--tinta-fraca);
 }
 
 .field input:focus {
   outline: none;
-  border-color: var(--vermelho);
-  box-shadow: 0 0 0 3px rgba(195, 25, 34, 0.16);
+  border-color: var(--vermelho-profundo);
 }
 
 .consent {
@@ -297,12 +311,12 @@ body::before {
   align-items: flex-start;
   margin: 10px 0 4px;
   padding: 16px;
-  background: var(--vermelho-veu);
-  border: 1px solid rgba(195, 25, 34, 0.28);
+  background: var(--veu-branco);
+  border: 1px solid var(--linha-vermelho);
   border-radius: var(--radius);
   font-size: 0.95rem;
   line-height: 1.45;
-  color: var(--off-white);
+  color: var(--sobre-vermelho);
 }
 
 .consent input {
@@ -310,15 +324,15 @@ body::before {
   height: 30px;
   flex-shrink: 0;
   margin-top: 2px;
-  accent-color: var(--vermelho);
+  accent-color: var(--vermelho-profundo);
 }
 
 .form-error {
   margin: 0;
   padding: 12px 14px;
-  background: rgba(255, 71, 71, 0.10);
-  border: 1px solid rgba(255, 71, 71, 0.35);
-  color: #ff8a8a;
+  background: var(--cartao);
+  border-left: 4px solid var(--vermelho-profundo);
+  color: var(--erro);
   border-radius: 10px;
   font-weight: 600;
 }
@@ -350,7 +364,7 @@ body::before {
   gap: 18px;
   align-items: flex-start;
   padding: 20px 4px;
-  border-bottom: 1px solid var(--aco-suave);
+  border-bottom: 1px solid var(--linha-vermelho);
 }
 
 .regras-lista li:last-child {
@@ -365,8 +379,7 @@ body::before {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background: var(--painel-2);
-  border: 1px solid var(--aco);
+  background: var(--cartao);
   font-family: var(--font-mono);
   font-size: 0.95rem;
   font-weight: 700;
@@ -378,12 +391,12 @@ body::before {
   display: block;
   font-size: 1.15rem;
   margin-bottom: 5px;
-  color: var(--off-white);
+  color: var(--sobre-vermelho);
 }
 
 .regras-lista p {
   margin: 0;
-  color: var(--mudo);
+  color: var(--sobre-vermelho-medio);
   font-size: 1rem;
   line-height: 1.45;
 }
@@ -411,7 +424,7 @@ body::before {
   right: 24px;
   top: 50%;
   height: 2px;
-  background: var(--aco);
+  background: var(--linha-vermelho);
   transform: translateY(-50%);
   z-index: 0;
 }
@@ -422,7 +435,7 @@ body::before {
   top: 50%;
   height: 2px;
   width: 0;
-  background: var(--vermelho);
+  background: var(--sobre-vermelho);
   transform: translateY(-50%);
   z-index: 0;
   transition: width 0.4s ease;
@@ -434,27 +447,29 @@ body::before {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: var(--carvao);
-  border: 2px solid var(--aco);
+  background: var(--vermelho);
+  border: 2px solid var(--linha-vermelho);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
   font-size: 0.7rem;
-  color: var(--mudo-fraco);
-  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  color: var(--sobre-vermelho-fraco);
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 .node.done {
-  background: var(--vermelho);
-  border-color: var(--vermelho);
-  color: #fff;
+  background: var(--sobre-vermelho);
+  border-color: var(--sobre-vermelho);
+  color: var(--vermelho);
+  font-weight: 700;
 }
 
 .node.current {
-  border-color: var(--vermelho);
-  color: var(--off-white);
-  box-shadow: 0 0 0 5px rgba(195, 25, 34, 0.16);
+  border-color: var(--sobre-vermelho);
+  background: var(--vermelho-profundo);
+  color: var(--sobre-vermelho);
+  font-weight: 700;
 }
 
 /* ---- Quiz ---- */
@@ -475,11 +490,12 @@ body::before {
   font-size: 0.8rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--mudo-fraco);
+  /* Fica sobre o campo vermelho, não sobre o dock: precisa do tom mais forte */
+  color: var(--sobre-vermelho-medio);
 }
 
 #quiz-pontos {
-  color: var(--vermelho);
+  color: var(--sobre-vermelho);
   font-weight: 700;
 }
 
@@ -501,7 +517,7 @@ body::before {
   font-size: clamp(1.4rem, 3.6vw, 1.95rem);
   font-weight: 600;
   line-height: 1.28;
-  color: var(--off-white);
+  color: var(--sobre-vermelho);
   flex-shrink: 0;
 }
 
@@ -516,6 +532,8 @@ body::before {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Alternativas em cartão branco: é onde a leitura acontece e onde o
+   contraste precisa ser máximo sob a luz da feira. */
 .alt-btn {
   display: flex;
   align-items: center;
@@ -524,10 +542,10 @@ body::before {
   min-height: 84px;
   padding: 16px 18px;
   text-align: left;
-  border: 1.5px solid var(--aco);
+  border: 1.5px solid transparent;
   border-radius: var(--radius);
-  background: var(--painel-2);
-  color: var(--off-white);
+  background: var(--cartao);
+  color: var(--tinta);
   font-family: var(--font-body);
   font-size: 1.1rem;
   line-height: 1.35;
@@ -537,8 +555,8 @@ body::before {
 
 .alt-btn:active:not(:disabled) {
   transform: scale(0.99);
-  border-color: var(--vermelho);
-  background: var(--vermelho-veu);
+  border-color: var(--vermelho-profundo);
+  background: var(--cartao-2);
 }
 
 .alt-btn:disabled {
@@ -554,11 +572,11 @@ body::before {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  border: 1px solid var(--aco);
-  background: var(--carvao);
-  color: var(--mudo);
+  background: var(--vermelho);
+  color: var(--sobre-vermelho);
   font-family: var(--font-mono);
   font-size: 0.9rem;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -566,7 +584,7 @@ body::before {
   flex: 1;
 }
 
-/* Dock do cronômetro */
+/* Dock do cronômetro — faixa vermelha profunda, ancorada na base */
 .quiz-timer-bar {
   position: fixed;
   left: 50%;
@@ -582,9 +600,8 @@ body::before {
   justify-content: center;
   gap: 6px;
   padding: 0 var(--safe-side);
-  background: linear-gradient(180deg, rgba(11, 12, 13, 0.85), var(--carvao));
-  border-top: 1px solid var(--aco-suave);
-  backdrop-filter: blur(2px);
+  background: var(--vermelho-profundo);
+  border-top: 1px solid var(--linha-vermelho);
 }
 
 .timer-label,
@@ -593,7 +610,7 @@ body::before {
   font-size: 0.72rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--mudo-fraco);
+  color: var(--sobre-vermelho-fraco);
 }
 
 .timer-valor {
@@ -602,7 +619,7 @@ body::before {
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.08em;
-  color: var(--off-white);
+  color: var(--sobre-vermelho);
   font-variant-numeric: tabular-nums;
 }
 
@@ -615,8 +632,7 @@ body::before {
   align-items: center;
   justify-content: center;
   padding: 30px;
-  background: rgba(8, 9, 10, 0.90);
-  backdrop-filter: blur(3px);
+  background: rgba(122, 14, 21, 0.94);
   opacity: 0;
   transition: opacity 0.25s ease;
 }
@@ -629,8 +645,8 @@ body::before {
   width: min(100%, 470px);
   padding: 34px 28px 26px;
   border-radius: 18px;
-  background: var(--painel);
-  border: 1px solid var(--aco);
+  background: var(--cartao);
+  border-top: 5px solid var(--vermelho);
   text-align: center;
   transform: translateY(16px) scale(0.96);
   transition: transform 0.28s ease;
@@ -641,24 +657,17 @@ body::before {
 }
 
 .feedback-card.is-bom {
-  border-color: rgba(51, 196, 129, 0.5);
+  border-top-color: var(--ok);
 }
 
 .feedback-card.is-ruim {
-  border-color: rgba(255, 71, 71, 0.5);
+  border-top-color: var(--tinta-media);
 }
 
-/* Pulse rings atrás do mascote */
-.feedback-img {
-  position: relative;
-  z-index: 1;
-  width: 172px;
-  height: 172px;
-  object-fit: contain;
-  margin: 0 auto 16px;
-  display: block;
-}
-
+/* Anel estático atrás do mascote.
+   A versão anterior usava dois anéis com animação infinita (pulse-ring):
+   num i3 de 2011 isso mantém a GPU trabalhando durante todo o evento,
+   sem ganho real de leitura. */
 .feedback-pulse {
   position: relative;
   width: 172px;
@@ -667,40 +676,26 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.feedback-pulse .feedback-img {
-  margin: 0;
-}
-
-.feedback-pulse::before,
-.feedback-pulse::after {
-  content: "";
-  position: absolute;
-  inset: 0;
   border-radius: 50%;
-  border: 2px solid var(--vermelho);
-  opacity: 0;
-  animation: pulse-ring 1.8s ease-out infinite;
+  background: var(--cartao-2);
 }
 
-.feedback-pulse::after {
-  animation-delay: 0.6s;
+.feedback-card.is-bom .feedback-pulse {
+  background: rgba(28, 138, 90, 0.12);
 }
 
-.is-bom .feedback-pulse::before,
-.is-bom .feedback-pulse::after {
-  border-color: var(--ok);
+.feedback-card.is-ruim .feedback-pulse {
+  background: rgba(28, 21, 23, 0.07);
 }
 
-.is-ruim .feedback-pulse::before,
-.is-ruim .feedback-pulse::after {
-  border-color: var(--erro);
-}
-
-@keyframes pulse-ring {
-  0%   { transform: scale(0.55); opacity: 0.8; }
-  100% { transform: scale(1.15); opacity: 0; }
+.feedback-img {
+  position: relative;
+  z-index: 1;
+  width: 138px;
+  height: 138px;
+  object-fit: contain;
+  display: block;
+  margin: 0;
 }
 
 .feedback-msg {
@@ -710,6 +705,7 @@ body::before {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+  color: var(--tinta);
 }
 
 .is-bom .feedback-msg { color: var(--ok); }
@@ -721,7 +717,7 @@ body::before {
   font-size: 0.78rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--mudo-fraco);
+  color: var(--tinta-fraca);
 }
 
 /* ---- Resultado ---- */
@@ -733,9 +729,8 @@ body::before {
   text-align: center;
   padding: 30px 18px;
   margin: 8px 0 20px;
-  background: var(--painel-2);
-  border: 1px solid var(--aco);
-  border-top: 3px solid var(--vermelho);
+  background: var(--cartao);
+  border-top: 5px solid var(--vermelho);
   border-radius: 16px;
 }
 
@@ -745,7 +740,7 @@ body::before {
   font-size: 0.7rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--mudo-fraco);
+  color: var(--tinta-fraca);
 }
 
 .resultado-pontos {
@@ -754,7 +749,7 @@ body::before {
   font-size: 4.6rem;
   font-weight: 700;
   line-height: 0.95;
-  color: var(--off-white);
+  color: var(--vermelho);
   font-variant-numeric: tabular-nums;
 }
 
@@ -762,7 +757,7 @@ body::before {
   margin: 6px 0 0;
   font-family: var(--font-mono);
   font-size: 0.95rem;
-  color: var(--mudo);
+  color: var(--tinta-media);
 }
 
 .resultado-grid {
@@ -772,8 +767,7 @@ body::before {
 
 .resultado-grid > div {
   padding: 18px;
-  background: var(--painel-2);
-  border: 1px solid var(--aco);
+  background: var(--cartao);
   border-radius: var(--radius);
 }
 
@@ -786,12 +780,12 @@ body::before {
   font-family: var(--font-mono);
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--off-white);
+  color: var(--tinta);
 }
 
 .resultado-desc {
   margin: 8px 0 0;
-  color: var(--mudo);
+  color: var(--tinta-media);
   font-size: 0.98rem;
   line-height: 1.45;
 }
@@ -820,26 +814,27 @@ body::before {
   gap: 14px;
   align-items: center;
   padding: 15px 16px;
-  background: var(--painel-2);
-  border: 1px solid var(--aco);
+  background: var(--cartao);
+  border-left: 4px solid transparent;
   border-radius: var(--radius);
 }
 
 .ranking-item.top-1 {
-  border-color: var(--vermelho);
-  background: var(--vermelho-veu);
+  border-left-color: var(--vermelho);
+  background: var(--cartao);
 }
 
 .ranking-pos {
   font-family: var(--font-mono);
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--mudo);
+  color: var(--tinta-fraca);
   text-align: center;
 }
 
 .ranking-item.top-1 .ranking-pos {
   color: var(--vermelho);
+  font-size: 1.3rem;
 }
 
 .ranking-nome {
@@ -847,13 +842,13 @@ body::before {
   font-size: 1.08rem;
   font-weight: 600;
   line-height: 1.25;
-  color: var(--off-white);
+  color: var(--tinta);
 }
 
 .ranking-empresa {
   margin: 3px 0 0;
   font-size: 0.88rem;
-  color: var(--mudo-fraco);
+  color: var(--tinta-fraca);
 }
 
 .ranking-stats {
@@ -865,22 +860,82 @@ body::before {
   font-family: var(--font-mono);
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--off-white);
+  color: var(--vermelho);
 }
 
 .ranking-tempo {
   margin: 3px 0 0;
   font-family: var(--font-mono);
   font-size: 0.82rem;
-  color: var(--mudo-fraco);
+  color: var(--tinta-fraca);
   font-variant-numeric: tabular-nums;
 }
 
 .ranking-vazio {
   text-align: center;
-  color: var(--mudo-fraco);
+  color: var(--sobre-vermelho-medio);
   padding: 46px 16px;
   list-style: none;
+}
+
+/* ==========================================================================
+   Aviso de inatividade (kiosk.js)
+   ========================================================================== */
+
+.kiosk-inatividade {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--safe-side);
+  background: rgba(122, 14, 21, 0.95);
+}
+
+.kiosk-inatividade[hidden] {
+  display: none;
+}
+
+.kiosk-inatividade-card {
+  width: 100%;
+  max-width: 640px;
+  padding: 48px 40px;
+  border-top: 5px solid var(--vermelho);
+  border-radius: var(--radius);
+  background: var(--cartao);
+  text-align: center;
+}
+
+.kiosk-inatividade-titulo {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--tinta);
+}
+
+.kiosk-inatividade-texto {
+  margin: 0 0 32px;
+  color: var(--tinta-media);
+  font-size: 1.15rem;
+}
+
+.kiosk-inatividade-contador {
+  color: var(--vermelho);
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+}
+
+.kiosk-inatividade-btn {
+  width: 100%;
+  background: var(--vermelho);
+  color: var(--sobre-vermelho);
+}
+
+.kiosk-inatividade-btn:active {
+  background: var(--vermelho-escuro);
 }
 
 /* ---- Totem alto (1080x1920) ---- */
@@ -908,59 +963,4 @@ body::before {
   :root { --safe-side: 18px; }
   .ranking-item { grid-template-columns: 38px 1fr auto; }
   .brand-logo { height: 32px; }
-}
-
-/* ==========================================================================
-   Aviso de inatividade (kiosk.js)
-   Sem blur nem animação contínua — a GPU do AIO de 2011 não dá conta.
-   ========================================================================== */
-
-.kiosk-inatividade {
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--safe-side);
-  background: rgba(11, 12, 13, 0.92);
-}
-
-.kiosk-inatividade[hidden] {
-  display: none;
-}
-
-.kiosk-inatividade-card {
-  width: 100%;
-  max-width: 640px;
-  padding: 48px 40px;
-  border: 1px solid var(--aco);
-  border-top: 4px solid var(--vermelho);
-  border-radius: var(--radius);
-  background: var(--painel);
-  text-align: center;
-}
-
-.kiosk-inatividade-titulo {
-  margin: 0 0 12px;
-  font-family: var(--font-display);
-  font-size: 2.4rem;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.kiosk-inatividade-texto {
-  margin: 0 0 32px;
-  color: var(--mudo);
-  font-size: 1.15rem;
-}
-
-.kiosk-inatividade-contador {
-  color: var(--vermelho);
-  font-family: var(--font-mono);
-  font-size: 1.5rem;
-}
-
-.kiosk-inatividade-btn {
-  width: 100%;
 }
