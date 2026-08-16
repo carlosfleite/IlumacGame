@@ -17,8 +17,16 @@ app = Flask(__name__)
 _sessao_lock = threading.Lock()
 _sessoes = {}
 
+# Preenchidos por create_app() a partir do config/questions.json. Os valores
+# aqui são só o fallback de quem roda `python app.py` sem passar pelo factory.
 PONTOS_POR_ACERTO = 2
 QTD_PERGUNTAS = 5
+
+
+def _aplicar_config(config):
+    global PONTOS_POR_ACERTO, QTD_PERGUNTAS
+    PONTOS_POR_ACERTO = config["pontos_por_acerto"]
+    QTD_PERGUNTAS = config["perguntas_por_partida"]
 
 
 def _limpar_sessao(participante_id):
@@ -375,10 +383,10 @@ def api_ranking():
 
 def create_app():
     """Factory usada pelo run.py."""
-    init_db()
+    _aplicar_config(init_db())
     return app
 
 
 if __name__ == "__main__":
-    init_db()
+    _aplicar_config(init_db())
     app.run(host="127.0.0.1", port=5000, debug=True, threaded=True)

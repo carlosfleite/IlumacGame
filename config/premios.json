@@ -1,0 +1,55 @@
+{
+  "_leia_me": [
+    "Tabela de premiacao do Quiz SDAI. Edite aqui, salve e reinicie o totem.",
+    "Nenhuma faixa esta fixa no codigo.",
+    "",
+    "PENDENTE: os brindes ainda nao foram definidos pela Ilumac. Os nomes",
+    "abaixo sao provisorios e aparecem na tela de resultado do participante —",
+    "troque 'nome' e 'descricao' assim que a premiacao estiver fechada.",
+    "",
+    "Regras de edicao:",
+    "- 'chave' identifica a faixa e nao deve mudar depois do evento comecar.",
+    "- 'pontos_min' e 'pontos_max' sao inclusivos e a pontuacao so pode ser",
+    "  par (0, 2, 4, 6, 8 ou 10), porque cada acerto vale 2 pontos.",
+    "- As faixas nao devem se sobrepor. Se sobrepuserem, vence a de maior",
+    "  'pontos_min'.",
+    "- 'ativo': false desativa a faixa sem apagar o historico de quem ja",
+    "  ganhou aquele brinde.",
+    "- Cobrir toda a escala de 0 a 10 evita que alguem termine sem faixa."
+  ],
+
+  "faixas": [
+    {
+      "chave": "sem-premio",
+      "pontos_min": 0,
+      "pontos_max": 2,
+      "nome": "Sem prêmio",
+      "descricao": "Obrigado por participar! Passe no estande para conhecer as soluções Ilumac.",
+      "ativo": true
+    },
+    {
+      "chave": "brinde-intermediario",
+      "pontos_min": 4,
+      "pontos_max": 6,
+      "nome": "Brinde intermediário",
+      "descricao": "A DEFINIR — retire seu brinde com a equipe Ilumac.",
+      "ativo": true
+    },
+    {
+      "chave": "brinde-maior-valor",
+      "pontos_min": 8,
+      "pontos_max": 8,
+      "nome": "Brinde especial",
+      "descricao": "A DEFINIR — retire seu brinde com a equipe Ilumac.",
+      "ativo": true
+    },
+    {
+      "chave": "premio-maximo",
+      "pontos_min": 10,
+      "pontos_max": 10,
+      "nome": "Prêmio máximo",
+      "descricao": "A DEFINIR — pontuação perfeita! Fale com a equipe Ilumac.",
+      "ativo": true
+    }
+  ]
+}
