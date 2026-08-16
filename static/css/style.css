@@ -666,6 +666,8 @@ body {
   background-repeat: no-repeat;
   background-position: 0 0;
   transform-origin: 50% 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
   animation: chama-quadros 0.36s steps(1) infinite,
              chama-chacoalho 0.72s steps(2) infinite;
 }
@@ -811,21 +813,26 @@ body {
   margin-bottom: 56px;
 }
 
-/* Mascote: caminha durante a entrada, assume a expressão ao encostar */
+/* Mascote: caminha durante a entrada, assume a expressão ao encostar.
+   Sprites nativos em 128px de altura (tools/gerar_pixel_assets.py), aqui
+   escalados 1.5x — o dobro da resolução de origem anterior (64px), com o
+   multiplicador reduzido pela metade, mantém o mesmo tamanho na tela. */
 .fb-mascote {
   flex-shrink: 0;
-  width: 174px;   /* 58px * 3 */
-  height: 192px;  /* 64px * 3 */
+  width: 173px;   /* 115px (célula da folha) * 1.5 */
+  height: 192px;  /* 128px * 1.5 */
   background-image: url("/static/img/ilumaquinho/andando.png");
-  background-size: 348px 192px;
+  background-size: 345px 192px;
   background-repeat: no-repeat;
   background-position: 0 0;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
   animation: mascote-anda 0.24s steps(1) infinite;
 }
 
 @keyframes mascote-anda {
   0%  { background-position: 0 0; }
-  50% { background-position: -174px 0; }
+  50% { background-position: -173px 0; }
 }
 
 .fb-mascote.parado {
@@ -835,7 +842,16 @@ body {
 }
 
 .fb-mascote.parado.is-bom  { background-image: url("/static/img/ilumaquinho/deu-bom.png"); }
-.fb-mascote.parado.is-ruim { background-image: url("/static/img/ilumaquinho/deu-ruim.png"); }
+
+/* deu-ruim.png é uma cena inteira (mascote + Central Lyax), bem mais larga
+   que um sprite de personagem — 242x168 nativo. Encaixar isso na largura
+   estreita do sprite de caminhada deixaria a composição minúscula dentro
+   de uma caixa alta e fina. Alarga só este estado, mantendo a mesma
+   altura das outras poses para o card não pular verticalmente. */
+.fb-mascote.parado.is-ruim {
+  width: 277px;   /* 192px de altura * (242/168) de proporção da cena */
+  background-image: url("/static/img/ilumaquinho/deu-ruim.png");
+}
 
 /* ---- Resultado ---- */
 .screen-resultado { justify-content: center; }
@@ -1067,10 +1083,12 @@ body {
   .chama { --chama-w: 64px; --chama-h: 80px; }
   .chama[data-nivel="5"] { --chama-w: 80px; --chama-h: 100px; }
   .resultado-pontos { font-size: 4rem; }
-  .fb-mascote { width: 232px; height: 256px; background-size: 464px 256px; }
+  .fb-reboque { width: min(100%, 820px); }
+  .fb-mascote { width: 230px; height: 256px; background-size: 460px 256px; }
+  .fb-mascote.parado.is-ruim { width: 369px; }
   @keyframes mascote-anda {
     0%  { background-position: 0 0; }
-    50% { background-position: -232px 0; }
+    50% { background-position: -230px 0; }
   }
 }
 
