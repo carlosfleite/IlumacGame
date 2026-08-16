@@ -9,14 +9,22 @@ maquina de desenvolvimento:
     python tools/gerar_pixel_assets.py
 
 Por que gerar em vez de versionar so o resultado: os PNG de marca em img/
-sao ilustracoes suaves em alta resolucao. A estetica do jogo e pixel art,
-entao cada sprite precisa ser reduzido a uma grade baixa e ter a paleta
-achatada. Fazer isso na mao e irreproduzivel; aqui fica documentado.
+sao ilustracoes suaves em alta resolucao e precisam ser reduzidas e
+recortadas para o jogo. Fazer isso na mao e irreproduzivel; aqui fica
+documentado.
 
-Tecnica: reduzir com LANCZOS (media boa de cor), achatar a paleta com
-quantizacao sem dithering (pixel art tem cor chapada, nao ruido) e exibir
-ampliado com image-rendering: pixelated no CSS. O navegador faz o upscale
-em nearest-neighbor, entao cada pixel do arquivo vira um bloco nitido.
+Tecnica (revisada): a primeira versao reduzia com LANCZOS e depois
+quantizava para poucas cores sem dithering. Isso parecia "pixel art" na
+teoria, mas na pratica o quantize por pixel sobre uma imagem ja borrada
+pelo LANCZOS produz ruido — cada pixel escolhe a cor mais proxima de forma
+independente, sem coerencia com o vizinho, e o resultado fica com aspecto
+sujo/apagado em vez de blocos limpos.
+
+A versao atual so reduz com LANCZOS e mantem as cores originais (a
+ilustracao de origem ja e cel-shading com paleta enxuta). O resultado e
+mais nitido e continua lendo como "jogo" quando ampliado com
+image-rendering: pixelated no CSS — cada pixel do arquivo vira um bloco
+solido, sem antialiasing do navegador.
 """
 
 import os
@@ -129,16 +137,28 @@ def _relatar(caminho, antes=None):
 # 1. Sprites do Llumaquinho
 # ---------------------------------------------------------------------------
 
-def pixelar_sprite(origem, destino, altura=64, cores=24, recorte=None,
-                   isolar=False):
+def _reduzir(im, altura):
     """
-    Reduz a ilustracao a uma grade baixa com paleta chapada.
+    So reduz com LANCZOS e binariza o alpha. Ver nota tecnica no topo do
+    arquivo sobre por que a quantizacao por pixel foi abandonada.
+    """
+    escala = altura / im.height
+    im = im.resize((max(1, round(im.width * escala)), altura), Image.LANCZOS)
+    alpha = im.getchannel("A").point(lambda v: 255 if v >= 128 else 0)
+    saida = im.convert("RGB").convert("RGBA")
+    saida.putalpha(alpha)
+    return saida
+
+
+def pixelar_sprite(origem, destino, altura=128, recorte=None, isolar=False):
+    """
+    Isola e reduz um personagem para uso como sprite do jogo.
 
     'recorte' e uma tupla de fracoes (esq, topo, dir, baixo) aplicada depois
     de tirar a moldura transparente. Serve para isolar o mascote quando a
     arte de origem e uma cena: o 'triste' vem sentado na frente de uma
     central de alarme, e sem recorte o mascote ficaria minusculo dentro do
-    quadro, ilegivel nos 64px do sprite.
+    quadro.
     """
     im = Image.open(origem).convert("RGBA")
     antes = os.path.getsize(origem)
@@ -160,18 +180,71 @@ def pixelar_sprite(origem, destino, altura=64, cores=24, recorte=None,
         # esta nitido, o que faz o preenchimento parar no lugar certo
         im = remover_cenario(im)
 
-    escala = altura / im.height
-    im = im.resize((max(1, round(im.width * escala)), altura), Image.LANCZOS)
-
-    # Quantiza so as cores visiveis; o alpha vira binario para a silhueta
-    # ficar recortada como pixel art, sem borda meio-transparente.
-    alpha = im.getchannel("A").point(lambda v: 255 if v >= 128 else 0)
-    rgb = im.convert("RGB").quantize(colors=cores, dither=Image.Dither.NONE)
-    saida = rgb.convert("RGBA")
-    saida.putalpha(alpha)
-
+    saida = _reduzir(im, altura)
     saida.save(destino, "PNG", optimize=True)
     _relatar(destino, antes)
+    return saida
+
+
+def compor_triste_na_lyax(origem_mascote, origem_lyax, destino, altura=200):
+    """
+    O Llumaquinho triste, encostado na Central Lyax de verdade.
+
+    A arte original ja mostra o mascote sentado com os bracos cruzados na
+    frente de uma central generica (a legenda no rodape diz "MAX", nao
+    "LYAX" — nao e o produto certo). Aqui o mascote e isolado da cena
+    original e recomposto encostado na Central Lyax de fato
+    (img/Central Lyax.png, que ja vem com fundo transparente — nao
+    precisa de remocao de fundo).
+
+    Os dois entram em alta resolucao, so reduzidos no fim (uma unica
+    passagem de LANCZOS na composicao final, em vez de duas passagens
+    perdendo qualidade cada uma).
+    """
+    mascote = Image.open(origem_mascote).convert("RGBA")
+    caixa = mascote.getbbox()
+    if caixa:
+        mascote = mascote.crop(caixa)
+    # a mesma janela de recorte usada no sprite pequeno, isolando so o
+    # mascote sentado no canto inferior esquerdo da cena original
+    e, t, d, b = (0.02, 0.31, 0.63, 1.0)
+    mascote = mascote.crop((round(mascote.width * e), round(mascote.height * t),
+                            round(mascote.width * d), round(mascote.height * b)))
+    caixa = mascote.getbbox()
+    if caixa:
+        mascote = mascote.crop(caixa)
+    mascote = remover_cenario(mascote)
+
+    lyax = Image.open(origem_lyax).convert("RGBA")
+    caixa = lyax.getbbox()
+    if caixa:
+        lyax = lyax.crop(caixa)
+
+    # Lyax como pano de fundo: mais alta que o mascote, para dar a
+    # sensacao de mobilia — o mascote encosta nela, nao o contrario.
+    alt_lyax = int(mascote.height * 1.35)
+    esc = alt_lyax / lyax.height
+    lyax = lyax.resize((max(1, round(lyax.width * esc)), alt_lyax), Image.LANCZOS)
+
+    # Sobreposicao: o ombro direito do mascote entra por baixo da quina
+    # esquerda da central, como se estivesse mesmo apoiado nela.
+    sobrepor = int(mascote.width * 0.22)
+    largura_total = mascote.width + lyax.width - sobrepor
+    altura_total = max(mascote.height, lyax.height)
+
+    cena = Image.new("RGBA", (largura_total, altura_total), (0, 0, 0, 0))
+    # a central fica atras, apoiada no chao (base alinhada)
+    cena.alpha_composite(lyax, (mascote.width - sobrepor, altura_total - lyax.height))
+    # o mascote na frente, tambem com os pes no chao
+    cena.alpha_composite(mascote, (0, altura_total - mascote.height))
+
+    caixa = cena.getbbox()
+    if caixa:
+        cena = cena.crop(caixa)
+
+    saida = _reduzir(cena, altura)
+    saida.save(destino, "PNG", optimize=True)
+    _relatar(destino)
     return saida
 
 
@@ -263,26 +336,41 @@ def gerar_chama(destino):
     return larg, alt
 
 
+# Altura nativa dos sprites do mascote. O dobro da versao anterior (64px):
+# a tecnica sem quantizacao rende muito melhor com mais pixels de origem,
+# e o CSS compensa o tamanho do arquivo escalando o multiplicador de
+# exibicao para baixo (ver style.css) — o tamanho na tela nao muda.
+ALTURA_MASCOTE = 128
+
+
 def main():
     os.makedirs(DESTINO_SPRITE, exist_ok=True)
     os.makedirs(DESTINO_IMG, exist_ok=True)
 
-    print("Sprites do Llumaquinho (64px, paleta chapada):")
+    print("Sprites do Llumaquinho (%dpx, sem quantizacao):" % ALTURA_MASCOTE)
     pixelar_sprite(os.path.join(ORIGEM, "ilumaquinho-comemoracao.png"),
-                   os.path.join(DESTINO_SPRITE, "deu-bom.png"))
-    # a arte triste e uma cena; isola o mascote no canto inferior esquerdo
-    pixelar_sprite(os.path.join(ORIGEM, "ilumaquinho-triste.png"),
-                   os.path.join(DESTINO_SPRITE, "deu-ruim.png"),
-                   recorte=(0.02, 0.31, 0.63, 1.0), isolar=True)
+                   os.path.join(DESTINO_SPRITE, "deu-bom.png"),
+                   altura=ALTURA_MASCOTE)
     pixelar_sprite(os.path.join(ORIGEM, "Ilumaquinho-Idle.png"),
-                   os.path.join(DESTINO_SPRITE, "idle.png"))
+                   os.path.join(DESTINO_SPRITE, "idle.png"),
+                   altura=ALTURA_MASCOTE)
+
+    print("Llumaquinho triste encostado na Central Lyax:")
+    compor_triste_na_lyax(
+        os.path.join(ORIGEM, "ilumaquinho-triste.png"),
+        os.path.join(ORIGEM, "Central Lyax.png"),
+        os.path.join(DESTINO_SPRITE, "deu-ruim.png"),
+        altura=ALTURA_MASCOTE + 40,  # a cena e mais larga; um pouco mais alta ajuda a leitura
+    )
 
     print("Folha de caminhada (2 quadros, para a animacao de puxar o card):")
     andar = [
         pixelar_sprite(os.path.join(ORIGEM, "ilumaquinho-andar-direita.png"),
-                       os.path.join(DESTINO_SPRITE, "_andar-1.png")),
+                       os.path.join(DESTINO_SPRITE, "_andar-1.png"),
+                       altura=ALTURA_MASCOTE),
         pixelar_sprite(os.path.join(ORIGEM, "ilumaquinho-andar-esquerda.png"),
-                       os.path.join(DESTINO_SPRITE, "_andar-2.png")),
+                       os.path.join(DESTINO_SPRITE, "_andar-2.png"),
+                       altura=ALTURA_MASCOTE),
     ]
     larg, alt = folha_de_caminhada(andar, os.path.join(DESTINO_SPRITE, "andando.png"))
     for tmp in ("_andar-1.png", "_andar-2.png"):
@@ -292,7 +380,6 @@ def main():
     print("Chama da barra de progresso:")
     clarg, calt = gerar_chama(os.path.join(DESTINO_IMG, "chama.png"))
     print("    -> celula da folha: %dx%d" % (clarg, calt))
-
 
 
 if __name__ == "__main__":
