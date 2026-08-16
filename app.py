@@ -4,10 +4,13 @@ Rotas Flask do Quiz SDAI — Ilumac Fire Show 2026.
 App local single-user (totem); estado da tentativa fica em memória.
 """
 
+import csv
+import io
 import random
 import re
 import threading
-from flask import Flask, jsonify, render_template, request
+from datetime import datetime
+from flask import Flask, Response, jsonify, render_template, request
 
 from database import buscar_premio_por_pontos, get_connection, init_db
 
@@ -40,6 +43,14 @@ def _limpar_sessao(participante_id):
 # ---------------------------------------------------------------------------
 
 @app.route("/")
+def pagina_abertura():
+    # Tela de abertura = estado de repouso do totem. kiosk.js volta pra cá
+    # (URL_REPOUSO = "/") depois de qualquer reset por inatividade ou fim
+    # de partida — por isso não leva data-kiosk-timeout: ela já é o descanso.
+    return render_template("abertura.html")
+
+
+@app.route("/cadastro")
 def pagina_cadastro():
     return render_template("cadastro.html")
 
@@ -354,6 +365,33 @@ def api_quiz_finalizar():
     })
 
 
+# Melhor tentativa por participante: 1) maior pontuação; 2) se empatar nos
+# pontos, menor tempo. Usada pelo ranking e pela exportação CSV — mantida
+# num só lugar porque é lógica de desempate não trivial e as duas telas
+# precisam concordar sobre quem "ganhou" de quem.
+_SQL_MELHOR_TENTATIVA = """
+    SELECT t.*
+    FROM quiz_tentativas t
+    INNER JOIN (
+        SELECT participante_id,
+               MAX(pontuacao) AS max_pts
+        FROM quiz_tentativas
+        GROUP BY participante_id
+    ) mp ON mp.participante_id = t.participante_id
+        AND mp.max_pts = t.pontuacao
+    INNER JOIN (
+        SELECT participante_id,
+               pontuacao,
+               MIN(tempo_total_ms) AS min_tempo
+        FROM quiz_tentativas
+        GROUP BY participante_id, pontuacao
+    ) mt ON mt.participante_id = t.participante_id
+        AND mt.pontuacao = t.pontuacao
+        AND mt.min_tempo = t.tempo_total_ms
+    GROUP BY t.participante_id
+"""
+
+
 @app.route("/api/ranking", methods=["GET"])
 def api_ranking():
     """
@@ -368,10 +406,8 @@ def api_ranking():
 
     conn = get_connection()
     try:
-        # Melhor tentativa por participante:
-        # 1) maior pontuação; 2) se empatar nos pontos, menor tempo.
-        # Entre participantes: ORDER BY pontuacao DESC, tempo ASC
-        # (tempo só desempata quem tem a MESMA pontuação).
+        # Entre participantes: ORDER BY pontuacao DESC, tempo ASC (tempo só
+        # desempata quem tem a MESMA pontuação).
         rows = conn.execute(
             """
             SELECT
@@ -381,32 +417,12 @@ def api_ranking():
                 best.tempo_total_ms,
                 best.data_hora,
                 pr.nome AS premio_nome
-            FROM (
-                SELECT t.*
-                FROM quiz_tentativas t
-                INNER JOIN (
-                    SELECT participante_id,
-                           MAX(pontuacao) AS max_pts
-                    FROM quiz_tentativas
-                    GROUP BY participante_id
-                ) mp ON mp.participante_id = t.participante_id
-                    AND mp.max_pts = t.pontuacao
-                INNER JOIN (
-                    SELECT participante_id,
-                           pontuacao,
-                           MIN(tempo_total_ms) AS min_tempo
-                    FROM quiz_tentativas
-                    GROUP BY participante_id, pontuacao
-                ) mt ON mt.participante_id = t.participante_id
-                    AND mt.pontuacao = t.pontuacao
-                    AND mt.min_tempo = t.tempo_total_ms
-                GROUP BY t.participante_id
-            ) best
+            FROM (%s) best
             JOIN participantes p ON p.id = best.participante_id
             LEFT JOIN quiz_premios pr ON pr.id = best.premio_id
             ORDER BY best.pontuacao DESC, best.tempo_total_ms ASC
             LIMIT ?
-            """,
+            """ % _SQL_MELHOR_TENTATIVA,
             (limite,),
         ).fetchall()
 
@@ -425,6 +441,82 @@ def api_ranking():
         conn.close()
 
     return jsonify({"ok": True, "ranking": ranking})
+
+
+# ---------------------------------------------------------------------------
+# Exportação (staff — não linkada em nenhuma tela do totem)
+# ---------------------------------------------------------------------------
+
+@app.route("/admin/exportar/participantes.csv")
+def exportar_participantes_csv():
+    """
+    CSV para captação/marketing pós-feira: um cadastro por linha, com a
+    melhor pontuação e o prêmio ganho (se houver). Participantes que se
+    cadastraram mas não terminaram o quiz também entram — para marketing
+    a lista de leads importa inteira, não só quem jogou até o fim.
+
+    Sem autenticação de propósito: run.py sobe o Flask só em 127.0.0.1,
+    então este endpoint já não é alcançável fora da própria máquina do
+    totem. Não fica linkado em nenhuma tela pública.
+
+    Delimitador ';' e BOM UTF-8: é o que faz o Excel em português abrir
+    o arquivo direto, com acentos corretos, sem passar pelo assistente de
+    importação. Vírgula como separador de campo colide com a vírgula
+    decimal do Excel PT-BR e tudo cai numa coluna só.
+    """
+    conn = get_connection()
+    try:
+        linhas = conn.execute(
+            """
+            SELECT
+                p.id, p.nome, p.telefone, p.email, p.empresa, p.cargo,
+                p.consentimento_lgpd, p.data_cadastro,
+                best.pontuacao, best.tempo_total_ms, best.data_hora,
+                pr.nome AS premio_nome
+            FROM participantes p
+            LEFT JOIN (%s) best ON best.participante_id = p.id
+            LEFT JOIN quiz_premios pr ON pr.id = best.premio_id
+            ORDER BY p.data_cadastro
+            """ % _SQL_MELHOR_TENTATIVA
+        ).fetchall()
+    finally:
+        conn.close()
+
+    def tempo_legivel(ms):
+        if ms is None:
+            return ""
+        s = int(ms) // 1000
+        return "%02d:%02d" % (s // 60, s % 60)
+
+    buffer = io.StringIO()
+    escritor = csv.writer(buffer, delimiter=";")
+    escritor.writerow([
+        "id", "nome", "telefone", "email", "empresa", "cargo",
+        "consentimento_lgpd", "data_cadastro",
+        "pontuacao", "tempo_total", "premio", "jogou",
+    ])
+    for r in linhas:
+        escritor.writerow([
+            r["id"],
+            r["nome"],
+            r["telefone"] or "",
+            r["email"] or "",
+            r["empresa"] or "",
+            r["cargo"] or "",
+            "sim" if r["consentimento_lgpd"] else "nao",
+            r["data_cadastro"] or "",
+            r["pontuacao"] if r["pontuacao"] is not None else "",
+            tempo_legivel(r["tempo_total_ms"]),
+            r["premio_nome"] or "",
+            "sim" if r["pontuacao"] is not None else "nao",
+        ])
+
+    nome_arquivo = "ilumac_participantes_%s.csv" % datetime.now().strftime("%Y-%m-%d_%H%M")
+    return Response(
+        buffer.getvalue().encode("utf-8-sig"),
+        mimetype="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="%s"' % nome_arquivo},
+    )
 
 
 def create_app():
