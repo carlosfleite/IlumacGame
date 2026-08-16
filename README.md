@@ -38,12 +38,31 @@ Abra `http://127.0.0.1:5000/`.
 
 | Conteúdo | Onde |
 |---|---|
-| Perguntas técnicas reais | Tabela `quiz_perguntas` (ou `seed_perguntas` em `database.py` se recriar o banco) |
-| Prêmios / faixas de pontos | Tabela `quiz_premios` (ou `seed_premios` em `database.py`) |
-| Sprites do Ilumaquinho | `static/img/ilumaquinho/deu-bom.svg` e `deu-ruim.svg` |
+| Perguntas técnicas reais | `config/questions.json` — edite e reinicie o totem, sem apagar o banco |
+| Prêmios / faixas de pontos | `config/premios.json` — mesma lógica |
+| Sprites do Llumaquinho | Gerados por `tools/gerar_pixel_assets.py` a partir de `img/`; rode o script de novo se a arte de origem mudar |
 
-Para resetar o banco: apague `quiz.db` e rode de novo — o schema e os seeds são recriados automaticamente.
+O banco (`quiz.db`) nunca deve ser apagado durante o evento — ele guarda os cadastros e o ranking acumulado dos 3 dias. `config/*.json` é sincronizado com o banco a cada boot sem apagar nada.
 
 ## Fluxo das telas
 
-1. Cadastro (LGPD obrigatório) → 2. Regras → 3. Quiz (5 perguntas) → 4. Resultado → 5. Ranking → novo participante
+1. Abertura (tela de repouso do totem) → 2. Cadastro (LGPD obrigatório) → 3. Regras → 4. Quiz (5 perguntas) → 5. Resultado → 6. Ranking → volta pra Abertura
+
+## Exportar os dados (pós-feira)
+
+Com o totem ligado, conecte o teclado/mouse wireless e abra no navegador:
+
+```
+http://127.0.0.1:5000/admin/exportar/participantes.csv
+```
+
+Baixa um CSV com todos os cadastros — inclusive de quem se cadastrou mas
+não terminou o quiz, porque para captação a lista de leads importa
+inteira. Uma linha por participante: dados de contato, consentimento
+LGPD, melhor pontuação, tempo e prêmio ganho (se houver).
+
+Abre direto no Excel em português sem passar pelo assistente de
+importação (delimitador `;` e acentuação em UTF-8 com BOM). Não fica
+linkado em nenhuma tela do jogo — é só para a equipe. Como o `run.py`
+sobe o Flask apenas em `127.0.0.1`, esse endereço não é alcançável de
+fora da própria máquina do totem.
