@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" preserveAspectRatio="xMidYMid slice" role="presentation">
+  <!--
+    Textura de fundo da marca: o contorno do brasao em escala grande,
+    com riscos longos acompanhando a curvatura.
+
+    Tentei antes uma versao pixelada, para casar com a estetica do jogo,
+    e nao funcionou: em blocos os tracos viraram ruido diagonal e o
+    escudo sumiu. Curva de marca precisa ser curva. A pixel art fica nos
+    sprites e nos componentes de interface, onde ela e lida como
+    linguagem; o fundo continua sendo a peca de marca.
+
+    Contraste proposital de 0.04 a 0.07 de alpha: e textura, nao
+    elemento de leitura. Se aparecer demais, briga com o texto branco.
+  -->
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- Escudo principal: ocupa a tela quase toda, saindo pelas bordas -->
+    <g stroke-opacity="0.07" stroke-width="2.5">
+      <path d="M 96 176 L 984 176 L 984 1096 Q 984 1456 540 1712 Q 96 1456 96 1096 Z"/>
+    </g>
+
+    <!-- Dois contornos internos, cada vez mais tenues -->
+    <g stroke-opacity="0.05" stroke-width="2">
+      <path d="M 232 320 L 848 320 L 848 1074 Q 848 1352 540 1552 Q 232 1352 232 1074 Z"/>
+    </g>
+    <g stroke-opacity="0.035" stroke-width="2">
+      <path d="M 368 464 L 712 464 L 712 1052 Q 712 1248 540 1392 Q 368 1248 368 1052 Z"/>
+    </g>
+
+    <!-- Riscos longos: repetem o arco do escudo e amarram a composicao -->
+    <g stroke-opacity="0.055" stroke-width="2">
+      <path d="M -140 96 Q 340 392 470 980 Q 580 1520 372 2040"/>
+      <path d="M 1220 60 Q 742 372 620 960 Q 512 1500 716 2020"/>
+    </g>
+
+    <g stroke-opacity="0.035" stroke-width="1.5">
+      <path d="M -120 620 Q 300 700 500 1060"/>
+      <path d="M 1200 560 Q 782 648 592 1010"/>
+      <path d="M -160 1420 Q 260 1240 540 1780"/>
+      <path d="M 1240 1360 Q 828 1196 566 1712"/>
+    </g>
+
+  </g>
+</svg>
