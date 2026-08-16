@@ -19,34 +19,33 @@
 
     <header class="brand-header">
       <p class="brand-eyebrow">Fire Show 2026 · Stand D73/D124</p>
-      <h1 class="brand-title">QUIZ SDAI</h1>
+      <h1 class="brand-title">Quiz SDAI</h1>
       <p class="brand-sub">Cadastre-se para jogar</p>
     </header>
 
     <form id="form-cadastro" class="form-cadastro" novalidate>
-      <label class="field">
-        <span>Nome *</span>
-        <input type="text" name="nome" id="nome" required autocomplete="name" enterkeyhint="next">
+      <label class="field" id="campo-nome">
+        <span>Nome completo *</span>
+        <input type="text" name="nome" id="nome" required autocomplete="name"
+               enterkeyhint="next" placeholder="Nome e sobrenome"
+               autocapitalize="words" maxlength="80">
+        <span class="dica" id="dica-nome" hidden></span>
       </label>
 
-      <label class="field">
-        <span>Empresa</span>
-        <input type="text" name="empresa" id="empresa" autocomplete="organization" enterkeyhint="next">
+      <label class="field" id="campo-telefone">
+        <span>Telefone *</span>
+        <input type="tel" name="telefone" id="telefone" required autocomplete="tel"
+               enterkeyhint="next" inputmode="numeric" placeholder="(00) 00000-0000"
+               maxlength="15">
+        <span class="dica" id="dica-telefone" hidden></span>
       </label>
 
-      <label class="field">
-        <span>E-mail</span>
-        <input type="email" name="email" id="email" autocomplete="email" enterkeyhint="next" inputmode="email">
-      </label>
-
-      <label class="field">
-        <span>Telefone</span>
-        <input type="tel" name="telefone" id="telefone" autocomplete="tel" enterkeyhint="next" inputmode="tel">
-      </label>
-
-      <label class="field">
-        <span>Cargo</span>
-        <input type="text" name="cargo" id="cargo" autocomplete="organization-title" enterkeyhint="done">
+      <label class="field" id="campo-email">
+        <span>E-mail *</span>
+        <input type="email" name="email" id="email" required autocomplete="email"
+               enterkeyhint="done" inputmode="email" placeholder="nome@empresa.com.br"
+               autocapitalize="off" spellcheck="false" maxlength="120">
+        <span class="dica" id="dica-email" hidden></span>
       </label>
 
       <label class="consent">
@@ -65,6 +64,7 @@
       </button>
     </form>
   </div>
+
   <script src="/static/js/kiosk.js"></script>
   <script src="/static/js/cadastro.js"></script>
 </body>

@@ -5,6 +5,7 @@ App local single-user (totem); estado da tentativa fica em memória.
 """
 
 import random
+import re
 import threading
 from flask import Flask, jsonify, render_template, request
 
@@ -45,7 +46,11 @@ def pagina_cadastro():
 
 @app.route("/regras")
 def pagina_regras():
-    return render_template("regras.html")
+    # O pid vai para o template para o botão "Começar" ser um <a href> real.
+    # Antes ele dependia de um listener de clique em JS; num totem, navegação
+    # essencial não pode depender disso — se o script falhar ou o evento não
+    # chegar, o participante fica preso na tela sem saída.
+    return render_template("regras.html", pid=request.args.get("pid", type=int))
 
 
 @app.route("/quiz")
@@ -67,18 +72,59 @@ def pagina_ranking():
 # API
 # ---------------------------------------------------------------------------
 
+_RE_NOME = re.compile(r"^[A-Za-zÀ-ÖØ-öø-ÿ' .-]+$")
+_RE_EMAIL = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$")
+
+
+def _validar_cadastro(nome, telefone, email):
+    """
+    Espelha a validação do cadastro.js. Roda no servidor porque o
+    navegador é do participante: com o teclado wireless do estande dá para
+    abrir o devtools e postar direto na API. Dado sujo aqui contamina a
+    base de captação que o marketing vai usar depois da feira.
+
+    Devolve (mensagem_de_erro, telefone_normalizado) — erro None se ok.
+    """
+    if not nome:
+        return "Nome é obrigatório.", None
+    partes = [p for p in nome.split(" ") if p]
+    if len(partes) < 2:
+        return "Informe nome e sobrenome.", None
+    if not _RE_NOME.match(nome):
+        return "Use apenas letras no nome.", None
+
+    digitos = re.sub(r"\D", "", telefone or "")
+    if len(digitos) < 10 or len(digitos) > 11:
+        return "Telefone inválido — use DDD + número.", None
+    if not 11 <= int(digitos[:2]) <= 99:
+        return "DDD inválido.", None
+    if len(digitos) == 11 and digitos[2] != "9":
+        return "Celular deve começar com 9 após o DDD.", None
+
+    if not email:
+        return "E-mail é obrigatório.", None
+    if len(email) > 120 or not _RE_EMAIL.match(email):
+        return "E-mail inválido.", None
+
+    # grava sempre no mesmo formato, independente do que o cliente mandou
+    if len(digitos) == 11:
+        formatado = "(%s) %s-%s" % (digitos[:2], digitos[2:7], digitos[7:])
+    else:
+        formatado = "(%s) %s-%s" % (digitos[:2], digitos[2:6], digitos[6:])
+    return None, formatado
+
+
 @app.route("/api/cadastro", methods=["POST"])
 def api_cadastro():
     data = request.get_json(silent=True) or {}
-    nome = (data.get("nome") or "").strip()
-    empresa = (data.get("empresa") or "").strip()
+    nome = " ".join((data.get("nome") or "").split())
     email = (data.get("email") or "").strip()
     telefone = (data.get("telefone") or "").strip()
-    cargo = (data.get("cargo") or "").strip()
     consentimento = 1 if data.get("consentimento_lgpd") else 0
 
-    if not nome:
-        return jsonify({"ok": False, "erro": "Nome é obrigatório."}), 400
+    erro, telefone_fmt = _validar_cadastro(nome, telefone, email)
+    if erro:
+        return jsonify({"ok": False, "erro": erro}), 400
     if not consentimento:
         return jsonify({"ok": False, "erro": "Consentimento LGPD é obrigatório."}), 400
 
@@ -87,10 +133,10 @@ def api_cadastro():
         cur = conn.execute(
             """
             INSERT INTO participantes
-                (nome, empresa, email, telefone, cargo, consentimento_lgpd)
-            VALUES (?, ?, ?, ?, ?, ?)
+                (nome, email, telefone, consentimento_lgpd)
+            VALUES (?, ?, ?, ?)
             """,
-            (nome, empresa, email, telefone, cargo, consentimento),
+            (nome, email, telefone_fmt, consentimento),
         )
         conn.commit()
         participante_id = cur.lastrowid
