@@ -30,9 +30,12 @@
   var elTrilho = document.getElementById("barra-trilho");
   var elChama = document.getElementById("chama");
 
+  var elPlacar = document.getElementById("barra-placar");
+
   var overlay = document.getElementById("feedback-overlay");
   var reboque = document.getElementById("fb-reboque");
   var fbCard = document.getElementById("fb-card");
+  var fbFaixa = document.getElementById("fb-faixa");
   var fbMascote = document.getElementById("fb-mascote");
   var fbMsg = document.getElementById("feedback-msg");
   var fbPontos = document.getElementById("feedback-pontos");
@@ -93,6 +96,13 @@
       elTrilho.appendChild(b);
     }
     elChama.setAttribute("data-nivel", "0");
+    atualizarPlacar(total);
+  }
+
+  function atualizarPlacar(total) {
+    if (elPlacar) {
+      elPlacar.textContent = pontuacao + " / " + (total * pontosPorAcerto);
+    }
   }
 
   function marcarBloco(i, acertou) {
@@ -102,6 +112,7 @@
     }
     // a chama cresce com os acertos, não com o número de perguntas
     elChama.setAttribute("data-nivel", String(acertos));
+    atualizarPlacar(perguntas.length);
   }
 
   // ---------------------------------------------------------------------
@@ -183,8 +194,9 @@
     var classe = acertou ? "is-bom" : "is-ruim";
 
     fbCard.className = "fb-card " + classe;
+    fbFaixa.textContent = acertou ? "Resposta certa" : "Resposta errada";
     fbMsg.textContent = mensagem;
-    fbPontos.textContent = acertou ? "+" + pontos + " pontos" : "sem pontos";
+    fbPontos.textContent = acertou ? "+" + pontos + " pontos" : "0 pontos";
 
     // volta o mascote para o ciclo de caminhada antes de entrar de novo
     fbMascote.className = "fb-mascote " + classe;

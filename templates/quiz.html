@@ -34,17 +34,28 @@
 
   <!-- Barra de fogo: um bloco por pergunta. Acende no acerto, apaga no erro. -->
   <footer class="barra-fogo">
-    <div class="barra-trilho" id="barra-trilho" role="img" aria-label="Progresso da partida"></div>
-    <div class="chama" id="chama" data-nivel="0" aria-hidden="true"></div>
+    <div class="barra-info">
+      <div class="barra-rotulo">
+        <span>Nível de fogo</span>
+        <b id="barra-placar">0 / 10</b>
+      </div>
+      <div class="barra-trilho" id="barra-trilho" role="img" aria-label="Progresso da partida"></div>
+    </div>
+    <div class="chama-caixa">
+      <div class="chama" id="chama" data-nivel="0" aria-hidden="true"></div>
+    </div>
   </footer>
 
   <!-- Feedback: o Llumaquinho entra puxando o card pela corda -->
   <div id="feedback-overlay" class="feedback-overlay" hidden>
     <div class="fb-reboque" id="fb-reboque">
       <div class="fb-card" id="fb-card">
-        <p id="feedback-msg" class="feedback-msg"></p>
-        <p id="feedback-pontos" class="feedback-pontos"></p>
-        <p class="feedback-tap">Toque para continuar</p>
+        <div class="fb-faixa" id="fb-faixa"></div>
+        <div class="fb-corpo">
+          <p id="feedback-msg" class="feedback-msg"></p>
+          <p id="feedback-pontos" class="feedback-pontos"></p>
+          <p class="feedback-tap">Toque para continuar</p>
+        </div>
       </div>
       <span class="fb-corda" aria-hidden="true"></span>
       <div class="fb-mascote" id="fb-mascote" role="img" aria-label="Llumaquinho"></div>
