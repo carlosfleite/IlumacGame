@@ -40,6 +40,14 @@ def _limpar_sessao(participante_id):
 # ---------------------------------------------------------------------------
 
 @app.route("/")
+def pagina_abertura():
+    # Tela de abertura = estado de repouso do totem. kiosk.js volta pra cá
+    # (URL_REPOUSO = "/") depois de qualquer reset por inatividade ou fim
+    # de partida — por isso não leva data-kiosk-timeout: ela já é o descanso.
+    return render_template("abertura.html")
+
+
+@app.route("/cadastro")
 def pagina_cadastro():
     return render_template("cadastro.html")
 

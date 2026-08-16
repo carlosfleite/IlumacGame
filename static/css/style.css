@@ -245,6 +245,164 @@ body {
   color: var(--sobre-vermelho-medio);
 }
 
+/* ==========================================================================
+   Abertura — tela de repouso do totem (attract screen)
+
+   É a primeira tela e também para onde o kiosk.js sempre volta depois de
+   qualquer reset ou fim de partida. Fica visível a maior parte do tempo
+   entre um participante e outro, então precisa chamar atenção de longe
+   sem pesar na CPU: só animações em steps(), sem blur.
+   ========================================================================== */
+
+.selo-ilumagame {
+  height: 34px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Não usa align-items:center no .screen: isso encolheria a .topbar para o
+   conteúdo e quebraria o justify-content:space-between dela (o selo Iluma
+   Game colaria no logo em vez de ir pra ponta direita). A centralização
+   fica só nos filhos internos que precisam dela. */
+.screen-abertura {
+  text-align: center;
+}
+
+.abertura-corpo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  min-height: 0;
+  width: 100%;
+}
+
+.abertura-eyebrow,
+.abertura-sub {
+  text-align: center;
+}
+
+.abertura-titulo {
+  text-align: center;
+}
+
+.abertura-sub {
+  max-width: 52ch;
+}
+
+/* Palco: mascote grande no centro, decorações flutuando ao redor. Tudo
+   posicionado em torno do próprio mascote (position relative nele), então
+   a composição inteira escala junto no media query do totem. */
+.abertura-palco {
+  --palco-h: 240px;
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 12px 0;
+}
+
+.abertura-mascote {
+  width: calc(var(--palco-h) * 113 / 128);
+  height: var(--palco-h);
+  background-image: url("/static/img/ilumaquinho/idle.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  /* respiração sutil: chama atenção de longe sem parecer nervoso */
+  animation: mascote-respira 1.6s steps(2) infinite;
+}
+
+@keyframes mascote-respira {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(calc(var(--px) * -2)); }
+}
+
+.abertura-estrela {
+  position: absolute;
+  width: 44px;
+  height: auto;
+  animation: estrela-brilha 1.8s steps(1) infinite;
+}
+
+.abertura-estrela-1 {
+  top: 6%;
+  left: 12%;
+  animation-delay: 0s;
+}
+
+.abertura-estrela-2 {
+  top: 14%;
+  right: 14%;
+  width: 34px;
+  animation-delay: 0.6s;
+}
+
+@keyframes estrela-brilha {
+  0%, 40%  { opacity: 1; }
+  50%      { opacity: 0.35; }
+  60%, 100% { opacity: 1; }
+}
+
+.abertura-balao {
+  position: absolute;
+  top: 2%;
+  right: 4%;
+  width: 128px;
+  height: auto;
+  animation: balao-flutua 2.4s steps(4) infinite;
+}
+
+@keyframes balao-flutua {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(calc(var(--px) * -1)); }
+}
+
+.abertura-cta {
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+  padding-top: 8px;
+}
+
+.abertura-seta {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: auto;
+  margin-bottom: 6px;
+  animation: seta-aponta 1s steps(2) infinite;
+}
+
+@keyframes seta-aponta {
+  0%, 100% { transform: translate(-50%, 0); }
+  50%      { transform: translate(-50%, calc(var(--px) * 2)); }
+}
+
+.abertura-btn {
+  animation: cta-respira 1.6s steps(2) infinite;
+}
+
+/* A animação usa transform (scale) e o :active de .btn também usa transform
+   (translate) para o feedback do toque — uma sobrescreveria a outra.
+   Desliga a respiração enquanto o dedo está na tela, senão o toque não
+   parece "encostar". */
+.abertura-btn:active {
+  animation: none;
+}
+
+@keyframes cta-respira {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.015); }
+}
+
 /* ---- Botões ---- */
 .btn {
   display: inline-flex;
@@ -1090,6 +1248,13 @@ body {
     0%  { background-position: 0 0; }
     50% { background-position: -230px 0; }
   }
+
+  .selo-ilumagame { height: 48px; }
+  .abertura-palco { --palco-h: 380px; }
+  .abertura-estrela { width: 68px; }
+  .abertura-estrela-2 { width: 52px; }
+  .abertura-balao { width: 190px; }
+  .abertura-seta { width: 44px; }
 }
 
 @media (max-width: 420px) {

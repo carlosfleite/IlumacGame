@@ -336,6 +336,27 @@ def gerar_chama(destino):
     return larg, alt
 
 
+# ---------------------------------------------------------------------------
+# 3. Elementos decorativos (ja sao pixel art pronta — so recorta e copia)
+# ---------------------------------------------------------------------------
+
+def preparar_decorativo(origem, destino):
+    """
+    Recorta a moldura transparente e salva. Os arquivos em img/ (estrela,
+    balao de fogos, seta, logo Iluma Game) ja sao pixel art feita por
+    designer — ao contrario dos PNG do Llumaquinho, aqui nao ha reducao
+    nem tratamento de cor, so remove a margem vazia ao redor.
+    """
+    im = Image.open(origem).convert("RGBA")
+    antes = os.path.getsize(origem)
+    caixa = im.getbbox()
+    if caixa:
+        im = im.crop(caixa)
+    im.save(destino, "PNG", optimize=True)
+    _relatar(destino, antes)
+    return im
+
+
 # Altura nativa dos sprites do mascote. O dobro da versao anterior (64px):
 # a tecnica sem quantizacao rende muito melhor com mais pixels de origem,
 # e o CSS compensa o tamanho do arquivo escalando o multiplicador de
@@ -380,6 +401,16 @@ def main():
     print("Chama da barra de progresso:")
     clarg, calt = gerar_chama(os.path.join(DESTINO_IMG, "chama.png"))
     print("    -> celula da folha: %dx%d" % (clarg, calt))
+
+    print("Elementos decorativos (tela de abertura):")
+    preparar_decorativo(os.path.join(ORIGEM, "Ativo 2.png"),
+                        os.path.join(DESTINO_IMG, "ilumagame.png"))
+    preparar_decorativo(os.path.join(ORIGEM, "ESTRELA.png"),
+                        os.path.join(DESTINO_IMG, "estrela.png"))
+    preparar_decorativo(os.path.join(ORIGEM, "BALÃO_FOGOS.png"),
+                        os.path.join(DESTINO_IMG, "balao-fogos.png"))
+    preparar_decorativo(os.path.join(ORIGEM, "SETA.png"),
+                        os.path.join(DESTINO_IMG, "seta.png"))
 
 
 if __name__ == "__main__":
