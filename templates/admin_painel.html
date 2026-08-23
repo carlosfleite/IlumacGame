@@ -8,9 +8,15 @@
 </head>
 <body class="page-admin">
   <div class="admin-topo">
-    <div class="admin-topo-marca">
-      <img class="admin-topo-logo" src="/static/img/logo-ilumac-branco.svg" alt="Ilumac">
-      <h1>Painel do marketing</h1>
+    <div class="admin-topo-conteudo">
+      <div class="admin-topo-marca">
+        <img class="admin-topo-logo" src="/static/img/logo-ilumac-branco.svg" alt="Ilumac">
+        <div>
+          <p class="admin-topo-tag">Fire Show 2026</p>
+          <h1>Painel do Marketing</h1>
+        </div>
+      </div>
+      <img class="admin-topo-mascote" src="/static/img/ilumaquinho/trofeu.png" alt="Ilumaquinho comemorando com o troféu">
     </div>
   </div>
 
@@ -80,7 +86,10 @@
           </tbody>
         </table>
       {% else %}
-        <p class="admin-vazio">Nenhum cadastro ainda.</p>
+        <div class="admin-vazio">
+          <img src="/static/img/ilumaquinho/idle.png" alt="">
+          <p>Nenhum cadastro ainda.</p>
+        </div>
       {% endif %}
     </div>
   </div>
