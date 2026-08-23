@@ -22,11 +22,6 @@ PARAR.flag
 export/
 *.csv
 
-# Credenciais do painel admin (hash da senha + chave de sessão) — geradas
-# sozinhas no primeiro boot. NUNCA versionar mesmo sendo só um hash: a
-# chave de sessão em texto puro permitiria forjar um cookie autenticado.
-config/admin.json
-
 # Backups manuais do banco (gerados durante manutenção pontual)
 quiz.db.backup_*
 

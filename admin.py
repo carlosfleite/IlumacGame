@@ -1,118 +1,24 @@
 # -*- coding: utf-8 -*-
 """
 Painel do marketing — dados de contato dos participantes, com exportação
-em CSV, Excel e PDF. Protegido por senha; ninguém mais no totem acessa.
+em CSV, Excel e PDF.
 
-config/admin.json guarda o hash da senha (nunca a senha em texto puro) e
-a chave usada para assinar o cookie de sessão do Flask. NÃO é versionado
-(ver .gitignore) — é gerado sozinho no primeiro boot, com uma senha
-aleatória registrada no log, pra ninguém precisar configurar nada antes
-do evento só pra essa tela funcionar. Pra trocar a senha depois, use
-tools/definir_senha_admin.py (ou apague o arquivo pra gerar outra).
+Sem login de propósito: só uma pessoa mexe nisso, na própria máquina do
+totem, que já só serve Flask em 127.0.0.1 (inacessível de fora). Não fica
+linkado em nenhuma tela do jogo.
 """
 import csv
-import hashlib
 import io
-import json
-import logging
-import os
-import secrets
 from datetime import datetime
-from functools import wraps
 
-from flask import Blueprint, Response, jsonify, redirect, render_template, request, session, url_for
+from flask import Blueprint, Response, render_template
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
 from fpdf import FPDF
 
-from database import CONFIG_DIR, get_connection, sql_melhor_tentativa
-
-ADMIN_JSON = os.path.join(CONFIG_DIR, "admin.json")
-
-log = logging.getLogger(__name__)
+from database import get_connection, sql_melhor_tentativa
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
-
-
-def _carregar_ou_criar_credenciais():
-    if os.path.exists(ADMIN_JSON):
-        with open(ADMIN_JSON, encoding="utf-8") as fp:
-            return json.load(fp)
-
-    senha = secrets.token_urlsafe(9)
-    dados = {
-        "senha_hash": hashlib.sha256(senha.encode("utf-8")).hexdigest(),
-        "secret_key": secrets.token_hex(32),
-    }
-    os.makedirs(CONFIG_DIR, exist_ok=True)
-    with open(ADMIN_JSON, "w", encoding="utf-8") as fp:
-        json.dump(dados, fp, indent=2)
-
-    mensagem = (
-        "Senha do painel admin gerada automaticamente: %s\n"
-        "ANOTE ESTA SENHA AGORA. Ela nao fica salva em texto puro em "
-        "nenhum lugar (config/admin.json guarda so o hash) — se perder, "
-        "rode tools/definir_senha_admin.py pra definir uma nova."
-    ) % senha
-
-    # log.warning sozinho não é confiável aqui: este código roda na
-    # IMPORTAÇÃO do módulo, ou seja, antes de run.py configurar o
-    # logging (que só acontece dentro de main()). Nesse instante o
-    # logger ainda não tem handler de arquivo — a mensagem podia só
-    # aparecer (e sumir) na janela preta do console. print() + arquivo
-    # garantem que a senha sobrevive mesmo que ninguém esteja olhando
-    # pra tela no segundo exato em que o totem liga.
-    print("\n" + "=" * 70 + "\n" + mensagem + "\n" + "=" * 70 + "\n")
-    log.warning(mensagem)
-    try:
-        log_dir = os.path.join(os.path.dirname(CONFIG_DIR), "logs")
-        os.makedirs(log_dir, exist_ok=True)
-        caminho = os.path.join(log_dir, "SENHA_ADMIN_GERADA_UMA_VEZ.txt")
-        with open(caminho, "w", encoding="utf-8") as fp:
-            fp.write(mensagem + "\nApague este arquivo depois de anotar a senha.\n")
-    except OSError:
-        pass  # não impede o totem de subir por causa disso
-
-    return dados
-
-
-_CREDENCIAIS = _carregar_ou_criar_credenciais()
-SECRET_KEY = _CREDENCIAIS["secret_key"]
-
-
-def _senha_correta(senha):
-    digest = hashlib.sha256((senha or "").encode("utf-8")).hexdigest()
-    return secrets.compare_digest(digest, _CREDENCIAIS["senha_hash"])
-
-
-def _requer_admin(fn):
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        if not session.get("admin"):
-            if "/exportar/" in request.path:
-                return jsonify({"ok": False, "erro": "Não autenticado."}), 401
-            return redirect(url_for("admin.login"))
-        return fn(*args, **kwargs)
-    return wrapper
-
-
-@admin_bp.route("/login", methods=["GET", "POST"])
-def login():
-    erro = None
-    if request.method == "POST":
-        if _senha_correta(request.form.get("senha")):
-            session.clear()
-            session["admin"] = True
-            session.permanent = True
-            return redirect(url_for("admin.painel"))
-        erro = "Senha incorreta."
-    return render_template("admin_login.html", erro=erro)
-
-
-@admin_bp.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("admin.login"))
 
 
 # ---------------------------------------------------------------------------
@@ -157,7 +63,6 @@ def _nome_arquivo(extensao):
 # ---------------------------------------------------------------------------
 
 @admin_bp.route("/")
-@_requer_admin
 def painel():
     conn = get_connection()
     try:
@@ -198,7 +103,6 @@ def painel():
 # ---------------------------------------------------------------------------
 
 @admin_bp.route("/exportar/participantes.csv")
-@_requer_admin
 def exportar_csv():
     """
     Delimitador ';' e BOM UTF-8: é o que faz o Excel em português abrir
@@ -239,7 +143,6 @@ def exportar_csv():
 
 
 @admin_bp.route("/exportar/participantes.xlsx")
-@_requer_admin
 def exportar_xlsx():
     conn = get_connection()
     try:
@@ -315,7 +218,6 @@ _COLUNAS_PDF = [
 
 
 @admin_bp.route("/exportar/participantes.pdf")
-@_requer_admin
 def exportar_pdf():
     conn = get_connection()
     try:

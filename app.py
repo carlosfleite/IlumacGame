@@ -9,7 +9,6 @@ import random
 import re
 import threading
 import time
-from datetime import timedelta
 from flask import Flask, jsonify, render_template, request
 
 from database import (
@@ -21,11 +20,9 @@ from database import (
     init_db,
     sql_melhor_tentativa,
 )
-from admin import SECRET_KEY as ADMIN_SECRET_KEY, admin_bp
+from admin import admin_bp
 
 app = Flask(__name__)
-app.secret_key = ADMIN_SECRET_KEY
-app.permanent_session_lifetime = timedelta(hours=12)
 app.register_blueprint(admin_bp)
 log = logging.getLogger(__name__)
 

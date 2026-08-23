@@ -56,28 +56,15 @@ Com o totem ligado, conecte o teclado/mouse wireless e abra no navegador:
 http://127.0.0.1:5000/admin
 ```
 
-Tela protegida por senha, com tabela de todos os cadastros — inclusive
-de quem se cadastrou mas não terminou o quiz, porque para captação a
-lista de leads importa inteira — e botões para exportar em **Excel**,
-**PDF** ou **CSV**. Cada linha traz o que o marketing precisa pra entrar
-em contato: nome, telefone, e-mail, consentimento LGPD, data de
-cadastro, melhor pontuação, tempo e prêmio ganho (se houver). Tem uma
-busca simples por nome/e-mail/telefone acima da tabela.
+Tabela com todos os cadastros — inclusive de quem se cadastrou mas não
+terminou o quiz, porque para captação a lista de leads importa inteira
+— e botões para exportar em **Excel**, **PDF** ou **CSV**. Cada linha
+traz o que o marketing precisa pra entrar em contato: nome, telefone,
+e-mail, consentimento LGPD, data de cadastro, melhor pontuação, tempo e
+prêmio ganho (se houver). Tem uma busca simples por nome/e-mail/telefone
+acima da tabela.
 
-Não fica linkado em nenhuma tela do jogo — é só para a equipe. Como o
-`run.py` sobe o Flask apenas em `127.0.0.1`, esse endereço não é
-alcançável de fora da própria máquina do totem; a senha é uma segunda
-camada, pra quem estiver na mesma máquina (ex.: outro funcionário no
-estande) não conseguir abrir os dados de contato sem querer.
-
-**Senha:** gerada automaticamente no primeiro boot e mostrada no console
-e em `logs/SENHA_ADMIN_GERADA_UMA_VEZ.txt` — anote e apague esse
-arquivo depois. Pra trocar a senha (ou definir uma sua), rode:
-
-```bash
-python tools/definir_senha_admin.py
-```
-
-Se esquecer a senha e não tiver o arquivo, apague `config/admin.json` e
-reinicie o totem — uma nova senha é gerada do zero (isso também
-desconecta qualquer sessão já logada).
+Sem senha de propósito: não fica linkado em nenhuma tela do jogo, e
+como o `run.py` sobe o Flask apenas em `127.0.0.1`, esse endereço não é
+alcançável de fora da própria máquina do totem — só quem está sentado
+nela (ou sabe o endereço) abre.

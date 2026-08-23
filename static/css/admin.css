@@ -53,65 +53,6 @@ body.page-admin {
   line-height: 1.45;
 }
 
-/* ---- Login ---- */
-
-.admin-login-wrap {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-
-.admin-login-card {
-  width: 100%;
-  max-width: 360px;
-  background: var(--cartao);
-  border: 1px solid var(--linha);
-  border-radius: 12px;
-  padding: 32px;
-  box-shadow: 0 12px 32px rgba(28, 21, 23, 0.08);
-  text-align: center;
-}
-
-.admin-login-logo { height: 36px; width: auto; margin-bottom: 20px; }
-
-.admin-login-card h1 {
-  font-size: 1.1rem;
-  margin: 0 0 6px;
-  color: var(--tinta);
-}
-
-.admin-login-card p.sub {
-  margin: 0 0 24px;
-  color: var(--tinta-fraca);
-  font-size: 0.85rem;
-}
-
-.admin-input {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid var(--linha);
-  border-radius: 8px;
-  font-family: var(--font);
-  font-size: 0.95rem;
-  margin-bottom: 14px;
-}
-
-.admin-input:focus {
-  outline: none;
-  border-color: var(--vermelho);
-}
-
-.admin-erro {
-  background: #fdecec;
-  color: var(--vermelho-escuro);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 0.85rem;
-  margin-bottom: 14px;
-}
-
 .admin-btn {
   display: inline-flex;
   align-items: center;
@@ -171,17 +112,6 @@ body.page-admin {
   font-weight: 700;
   letter-spacing: 0.01em;
 }
-
-.admin-sair {
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 0.85rem;
-  text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 6px;
-  padding: 8px 14px;
-}
-
-.admin-sair:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
 
 .admin-corpo {
   max-width: 1200px;
