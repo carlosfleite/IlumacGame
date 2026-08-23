@@ -469,6 +469,53 @@ def buscar_premio_por_pontos(conn, pontuacao):
     return row
 
 
+# ---------------------------------------------------------------------------
+# Melhor tentativa por participante
+# ---------------------------------------------------------------------------
+
+# Usada pelo ranking (dia e geral) e pelas exportações do painel admin —
+# mantida num só lugar porque é lógica de desempate não trivial (maior
+# pontuação; empate → menor tempo) e todo mundo que "quem ganhou de quem"
+# precisa concordar.
+#
+# {filtro} decide sobre QUAIS tentativas a "melhor" é calculada: todas ou
+# só as de hoje. Aplicado nas três referências a quiz_tentativas para o
+# desempate ficar coerente — senão a melhor pontuação viria do período
+# todo, mas o tempo de desempate só de uma fatia dele. 'localtime'
+# converte o timestamp (gravado em UTC pelo SQLite) para o fuso do totem
+# antes de comparar a data, porque dia de feira é dia de calendário
+# local, não dia UTC.
+FILTRO_TENTATIVAS_GERAL = "1 = 1"
+FILTRO_TENTATIVAS_HOJE = "date(data_hora, 'localtime') = date('now', 'localtime')"
+
+_SQL_MELHOR_TENTATIVA_TMPL = """
+    SELECT t.*
+    FROM (SELECT * FROM quiz_tentativas WHERE {filtro}) t
+    INNER JOIN (
+        SELECT participante_id,
+               MAX(pontuacao) AS max_pts
+        FROM (SELECT * FROM quiz_tentativas WHERE {filtro})
+        GROUP BY participante_id
+    ) mp ON mp.participante_id = t.participante_id
+        AND mp.max_pts = t.pontuacao
+    INNER JOIN (
+        SELECT participante_id,
+               pontuacao,
+               MIN(tempo_total_ms) AS min_tempo
+        FROM (SELECT * FROM quiz_tentativas WHERE {filtro})
+        GROUP BY participante_id, pontuacao
+    ) mt ON mt.participante_id = t.participante_id
+        AND mt.pontuacao = t.pontuacao
+        AND mt.min_tempo = t.tempo_total_ms
+    GROUP BY t.participante_id
+"""
+
+
+def sql_melhor_tentativa(filtro=FILTRO_TENTATIVAS_GERAL):
+    """Devolve a subquery de melhor tentativa por participante, pronta pra usar num FROM/JOIN."""
+    return _SQL_MELHOR_TENTATIVA_TMPL.format(filtro=filtro)
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     cfg = init_db()

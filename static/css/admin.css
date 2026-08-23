@@ -1,0 +1,313 @@
+/* ==========================================================================
+   Painel admin — Quiz SDAI Ilumac.
+
+   Visual deliberadamente diferente do totem (que é vitrine/jogo, pixel art,
+   tela cheia vermelha): aqui é uma ferramenta de trabalho pro marketing,
+   então o objetivo é legibilidade e densidade de informação, não "vitrine".
+   Fundo claro, tipografia só em Montserrat (sem a fonte pixelada), tabela
+   de verdade. Mantém só a cor de marca (vermelho) como acento.
+   ========================================================================== */
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("/static/fonts/montserrat-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Montserrat";
+  src: url("/static/fonts/montserrat-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Montserrat";
+  src: url("/static/fonts/montserrat-700.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --px: 4px;
+  --vermelho: #c31922;
+  --vermelho-escuro: #a5141c;
+  --tinta: #1c1517;
+  --tinta-media: #5d5052;
+  --tinta-fraca: #857779;
+  --papel: #f7f4f3;
+  --cartao: #ffffff;
+  --linha: #e7e0de;
+  --verde: #1f8a4c;
+  --font: "Montserrat", "Segoe UI", Tahoma, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body.page-admin {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+/* ---- Login ---- */
+
+.admin-login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.admin-login-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--cartao);
+  border: 1px solid var(--linha);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 12px 32px rgba(28, 21, 23, 0.08);
+  text-align: center;
+}
+
+.admin-login-logo { height: 36px; width: auto; margin-bottom: 20px; }
+
+.admin-login-card h1 {
+  font-size: 1.1rem;
+  margin: 0 0 6px;
+  color: var(--tinta);
+}
+
+.admin-login-card p.sub {
+  margin: 0 0 24px;
+  color: var(--tinta-fraca);
+  font-size: 0.85rem;
+}
+
+.admin-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+  font-family: var(--font);
+  font-size: 0.95rem;
+  margin-bottom: 14px;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: var(--vermelho);
+}
+
+.admin-erro {
+  background: #fdecec;
+  color: var(--vermelho-escuro);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+}
+
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--vermelho);
+  color: #fff;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.12s ease;
+}
+
+.admin-btn:hover { background: var(--vermelho-escuro); }
+
+.admin-btn-secundario {
+  background: transparent;
+  color: var(--tinta-media);
+  border: 1px solid var(--linha);
+}
+
+.admin-btn-secundario:hover {
+  background: var(--papel);
+  color: var(--tinta);
+}
+
+/* ---- Painel ---- */
+
+.admin-topo {
+  background: var(--vermelho);
+  color: #fff;
+  padding: 18px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-topo-marca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-topo-logo { height: 28px; width: auto; }
+
+.admin-topo h1 {
+  font-size: 1rem;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.admin-sair {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 6px;
+  padding: 8px 14px;
+}
+
+.admin-sair:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+
+.admin-corpo {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 28px 48px;
+}
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.admin-stat {
+  background: var(--cartao);
+  border: 1px solid var(--linha);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+
+.admin-stat .valor {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--vermelho);
+  line-height: 1.1;
+}
+
+.admin-stat .rotulo {
+  font-size: 0.78rem;
+  color: var(--tinta-fraca);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+}
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.admin-exportar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-exportar .admin-btn {
+  width: auto;
+  padding: 10px 16px;
+  font-size: 0.82rem;
+}
+
+.admin-busca {
+  flex: 1;
+  min-width: 220px;
+  max-width: 320px;
+  padding: 10px 14px;
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+  font-family: var(--font);
+  font-size: 0.88rem;
+}
+
+.admin-busca:focus { outline: none; border-color: var(--vermelho); }
+
+.admin-tabela-wrap {
+  background: var(--cartao);
+  border: 1px solid var(--linha);
+  border-radius: 10px;
+  overflow: auto;
+}
+
+.admin-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+
+.admin-tabela th {
+  text-align: left;
+  padding: 12px 14px;
+  background: var(--papel);
+  color: var(--tinta-media);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--linha);
+  position: sticky;
+  top: 0;
+}
+
+.admin-tabela td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--linha);
+  color: var(--tinta);
+}
+
+.admin-tabela tbody tr:hover { background: var(--papel); }
+.admin-tabela tbody tr:last-child td { border-bottom: none; }
+
+.admin-pill {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.admin-pill-sim { background: #e7f6ed; color: var(--verde); }
+.admin-pill-nao { background: #f3ecec; color: var(--tinta-fraca); }
+
+.admin-vazio {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--tinta-fraca);
+}
+
+@media (max-width: 640px) {
+  .admin-corpo { padding: 16px; }
+  .admin-topo { padding: 14px 16px; }
+  .admin-toolbar { flex-direction: column; align-items: stretch; }
+  .admin-busca { max-width: none; }
+}

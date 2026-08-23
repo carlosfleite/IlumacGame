@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel admin — Quiz SDAI Ilumac</title>
+  <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body class="page-admin">
+  <div class="admin-login-wrap">
+    <form class="admin-login-card" method="POST" action="/admin/login">
+      <img class="admin-login-logo" src="/static/img/logo-ilumac-vermelho.svg" alt="Ilumac">
+      <h1>Painel do marketing</h1>
+      <p class="sub">Dados de contato dos participantes do Quiz SDAI.</p>
+
+      {% if erro %}
+        <p class="admin-erro">{{ erro }}</p>
+      {% endif %}
+
+      <input class="admin-input" type="password" name="senha" placeholder="Senha" autofocus required>
+      <button class="admin-btn" type="submit">Entrar</button>
+    </form>
+  </div>
+</body>
+</html>

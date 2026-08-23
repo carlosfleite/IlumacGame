@@ -4,24 +4,29 @@ Rotas Flask do Quiz SDAI — Ilumac Fire Show 2026.
 App local single-user (totem); estado da tentativa fica em memória.
 """
 
-import csv
-import io
 import logging
 import random
 import re
 import threading
 import time
-from datetime import datetime
-from flask import Flask, Response, jsonify, render_template, request
+from datetime import timedelta
+from flask import Flask, jsonify, render_template, request
 
 from database import (
     ConfiguracaoInvalida,
+    FILTRO_TENTATIVAS_GERAL,
+    FILTRO_TENTATIVAS_HOJE,
     buscar_premio_por_pontos,
     get_connection,
     init_db,
+    sql_melhor_tentativa,
 )
+from admin import SECRET_KEY as ADMIN_SECRET_KEY, admin_bp
 
 app = Flask(__name__)
+app.secret_key = ADMIN_SECRET_KEY
+app.permanent_session_lifetime = timedelta(hours=12)
+app.register_blueprint(admin_bp)
 log = logging.getLogger(__name__)
 
 
@@ -82,7 +87,11 @@ def _aplicar_config(config):
 
 @app.before_request
 def _bloquear_se_config_invalida():
-    if not _erro_fatal or request.path.startswith("/static/"):
+    # /admin não depende de questions.json/premios.json (só lê participantes
+    # e tentativas já gravadas) — não faz sentido travar o acesso do
+    # marketing aos dados de contato por causa de um erro de conteúdo do
+    # quiz que não tem nada a ver com isso.
+    if not _erro_fatal or request.path.startswith(("/static/", "/admin")):
         return None
     if request.path.startswith("/api/"):
         return jsonify({"ok": False, "erro": _erro_fatal}), 503
@@ -487,46 +496,6 @@ def api_quiz_finalizar():
     })
 
 
-# Melhor tentativa por participante: 1) maior pontuação; 2) se empatar nos
-# pontos, menor tempo. Usada pelo ranking e pela exportação CSV — mantida
-# num só lugar porque é lógica de desempate não trivial e as duas telas
-# precisam concordar sobre quem "ganhou" de quem.
-#
-# {filtro} decide sobre QUAIS tentativas a "melhor" é calculada: todas
-# (ranking geral / CSV) ou só as de hoje (ranking do dia). Aplicado nas
-# três referências a quiz_tentativas para o desempate ficar coerente —
-# senão a melhor pontuação viria do dia todo, mas o tempo de desempate
-# só do dia de hoje. 'localtime' converte o timestamp (gravado em UTC
-# pelo SQLite) para o fuso do totem antes de comparar a data, porque
-# feira é dia de calendário local, não dia UTC.
-_SQL_MELHOR_TENTATIVA_TMPL = """
-    SELECT t.*
-    FROM (SELECT * FROM quiz_tentativas WHERE {filtro}) t
-    INNER JOIN (
-        SELECT participante_id,
-               MAX(pontuacao) AS max_pts
-        FROM (SELECT * FROM quiz_tentativas WHERE {filtro})
-        GROUP BY participante_id
-    ) mp ON mp.participante_id = t.participante_id
-        AND mp.max_pts = t.pontuacao
-    INNER JOIN (
-        SELECT participante_id,
-               pontuacao,
-               MIN(tempo_total_ms) AS min_tempo
-        FROM (SELECT * FROM quiz_tentativas WHERE {filtro})
-        GROUP BY participante_id, pontuacao
-    ) mt ON mt.participante_id = t.participante_id
-        AND mt.pontuacao = t.pontuacao
-        AND mt.min_tempo = t.tempo_total_ms
-    GROUP BY t.participante_id
-"""
-
-_FILTRO_GERAL = "1 = 1"
-_FILTRO_HOJE = "date(data_hora, 'localtime') = date('now', 'localtime')"
-
-_SQL_MELHOR_TENTATIVA = _SQL_MELHOR_TENTATIVA_TMPL.format(filtro=_FILTRO_GERAL)
-
-
 @app.route("/api/ranking", methods=["GET"])
 def api_ranking():
     """
@@ -543,8 +512,8 @@ def api_ranking():
         limite = 100
 
     escopo = "dia" if request.args.get("escopo") == "dia" else "geral"
-    filtro = _FILTRO_HOJE if escopo == "dia" else _FILTRO_GERAL
-    sql_melhor = _SQL_MELHOR_TENTATIVA_TMPL.format(filtro=filtro)
+    filtro = FILTRO_TENTATIVAS_HOJE if escopo == "dia" else FILTRO_TENTATIVAS_GERAL
+    sql_melhor = sql_melhor_tentativa(filtro)
 
     conn = get_connection()
     try:
@@ -583,78 +552,8 @@ def api_ranking():
     return jsonify({"ok": True, "ranking": ranking, "escopo": escopo})
 
 
-# ---------------------------------------------------------------------------
-# Exportação (staff — não linkada em nenhuma tela do totem)
-# ---------------------------------------------------------------------------
-
-@app.route("/admin/exportar/participantes.csv")
-def exportar_participantes_csv():
-    """
-    CSV para captação/marketing pós-feira: um cadastro por linha, com a
-    melhor pontuação e o prêmio ganho (se houver). Participantes que se
-    cadastraram mas não terminaram o quiz também entram — para marketing
-    a lista de leads importa inteira, não só quem jogou até o fim.
-
-    Sem autenticação de propósito: run.py sobe o Flask só em 127.0.0.1,
-    então este endpoint já não é alcançável fora da própria máquina do
-    totem. Não fica linkado em nenhuma tela pública.
-
-    Delimitador ';' e BOM UTF-8: é o que faz o Excel em português abrir
-    o arquivo direto, com acentos corretos, sem passar pelo assistente de
-    importação. Vírgula como separador de campo colide com a vírgula
-    decimal do Excel PT-BR e tudo cai numa coluna só.
-    """
-    conn = get_connection()
-    try:
-        linhas = conn.execute(
-            """
-            SELECT
-                p.id, p.nome, p.telefone, p.email,
-                p.consentimento_lgpd, p.data_cadastro,
-                best.pontuacao, best.tempo_total_ms, best.data_hora,
-                pr.nome AS premio_nome
-            FROM participantes p
-            LEFT JOIN (%s) best ON best.participante_id = p.id
-            LEFT JOIN quiz_premios pr ON pr.id = best.premio_id
-            ORDER BY p.data_cadastro
-            """ % _SQL_MELHOR_TENTATIVA
-        ).fetchall()
-    finally:
-        conn.close()
-
-    def tempo_legivel(ms):
-        if ms is None:
-            return ""
-        s = int(ms) // 1000
-        return "%02d:%02d" % (s // 60, s % 60)
-
-    buffer = io.StringIO()
-    escritor = csv.writer(buffer, delimiter=";")
-    escritor.writerow([
-        "id", "nome", "telefone", "email",
-        "consentimento_lgpd", "data_cadastro",
-        "pontuacao", "tempo_total", "premio", "jogou",
-    ])
-    for r in linhas:
-        escritor.writerow([
-            r["id"],
-            r["nome"],
-            r["telefone"] or "",
-            r["email"] or "",
-            "sim" if r["consentimento_lgpd"] else "nao",
-            r["data_cadastro"] or "",
-            r["pontuacao"] if r["pontuacao"] is not None else "",
-            tempo_legivel(r["tempo_total_ms"]),
-            r["premio_nome"] or "",
-            "sim" if r["pontuacao"] is not None else "nao",
-        ])
-
-    nome_arquivo = "ilumac_participantes_%s.csv" % datetime.now().strftime("%Y-%m-%d_%H%M")
-    return Response(
-        buffer.getvalue().encode("utf-8-sig"),
-        mimetype="text/csv",
-        headers={"Content-Disposition": 'attachment; filename="%s"' % nome_arquivo},
-    )
+# Exportação de dados para o marketing mora em admin.py, atrás de login
+# (blueprint registrado lá em cima) — não fica mais aqui sem autenticação.
 
 
 def create_app():

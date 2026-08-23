@@ -53,7 +53,7 @@ if not exist "%PY%" (
     )
 )
 
-"%PY%" -c "import flask, webview" >nul 2>&1
+"%PY%" -c "import flask, webview, openpyxl, fpdf" >nul 2>&1
 if errorlevel 1 (
     echo [SETUP] Dependencias ausentes. Instalando ... ^(requer internet^)
     "%PY%" -m pip install -r requirements.txt -q
