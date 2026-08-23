@@ -6,25 +6,72 @@ App local single-user (totem); estado da tentativa fica em memória.
 
 import csv
 import io
+import logging
 import random
 import re
 import threading
+import time
 from datetime import datetime
 from flask import Flask, Response, jsonify, render_template, request
 
-from database import buscar_premio_por_pontos, get_connection, init_db
+from database import (
+    ConfiguracaoInvalida,
+    buscar_premio_por_pontos,
+    get_connection,
+    init_db,
+)
 
 app = Flask(__name__)
+log = logging.getLogger(__name__)
+
+
+@app.errorhandler(Exception)
+def _erro_json(exc):
+    """
+    Qualquer exceção não tratada em /api/ vira JSON, nunca a página HTML
+    padrão do Flask. O totem roda 3 dias sem supervisão: se o banco travar
+    ou o disco encher, o participante precisa ver uma mensagem que o
+    frontend consegue interpretar (fetch().then(res => res.json())) em vez
+    de um SyntaxError ao tentar parsear HTML como JSON — travando a tela
+    sem nenhuma saída.
+    """
+    codigo = getattr(exc, "code", 500) or 500
+    if codigo == 500:
+        log.exception("Erro nao tratado em %s", request.path)
+    if request.path.startswith("/api/"):
+        return jsonify({"ok": False, "erro": "Erro interno do servidor."}), codigo
+    return exc if codigo != 500 else ("Erro interno do servidor.", 500)
 
 # Estado da sessão atual do totem (uma pessoa por vez).
 # Chave: participante_id → dict com perguntas, respostas bufferizadas, etc.
 _sessao_lock = threading.Lock()
 _sessoes = {}
 
+# Quem começa o quiz e abandona o totem sem finalizar nunca aciona
+# _limpar_sessao(). Numa feira de 3 dias isso acumula sem teto. Cada nova
+# tentativa varre e descarta sessões mais velhas que isto — tempo generoso
+# porque uma pessoa parada lendo as perguntas não pode ser confundida com
+# abandono.
+_SESSAO_TTL_S = 30 * 60
+
+
+def _descartar_sessoes_expiradas():
+    """Chamado sempre com _sessao_lock já adquirido."""
+    limite = time.time() - _SESSAO_TTL_S
+    expiradas = [pid for pid, s in _sessoes.items() if s["criada_em"] < limite]
+    for pid in expiradas:
+        del _sessoes[pid]
+
 # Preenchidos por create_app() a partir do config/questions.json. Os valores
 # aqui são só o fallback de quem roda `python app.py` sem passar pelo factory.
 PONTOS_POR_ACERTO = 2
 QTD_PERGUNTAS = 5
+
+# Mensagem de config fatal (ex.: poucas perguntas ativas). Setado só na
+# inicialização; enquanto não-None, todas as rotas ficam bloqueadas com um
+# aviso legível em vez de deixar o watchdog reiniciar o processo em loop
+# infinito sem nada visível na tela do totem.
+_erro_fatal = None
 
 
 def _aplicar_config(config):
@@ -36,6 +83,21 @@ def _aplicar_config(config):
 def _limpar_sessao(participante_id):
     with _sessao_lock:
         _sessoes.pop(participante_id, None)
+
+
+@app.before_request
+def _bloquear_se_config_invalida():
+    if not _erro_fatal or request.path.startswith("/static/"):
+        return None
+    if request.path.startswith("/api/"):
+        return jsonify({"ok": False, "erro": _erro_fatal}), 503
+    return (
+        "<h1>Quiz indisponível</h1>"
+        "<p>Configuração inválida: %s</p>"
+        "<p>Corrija config/questions.json ou config/premios.json "
+        "e reinicie o totem.</p>" % _erro_fatal,
+        503,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -98,8 +160,13 @@ def _validar_cadastro(nome, telefone, email):
     """
     if not nome:
         return "Nome é obrigatório.", None
+    if len(nome) > 80:
+        return "Nome muito longo.", None
     partes = [p for p in nome.split(" ") if p]
     if len(partes) < 2:
+        return "Informe nome e sobrenome.", None
+    curtas = [p for p in partes if len(p) < 2]
+    if len(curtas) == len(partes):
         return "Informe nome e sobrenome.", None
     if not _RE_NOME.match(nome):
         return "Use apenas letras no nome.", None
@@ -129,7 +196,7 @@ def _validar_cadastro(nome, telefone, email):
 def api_cadastro():
     data = request.get_json(silent=True) or {}
     nome = " ".join((data.get("nome") or "").split())
-    email = (data.get("email") or "").strip()
+    email = (data.get("email") or "").strip().lower()
     telefone = (data.get("telefone") or "").strip()
     consentimento = 1 if data.get("consentimento_lgpd") else 0
 
@@ -141,16 +208,26 @@ def api_cadastro():
 
     conn = get_connection()
     try:
-        cur = conn.execute(
-            """
-            INSERT INTO participantes
-                (nome, email, telefone, consentimento_lgpd)
-            VALUES (?, ?, ?, ?)
-            """,
-            (nome, email, telefone_fmt, consentimento),
-        )
-        conn.commit()
-        participante_id = cur.lastrowid
+        # Mesma pessoa jogando de novo (fila deu volta, celular emprestado
+        # etc.) não pode virar um segundo lead na lista de marketing. O
+        # e-mail já é normalizado para minúsculo acima, então "T@T.COM" e
+        # "t@t.com" caem aqui.
+        existente = conn.execute(
+            "SELECT id FROM participantes WHERE lower(email) = ?", (email,)
+        ).fetchone()
+        if existente:
+            participante_id = existente["id"]
+        else:
+            cur = conn.execute(
+                """
+                INSERT INTO participantes
+                    (nome, email, telefone, consentimento_lgpd)
+                VALUES (?, ?, ?, ?)
+                """,
+                (nome, email, telefone_fmt, consentimento),
+            )
+            conn.commit()
+            participante_id = cur.lastrowid
     finally:
         conn.close()
 
@@ -205,11 +282,13 @@ def api_quiz_iniciar():
         })
 
     with _sessao_lock:
+        _descartar_sessoes_expiradas()
         _sessoes[participante_id] = {
             "gabarito": gabarito,
             "ordem_ids": [p["id"] for p in perguntas_cliente],
             "respostas": [],  # buffer até finalizar
             "respondidas": set(),
+            "criada_em": time.time(),
         }
 
     return jsonify({
@@ -302,6 +381,13 @@ def api_quiz_finalizar():
         if not sessao:
             return jsonify({"ok": False, "erro": "Sessão de quiz não iniciada."}), 400
         respostas = list(sessao["respostas"])
+        total_perguntas = len(sessao["ordem_ids"])
+
+    if len(respostas) < total_perguntas:
+        return jsonify({
+            "ok": False,
+            "erro": "Quiz incompleto — responda todas as perguntas antes de finalizar.",
+        }), 400
 
     # Recalcula pontuação no servidor (fonte da verdade)
     pontuacao_srv = sum(r["acertou"] for r in respostas) * PONTOS_POR_ACERTO
@@ -412,7 +498,6 @@ def api_ranking():
             """
             SELECT
                 p.nome,
-                p.empresa,
                 best.pontuacao,
                 best.tempo_total_ms,
                 best.data_hora,
@@ -431,7 +516,6 @@ def api_ranking():
             ranking.append({
                 "posicao": i,
                 "nome": row["nome"],
-                "empresa": row["empresa"] or "",
                 "pontuacao": row["pontuacao"],
                 "tempo_total_ms": row["tempo_total_ms"],
                 "premio_nome": row["premio_nome"] or "",
@@ -469,7 +553,7 @@ def exportar_participantes_csv():
         linhas = conn.execute(
             """
             SELECT
-                p.id, p.nome, p.telefone, p.email, p.empresa, p.cargo,
+                p.id, p.nome, p.telefone, p.email,
                 p.consentimento_lgpd, p.data_cadastro,
                 best.pontuacao, best.tempo_total_ms, best.data_hora,
                 pr.nome AS premio_nome
@@ -491,7 +575,7 @@ def exportar_participantes_csv():
     buffer = io.StringIO()
     escritor = csv.writer(buffer, delimiter=";")
     escritor.writerow([
-        "id", "nome", "telefone", "email", "empresa", "cargo",
+        "id", "nome", "telefone", "email",
         "consentimento_lgpd", "data_cadastro",
         "pontuacao", "tempo_total", "premio", "jogou",
     ])
@@ -501,8 +585,6 @@ def exportar_participantes_csv():
             r["nome"],
             r["telefone"] or "",
             r["email"] or "",
-            r["empresa"] or "",
-            r["cargo"] or "",
             "sim" if r["consentimento_lgpd"] else "nao",
             r["data_cadastro"] or "",
             r["pontuacao"] if r["pontuacao"] is not None else "",
@@ -520,11 +602,24 @@ def exportar_participantes_csv():
 
 
 def create_app():
-    """Factory usada pelo run.py."""
-    _aplicar_config(init_db())
+    """
+    Factory usada pelo run.py.
+
+    Config inválida (ex.: menos perguntas ativas do que a partida precisa)
+    não pode derrubar o processo: run.py mataria o processo inteiro e o
+    watchdog reiniciaria sem parar, sem nada legível chegar à tela do
+    totem. Em vez disso, sobe o Flask normalmente e bloqueia toda rota com
+    um aviso — dá pra equipe do estande ver o motivo e corrigir o JSON.
+    """
+    global _erro_fatal
+    try:
+        _aplicar_config(init_db())
+    except ConfiguracaoInvalida as exc:
+        log.error("Configuração inválida na inicialização: %s", exc)
+        _erro_fatal = str(exc)
     return app
 
 
 if __name__ == "__main__":
-    _aplicar_config(init_db())
+    create_app()
     app.run(host="127.0.0.1", port=5000, debug=True, threaded=True)
