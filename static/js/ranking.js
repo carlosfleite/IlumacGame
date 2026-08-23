@@ -42,15 +42,11 @@
       lista.innerHTML = rows
         .map(function (r) {
           var topClass = r.posicao === 1 ? " top-1" : "";
-          var empresa = r.empresa
-            ? '<p class="ranking-empresa">' + escapeHtml(r.empresa) + "</p>"
-            : "";
           return (
             '<li class="ranking-item' + topClass + '">' +
               '<span class="ranking-pos">' + r.posicao + "º</span>" +
               "<div>" +
                 '<p class="ranking-nome">' + escapeHtml(r.nome) + "</p>" +
-                empresa +
               "</div>" +
               '<div class="ranking-stats">' +
                 '<p class="ranking-pts">' + r.pontuacao + " pts</p>" +

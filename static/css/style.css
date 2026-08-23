@@ -1127,12 +1127,6 @@ body {
   color: var(--tinta);
 }
 
-.ranking-empresa {
-  margin: 4px 0 0;
-  font-size: 0.9rem;
-  color: var(--tinta-fraca);
-}
-
 .ranking-stats { text-align: right; }
 
 .ranking-pts {
