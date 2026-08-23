@@ -120,6 +120,15 @@ CREATE TABLE IF NOT EXISTS quiz_respostas (
 -- O ranking ordena por pontuação desc e tempo asc sobre todas as partidas.
 CREATE INDEX IF NOT EXISTS idx_tentativas_ranking
     ON quiz_tentativas (pontuacao DESC, tempo_total_ms ASC);
+
+-- Ranking e CSV agrupam tentativas por participante (melhor pontuação) e
+-- respostas por tentativa; sem estes índices as duas consultas fazem
+-- table scan completo a cada carregamento.
+CREATE INDEX IF NOT EXISTS idx_tentativas_participante
+    ON quiz_tentativas (participante_id);
+
+CREATE INDEX IF NOT EXISTS idx_respostas_tentativa
+    ON quiz_respostas (tentativa_id);
 """
 
 
@@ -359,6 +368,26 @@ def sincronizar_premios(conn, faixas):
     )
 
 
+def _validar_cobertura_premios(faixas, pontuacao_maxima, incremento):
+    """
+    Não-fatal de propósito: uma lacuna na premiação é erro de conteúdo
+    (alguém mexeu no premios.json e esqueceu uma faixa), não motivo para
+    derrubar o totem. Só avisa no log pra equipe corrigir — quem cair na
+    lacuna simplesmente fica sem prêmio, sem crash.
+    """
+    ativas = [f for f in faixas if f["ativo"]]
+    faltando = [
+        p for p in range(0, pontuacao_maxima + 1, incremento)
+        if not any(f["pontos_min"] <= p <= f["pontos_max"] for f in ativas)
+    ]
+    if faltando:
+        log.error(
+            "premios.json tem lacuna(s) de cobertura: pontuacao(oes) %s nao "
+            "caem em nenhuma faixa ativa. Corrija config/premios.json.",
+            faltando,
+        )
+
+
 def init_db():
     """
     Cria o schema, migra e sincroniza o conteúdo dos JSON.
@@ -400,6 +429,8 @@ def init_db():
             faixas = carregar_premios()
             sincronizar_premios(conn, faixas)
             log.info("premios.json sincronizado: %d faixa(s)", len(faixas))
+            pontuacao_maxima = config["perguntas_por_partida"] * config["pontos_por_acerto"]
+            _validar_cobertura_premios(faixas, pontuacao_maxima, config["pontos_por_acerto"])
         except ConfiguracaoInvalida as exc:
             log.error(
                 "premios.json NAO foi aplicado (%s). "

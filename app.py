@@ -47,8 +47,8 @@ def _erro_json(exc):
 _sessao_lock = threading.Lock()
 _sessoes = {}
 
-# Quem começa o quiz e abandona o totem sem finalizar nunca aciona
-# _limpar_sessao(). Numa feira de 3 dias isso acumula sem teto. Cada nova
+# Quem começa o quiz e abandona o totem sem finalizar nunca limpa a
+# própria sessão. Numa feira de 3 dias isso acumula sem teto. Cada nova
 # tentativa varre e descarta sessões mais velhas que isto — tempo generoso
 # porque uma pessoa parada lendo as perguntas não pode ser confundida com
 # abandono.
@@ -78,11 +78,6 @@ def _aplicar_config(config):
     global PONTOS_POR_ACERTO, QTD_PERGUNTAS
     PONTOS_POR_ACERTO = config["pontos_por_acerto"]
     QTD_PERGUNTAS = config["perguntas_por_partida"]
-
-
-def _limpar_sessao(participante_id):
-    with _sessao_lock:
-        _sessoes.pop(participante_id, None)
 
 
 @app.before_request
@@ -345,12 +340,13 @@ def api_quiz_responder():
       erro   → "Ih, deu ruim!"
     """
     data = request.get_json(silent=True) or {}
-    participante_id = data.get("participante_id")
-    pergunta_id = data.get("pergunta_id")
     resposta_dada = (data.get("resposta_dada") or "").strip().lower()
     tempo_resposta_ms = data.get("tempo_resposta_ms")
 
-    if not participante_id or not pergunta_id:
+    try:
+        participante_id = int(data.get("participante_id"))
+        pergunta_id = int(data.get("pergunta_id"))
+    except (TypeError, ValueError):
         return jsonify({"ok": False, "erro": "Dados incompletos."}), 400
     if resposta_dada not in ("a", "b", "c", "d"):
         return jsonify({"ok": False, "erro": "Resposta inválida."}), 400
@@ -400,32 +396,36 @@ def api_quiz_responder():
 def api_quiz_finalizar():
     """Grava tentativa + respostas, calcula prêmio e limpa sessão."""
     data = request.get_json(silent=True) or {}
-    participante_id = data.get("participante_id")
     pontuacao = data.get("pontuacao")
     tempo_total_ms = data.get("tempo_total_ms")
 
-    if not participante_id:
-        return jsonify({"ok": False, "erro": "participante_id obrigatório."}), 400
     try:
+        participante_id = int(data.get("participante_id"))
         pontuacao = int(pontuacao)
         tempo_total_ms = int(tempo_total_ms)
         if pontuacao < 0 or tempo_total_ms < 0:
             raise ValueError()
     except (TypeError, ValueError):
-        return jsonify({"ok": False, "erro": "pontuacao/tempo inválidos."}), 400
+        return jsonify({"ok": False, "erro": "Dados inválidos."}), 400
 
+    # A sessão é consumida (deletada) aqui dentro do MESMO lock que confirma
+    # que ela existe e está completa — não em dois passos separados. Um
+    # segundo POST concorrente para o mesmo participante (retry de rede,
+    # duplo toque na tela) precisa encontrar a sessão já vazia e cair no
+    # "não iniciada" abaixo, em vez de gravar a mesma tentativa duas vezes
+    # no ranking.
     with _sessao_lock:
         sessao = _sessoes.get(participante_id)
         if not sessao:
             return jsonify({"ok": False, "erro": "Sessão de quiz não iniciada."}), 400
         respostas = list(sessao["respostas"])
         total_perguntas = len(sessao["ordem_ids"])
-
-    if len(respostas) < total_perguntas:
-        return jsonify({
-            "ok": False,
-            "erro": "Quiz incompleto — responda todas as perguntas antes de finalizar.",
-        }), 400
+        if len(respostas) < total_perguntas:
+            return jsonify({
+                "ok": False,
+                "erro": "Quiz incompleto — responda todas as perguntas antes de finalizar.",
+            }), 400
+        del _sessoes[participante_id]
 
     # Recalcula pontuação no servidor (fonte da verdade)
     pontuacao_srv = sum(r["acertou"] for r in respostas) * PONTOS_POR_ACERTO
@@ -468,8 +468,6 @@ def api_quiz_finalizar():
         ).fetchone()
     finally:
         conn.close()
-
-    _limpar_sessao(participante_id)
 
     return jsonify({
         "ok": True,
