@@ -189,7 +189,7 @@
     });
 
     if (primeiroInvalido) {
-      mostrarErro("Confira os campos destacados.");
+      mostrarErro("*Confira os campos destacados.");
       campos[primeiroInvalido].input.focus();
       return;
     }

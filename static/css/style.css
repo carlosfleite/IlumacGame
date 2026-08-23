@@ -374,7 +374,7 @@ body {
   position: absolute;
   left: 50%;
   bottom: 100%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) rotate(180deg);
   width: 30px;
   height: auto;
   margin-bottom: 6px;
@@ -382,8 +382,8 @@ body {
 }
 
 @keyframes seta-aponta {
-  0%, 100% { transform: translate(-50%, 0); }
-  50%      { transform: translate(-50%, calc(var(--px) * 2)); }
+  0%, 100% { transform: translate(-50%, 0) rotate(180deg); }
+  50%      { transform: translate(-50%, calc(var(--px) * 2)) rotate(180deg); }
 }
 
 .abertura-btn {
@@ -547,8 +547,7 @@ body {
   padding: 14px 16px;
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
-  border-left-width: calc(var(--px) * 3);
-  border-left-color: var(--vermelho);
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
   color: var(--erro);
   font-weight: 700;
   font-size: 0.98rem;
@@ -1020,8 +1019,6 @@ body {
   margin: 4px 0 16px;
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
-  border-top-width: calc(var(--px) * 4);
-  border-top-color: var(--vermelho);
   box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
 }
 
@@ -1135,7 +1132,23 @@ body {
   box-shadow: var(--px) var(--px) 0 0 var(--vermelho-noite);
 }
 
-.ranking-item.top-1 { border-left-width: calc(var(--px) * 3); border-left-color: var(--vermelho); }
+.ranking-item.top-1 {
+  position: relative;
+  overflow: hidden;
+}
+
+.ranking-item.top-1::after {
+  content: "TOP";
+  position: absolute;
+  top: 8px;
+  left: -28px;
+  background: var(--vermelho);
+  color: var(--cartao);
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  padding: 2px 32px;
+  transform: rotate(-45deg);
+}
 
 .ranking-pos {
   font-family: var(--font-display);
