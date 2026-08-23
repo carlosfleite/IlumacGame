@@ -491,13 +491,21 @@ def api_quiz_finalizar():
 # pontos, menor tempo. Usada pelo ranking e pela exportação CSV — mantida
 # num só lugar porque é lógica de desempate não trivial e as duas telas
 # precisam concordar sobre quem "ganhou" de quem.
-_SQL_MELHOR_TENTATIVA = """
+#
+# {filtro} decide sobre QUAIS tentativas a "melhor" é calculada: todas
+# (ranking geral / CSV) ou só as de hoje (ranking do dia). Aplicado nas
+# três referências a quiz_tentativas para o desempate ficar coerente —
+# senão a melhor pontuação viria do dia todo, mas o tempo de desempate
+# só do dia de hoje. 'localtime' converte o timestamp (gravado em UTC
+# pelo SQLite) para o fuso do totem antes de comparar a data, porque
+# feira é dia de calendário local, não dia UTC.
+_SQL_MELHOR_TENTATIVA_TMPL = """
     SELECT t.*
-    FROM quiz_tentativas t
+    FROM (SELECT * FROM quiz_tentativas WHERE {filtro}) t
     INNER JOIN (
         SELECT participante_id,
                MAX(pontuacao) AS max_pts
-        FROM quiz_tentativas
+        FROM (SELECT * FROM quiz_tentativas WHERE {filtro})
         GROUP BY participante_id
     ) mp ON mp.participante_id = t.participante_id
         AND mp.max_pts = t.pontuacao
@@ -505,7 +513,7 @@ _SQL_MELHOR_TENTATIVA = """
         SELECT participante_id,
                pontuacao,
                MIN(tempo_total_ms) AS min_tempo
-        FROM quiz_tentativas
+        FROM (SELECT * FROM quiz_tentativas WHERE {filtro})
         GROUP BY participante_id, pontuacao
     ) mt ON mt.participante_id = t.participante_id
         AND mt.pontuacao = t.pontuacao
@@ -513,18 +521,30 @@ _SQL_MELHOR_TENTATIVA = """
     GROUP BY t.participante_id
 """
 
+_FILTRO_GERAL = "1 = 1"
+_FILTRO_HOJE = "date(data_hora, 'localtime') = date('now', 'localtime')"
+
+_SQL_MELHOR_TENTATIVA = _SQL_MELHOR_TENTATIVA_TMPL.format(filtro=_FILTRO_GERAL)
+
 
 @app.route("/api/ranking", methods=["GET"])
 def api_ranking():
     """
     Ranking: pontuação DESC; empate (mesma pontuação) → menor tempo ASC.
     Quem tem pontuações diferentes não compete por tempo.
+
+    ?escopo=dia devolve só as melhores tentativas de hoje; qualquer outro
+    valor (ou ausência do parâmetro) devolve o acumulado dos 3 dias.
     """
     limite = request.args.get("limite", default=20, type=int)
     if limite < 1:
         limite = 20
     if limite > 100:
         limite = 100
+
+    escopo = "dia" if request.args.get("escopo") == "dia" else "geral"
+    filtro = _FILTRO_HOJE if escopo == "dia" else _FILTRO_GERAL
+    sql_melhor = _SQL_MELHOR_TENTATIVA_TMPL.format(filtro=filtro)
 
     conn = get_connection()
     try:
@@ -543,7 +563,7 @@ def api_ranking():
             LEFT JOIN quiz_premios pr ON pr.id = best.premio_id
             ORDER BY best.pontuacao DESC, best.tempo_total_ms ASC
             LIMIT ?
-            """ % _SQL_MELHOR_TENTATIVA,
+            """ % sql_melhor,
             (limite,),
         ).fetchall()
 
@@ -560,7 +580,7 @@ def api_ranking():
     finally:
         conn.close()
 
-    return jsonify({"ok": True, "ranking": ranking})
+    return jsonify({"ok": True, "ranking": ranking, "escopo": escopo})
 
 
 # ---------------------------------------------------------------------------
