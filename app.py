@@ -234,6 +234,44 @@ def api_cadastro():
     return jsonify({"ok": True, "participante_id": participante_id})
 
 
+def _sortear_perguntas(rows, quantidade):
+    """
+    Sorteio estratificado por dificuldade: revezar entre os grupos
+    (iniciante/intermediaria/dificil/geral) embaralhados, em vez de um
+    random.sample() puro sobre o total.
+
+    Um sorteio uniforme, por puro azar, pode devolver 5 perguntas fáceis
+    de vez em quando — aí a fila inteira começa a comparar respostas
+    daquela combinação específica. Revezar os grupos espalha a exposição
+    de forma mais pareja entre o banco inteiro, dificultando decoreba
+    coletiva no estande. A ordem dos grupos também é embaralhada a cada
+    partida, para nenhum grupo ser sistematicamente "o primeiro".
+    """
+    grupos = {}
+    for row in rows:
+        grupos.setdefault(row["dificuldade"] or "geral", []).append(row)
+    for lista in grupos.values():
+        random.shuffle(lista)
+
+    ordem_grupos = list(grupos.keys())
+    random.shuffle(ordem_grupos)
+
+    selecionadas = []
+    indices = {g: 0 for g in ordem_grupos}
+    avancou = True
+    while len(selecionadas) < quantidade and avancou:
+        avancou = False
+        for g in ordem_grupos:
+            if len(selecionadas) >= quantidade:
+                break
+            i = indices[g]
+            if i < len(grupos[g]):
+                selecionadas.append(grupos[g][i])
+                indices[g] = i + 1
+                avancou = True
+    return selecionadas
+
+
 @app.route("/api/quiz/iniciar", methods=["GET"])
 def api_quiz_iniciar():
     """Sorteia 5 perguntas ativas e devolve sem revelar a correta."""
@@ -251,7 +289,7 @@ def api_quiz_iniciar():
 
         rows = conn.execute(
             """
-            SELECT id, texto, alt_a, alt_b, alt_c, alt_d, correta
+            SELECT id, texto, alt_a, alt_b, alt_c, alt_d, correta, dificuldade
             FROM quiz_perguntas
             WHERE ativa = 1
             """
@@ -265,7 +303,7 @@ def api_quiz_iniciar():
             "erro": f"É necessário ter ao menos {QTD_PERGUNTAS} perguntas ativas.",
         }), 500
 
-    selecionadas = random.sample(list(rows), QTD_PERGUNTAS)
+    selecionadas = _sortear_perguntas(rows, QTD_PERGUNTAS)
 
     # Guarda gabarito só no servidor
     gabarito = {}

@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS quiz_perguntas (
     alt_c TEXT NOT NULL,
     alt_d TEXT NOT NULL,
     correta TEXT NOT NULL CHECK (correta IN ('a','b','c','d')),
+    dificuldade TEXT NOT NULL DEFAULT 'geral',
     ativa INTEGER NOT NULL DEFAULT 1
 );
 
@@ -141,6 +142,12 @@ def _migrar(conn):
         conn.execute(
             "UPDATE quiz_perguntas SET chave = 'legado-' || id, ativa = 0 "
             "WHERE chave IS NULL"
+        )
+
+    if "dificuldade" not in _colunas(conn, "quiz_perguntas"):
+        log.info("Migrando quiz_perguntas: adicionando coluna 'dificuldade'")
+        conn.execute(
+            "ALTER TABLE quiz_perguntas ADD COLUMN dificuldade TEXT NOT NULL DEFAULT 'geral'"
         )
 
     if "chave" not in _colunas(conn, "quiz_premios"):
@@ -232,6 +239,7 @@ def carregar_perguntas():
             "alt_c": alts["c"].strip(),
             "alt_d": alts["d"].strip(),
             "correta": correta,
+            "dificuldade": (item.get("dificuldade") or "geral").strip().lower(),
             "ativa": 1 if item.get("ativa", True) else 0,
         })
 
@@ -301,8 +309,8 @@ def sincronizar_perguntas(conn, perguntas):
         conn.execute(
             """
             INSERT INTO quiz_perguntas
-                (chave, texto, alt_a, alt_b, alt_c, alt_d, correta, ativa)
-            VALUES (:chave, :texto, :alt_a, :alt_b, :alt_c, :alt_d, :correta, :ativa)
+                (chave, texto, alt_a, alt_b, alt_c, alt_d, correta, dificuldade, ativa)
+            VALUES (:chave, :texto, :alt_a, :alt_b, :alt_c, :alt_d, :correta, :dificuldade, :ativa)
             ON CONFLICT(chave) DO UPDATE SET
                 texto = excluded.texto,
                 alt_a = excluded.alt_a,
@@ -310,6 +318,7 @@ def sincronizar_perguntas(conn, perguntas):
                 alt_c = excluded.alt_c,
                 alt_d = excluded.alt_d,
                 correta = excluded.correta,
+                dificuldade = excluded.dificuldade,
                 ativa = excluded.ativa
             """,
             p,
