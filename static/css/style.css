@@ -316,22 +316,6 @@ body {
   flex-shrink: 0;
 }
 
-.abertura-seta {
-  position: absolute;
-  left: 50%;
-  bottom: 100%;
-  transform: translateX(-50%) rotate(180deg);
-  width: 30px;
-  height: auto;
-  margin-bottom: 6px;
-  animation: seta-aponta 1s steps(2) infinite;
-}
-
-@keyframes seta-aponta {
-  0%, 100% { transform: translate(-50%, 0) rotate(180deg); }
-  50%      { transform: translate(-50%, calc(var(--px) * 2)) rotate(180deg); }
-}
-
 .abertura-btn {
   display: block;
   text-decoration: none;
@@ -1135,7 +1119,38 @@ body {
   box-shadow: var(--px) var(--px) 0 0 var(--vermelho-noite);
 }
 
-.ranking-item.top-1 { border-left-width: calc(var(--px) * 3); border-left-color: var(--vermelho); }
+.ranking-item.top-1 {
+  position: relative;
+}
+
+/* faixa vermelha reta cobrindo a borda esquerda — sem o corte diagonal do canto */
+.ranking-item.top-1::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--px) * -1);
+  bottom: calc(var(--px) * -1);
+  left: calc(var(--px) * -1);
+  width: calc(var(--px) * 3);
+  background: var(--vermelho);
+  z-index: 1;
+}
+
+/* faixinha "TOP" saindo pro lado, rente à borda de cima */
+.ranking-item.top-1::after {
+  content: "TOP";
+  position: absolute;
+  top: 8px;
+  right: calc(100% + 6px);
+  padding: 4px 8px;
+  background: var(--vermelho);
+  border: var(--px) solid var(--contorno);
+  color: var(--sobre-vermelho);
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  z-index: 2;
+}
 
 .ranking-pos {
   font-family: var(--font-display);
