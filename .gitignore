@@ -22,6 +22,9 @@ PARAR.flag
 export/
 *.csv
 
+# Backups manuais do banco (gerados durante manutenção pontual)
+quiz.db.backup_*
+
 # Sistema operacional
 Thumbs.db
 desktop.ini

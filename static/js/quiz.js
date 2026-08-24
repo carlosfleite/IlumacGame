@@ -159,6 +159,24 @@
     }
   }
 
+  var VOLTAR_MS = 4000; // tempo pra ler a mensagem antes de voltar sozinho
+
+  /**
+   * Erro sem como continuar dali (sessão perdida num restart do watchdog,
+   * banco fora do ar, etc.): mostra o motivo e volta pra abertura sozinho.
+   * Sem isto, um erro de rede deixava o participante preso na tela do
+   * quiz, com os botões desabilitados, até alguém da equipe perceber.
+   */
+  function voltarAoInicio(mensagem) {
+    pararTimer();
+    sessionStorage.removeItem("participante_id");
+    elPergunta.textContent = mensagem;
+    elAlts.innerHTML = "";
+    setTimeout(function () {
+      window.location.replace("/");
+    }, VOLTAR_MS);
+  }
+
   // ---------------------------------------------------------------------
   // Feedback: o mascote entra puxando o card
   // ---------------------------------------------------------------------
@@ -288,11 +306,7 @@
         };
       })
       .catch(function (err) {
-        respondendo = false;
-        elPergunta.textContent = err.message || "Erro local ao responder.";
-        var buttons = elAlts.querySelectorAll(".alt-btn");
-        for (var i = 0; i < buttons.length; i++) buttons[i].disabled = false;
-        iniciarTimer();
+        voltarAoInicio(err.message || "Erro ao registrar resposta.");
       });
   }
 
@@ -316,7 +330,7 @@
         window.location.href = "/resultado";
       })
       .catch(function (err) {
-        elPergunta.textContent = err.message || "Erro ao finalizar o quiz.";
+        voltarAoInicio(err.message || "Erro ao finalizar o quiz.");
       });
   }
 
@@ -337,6 +351,6 @@
       renderPergunta();
     })
     .catch(function (err) {
-      elPergunta.textContent = err.message || "Erro ao carregar o quiz.";
+      voltarAoInicio(err.message || "Erro ao carregar o quiz.");
     });
 })();

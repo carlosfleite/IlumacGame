@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS quiz_perguntas (
     alt_c TEXT NOT NULL,
     alt_d TEXT NOT NULL,
     correta TEXT NOT NULL CHECK (correta IN ('a','b','c','d')),
+    dificuldade TEXT NOT NULL DEFAULT 'geral',
     ativa INTEGER NOT NULL DEFAULT 1
 );
 
@@ -119,6 +120,15 @@ CREATE TABLE IF NOT EXISTS quiz_respostas (
 -- O ranking ordena por pontuação desc e tempo asc sobre todas as partidas.
 CREATE INDEX IF NOT EXISTS idx_tentativas_ranking
     ON quiz_tentativas (pontuacao DESC, tempo_total_ms ASC);
+
+-- Ranking e CSV agrupam tentativas por participante (melhor pontuação) e
+-- respostas por tentativa; sem estes índices as duas consultas fazem
+-- table scan completo a cada carregamento.
+CREATE INDEX IF NOT EXISTS idx_tentativas_participante
+    ON quiz_tentativas (participante_id);
+
+CREATE INDEX IF NOT EXISTS idx_respostas_tentativa
+    ON quiz_respostas (tentativa_id);
 """
 
 
@@ -141,6 +151,12 @@ def _migrar(conn):
         conn.execute(
             "UPDATE quiz_perguntas SET chave = 'legado-' || id, ativa = 0 "
             "WHERE chave IS NULL"
+        )
+
+    if "dificuldade" not in _colunas(conn, "quiz_perguntas"):
+        log.info("Migrando quiz_perguntas: adicionando coluna 'dificuldade'")
+        conn.execute(
+            "ALTER TABLE quiz_perguntas ADD COLUMN dificuldade TEXT NOT NULL DEFAULT 'geral'"
         )
 
     if "chave" not in _colunas(conn, "quiz_premios"):
@@ -232,6 +248,7 @@ def carregar_perguntas():
             "alt_c": alts["c"].strip(),
             "alt_d": alts["d"].strip(),
             "correta": correta,
+            "dificuldade": (item.get("dificuldade") or "geral").strip().lower(),
             "ativa": 1 if item.get("ativa", True) else 0,
         })
 
@@ -301,8 +318,8 @@ def sincronizar_perguntas(conn, perguntas):
         conn.execute(
             """
             INSERT INTO quiz_perguntas
-                (chave, texto, alt_a, alt_b, alt_c, alt_d, correta, ativa)
-            VALUES (:chave, :texto, :alt_a, :alt_b, :alt_c, :alt_d, :correta, :ativa)
+                (chave, texto, alt_a, alt_b, alt_c, alt_d, correta, dificuldade, ativa)
+            VALUES (:chave, :texto, :alt_a, :alt_b, :alt_c, :alt_d, :correta, :dificuldade, :ativa)
             ON CONFLICT(chave) DO UPDATE SET
                 texto = excluded.texto,
                 alt_a = excluded.alt_a,
@@ -310,6 +327,7 @@ def sincronizar_perguntas(conn, perguntas):
                 alt_c = excluded.alt_c,
                 alt_d = excluded.alt_d,
                 correta = excluded.correta,
+                dificuldade = excluded.dificuldade,
                 ativa = excluded.ativa
             """,
             p,
@@ -348,6 +366,26 @@ def sincronizar_premios(conn, faixas):
         "UPDATE quiz_premios SET ativo = 0 WHERE chave NOT IN (%s)" % marcadores,
         chaves,
     )
+
+
+def _validar_cobertura_premios(faixas, pontuacao_maxima, incremento):
+    """
+    Não-fatal de propósito: uma lacuna na premiação é erro de conteúdo
+    (alguém mexeu no premios.json e esqueceu uma faixa), não motivo para
+    derrubar o totem. Só avisa no log pra equipe corrigir — quem cair na
+    lacuna simplesmente fica sem prêmio, sem crash.
+    """
+    ativas = [f for f in faixas if f["ativo"]]
+    faltando = [
+        p for p in range(0, pontuacao_maxima + 1, incremento)
+        if not any(f["pontos_min"] <= p <= f["pontos_max"] for f in ativas)
+    ]
+    if faltando:
+        log.error(
+            "premios.json tem lacuna(s) de cobertura: pontuacao(oes) %s nao "
+            "caem em nenhuma faixa ativa. Corrija config/premios.json.",
+            faltando,
+        )
 
 
 def init_db():
@@ -391,6 +429,8 @@ def init_db():
             faixas = carregar_premios()
             sincronizar_premios(conn, faixas)
             log.info("premios.json sincronizado: %d faixa(s)", len(faixas))
+            pontuacao_maxima = config["perguntas_por_partida"] * config["pontos_por_acerto"]
+            _validar_cobertura_premios(faixas, pontuacao_maxima, config["pontos_por_acerto"])
         except ConfiguracaoInvalida as exc:
             log.error(
                 "premios.json NAO foi aplicado (%s). "
@@ -427,6 +467,53 @@ def buscar_premio_por_pontos(conn, pontuacao):
         (pontuacao, pontuacao),
     ).fetchone()
     return row
+
+
+# ---------------------------------------------------------------------------
+# Melhor tentativa por participante
+# ---------------------------------------------------------------------------
+
+# Usada pelo ranking (dia e geral) e pelas exportações do painel admin —
+# mantida num só lugar porque é lógica de desempate não trivial (maior
+# pontuação; empate → menor tempo) e todo mundo que "quem ganhou de quem"
+# precisa concordar.
+#
+# {filtro} decide sobre QUAIS tentativas a "melhor" é calculada: todas ou
+# só as de hoje. Aplicado nas três referências a quiz_tentativas para o
+# desempate ficar coerente — senão a melhor pontuação viria do período
+# todo, mas o tempo de desempate só de uma fatia dele. 'localtime'
+# converte o timestamp (gravado em UTC pelo SQLite) para o fuso do totem
+# antes de comparar a data, porque dia de feira é dia de calendário
+# local, não dia UTC.
+FILTRO_TENTATIVAS_GERAL = "1 = 1"
+FILTRO_TENTATIVAS_HOJE = "date(data_hora, 'localtime') = date('now', 'localtime')"
+
+_SQL_MELHOR_TENTATIVA_TMPL = """
+    SELECT t.*
+    FROM (SELECT * FROM quiz_tentativas WHERE {filtro}) t
+    INNER JOIN (
+        SELECT participante_id,
+               MAX(pontuacao) AS max_pts
+        FROM (SELECT * FROM quiz_tentativas WHERE {filtro})
+        GROUP BY participante_id
+    ) mp ON mp.participante_id = t.participante_id
+        AND mp.max_pts = t.pontuacao
+    INNER JOIN (
+        SELECT participante_id,
+               pontuacao,
+               MIN(tempo_total_ms) AS min_tempo
+        FROM (SELECT * FROM quiz_tentativas WHERE {filtro})
+        GROUP BY participante_id, pontuacao
+    ) mt ON mt.participante_id = t.participante_id
+        AND mt.pontuacao = t.pontuacao
+        AND mt.min_tempo = t.tempo_total_ms
+    GROUP BY t.participante_id
+"""
+
+
+def sql_melhor_tentativa(filtro=FILTRO_TENTATIVAS_GERAL):
+    """Devolve a subquery de melhor tentativa por participante, pronta pra usar num FROM/JOIN."""
+    return _SQL_MELHOR_TENTATIVA_TMPL.format(filtro=filtro)
 
 
 if __name__ == "__main__":

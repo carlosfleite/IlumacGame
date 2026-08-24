@@ -1,2 +1,4 @@
 flask>=3.0,<4
 pywebview>=5.0,<6
+openpyxl>=3.1,<4
+fpdf2>=2.7,<3

@@ -9,12 +9,29 @@
     "  comecar: e por ela que o historico de respostas se liga a pergunta.",
     "- 'correta' aceita apenas: a, b, c ou d.",
     "- 'ativa': false tira a pergunta do sorteio sem apagar o historico dela.",
+    "- 'dificuldade' (iniciante/intermediaria/dificil) entra no sorteio: o",
+    "  totem revezar entre os grupos de dificuldade em vez de sortear puro",
+    "  do total, pra nao sair uma partida so de perguntas faceis (ou so",
+    "  dificeis) por azar. Pergunta sem 'dificuldade' cai no grupo 'geral'.",
+    "  Nao aparece pro jogador, so influencia quais perguntas saem juntas.",
     "- E preciso ter pelo menos 'perguntas_por_partida' perguntas ativas.",
     "",
-    "REVISAR ANTES DO EVENTO: as perguntas abaixo foram redigidas sobre",
-    "fundamentos de SDAI e categorias de produto da Ilumac. As que citam",
-    "numero de norma tecnica estao marcadas com \"revisar\": true — confirme",
-    "com a equipe tecnica antes da feira."
+    "IMPORTANTE — nao deixe a resposta certa 'aparecer' pelo tamanho: ao",
+    "escrever uma pergunta nova, mantenha as 4 alternativas com comprimento",
+    "parecido. Foi corrigido nesta revisao um problema onde a alternativa",
+    "correta era quase sempre a mais longa/detalhada — deixava facil de",
+    "adivinhar sem saber o conteudo. As erradas devem soar plausiveis",
+    "(pegadinha de verdade: numero trocado com outro produto real, conceito",
+    "invertido, confusao comum), nao so preencher espaco.",
+    "",
+    "REVISAR ANTES DO EVENTO: perguntas marcadas com \"revisar\": true citam",
+    "numero de norma tecnica ou um fato tecnico geral de SDAI que nao foi",
+    "encontrado literalmente no site da Ilumac durante a redacao — confirme",
+    "com a equipe tecnica antes da feira. As demais (produtos, specs de",
+    "central, nomenclatura de detector) foram levantadas em ilumac.com.br",
+    "e nas masterclasses do canal da Ilumac no YouTube em ago/2026; ainda",
+    "assim vale uma conferida rapida, ficha tecnica de produto muda com o",
+    "tempo."
   ],
 
   "pontos_por_acerto": 2,
@@ -37,10 +54,10 @@
       "chave": "central-funcao",
       "texto": "Qual é a função da central de alarme em um SDAI?",
       "alternativas": {
-        "a": "Apenas registrar o histórico de manutenções do prédio",
-        "b": "Supervisionar os dispositivos, processar os sinais e comandar os alarmes",
-        "c": "Substituir o sistema de sprinklers em caso de incêndio",
-        "d": "Controlar a climatização e a iluminação do edifício"
+        "a": "Registrar o histórico de eventos, mas sem processar sinal algum dos dispositivos",
+        "b": "Supervisionar os dispositivos, processar os sinais recebidos e comandar os alarmes",
+        "c": "Substituir integralmente o sistema de sprinklers em qualquer caso de incêndio",
+        "d": "Controlar a climatização e a iluminação do edifício pela mesma rede de cabos"
       },
       "correta": "b",
       "ativa": true
@@ -49,10 +66,10 @@
       "chave": "convencional-vs-enderecavel",
       "texto": "Qual é a principal vantagem de um sistema endereçável sobre um convencional?",
       "alternativas": {
-        "a": "Dispensa o uso de detectores no ambiente",
-        "b": "Funciona sem qualquer alimentação elétrica",
-        "c": "Identifica exatamente qual dispositivo gerou o alarme",
-        "d": "Elimina a necessidade de manutenção periódica"
+        "a": "Dispensar completamente o uso de detectores no ambiente monitorado",
+        "b": "Funcionar de forma plena sem qualquer fonte de alimentação elétrica",
+        "c": "Identificar exatamente qual dispositivo do laço gerou o alarme disparado",
+        "d": "Eliminar por completo a necessidade de manutenção periódica do sistema"
       },
       "correta": "c",
       "ativa": true
@@ -61,10 +78,10 @@
       "chave": "detector-optico-principio",
       "texto": "O detector óptico de fumaça identifica um princípio de incêndio por meio de:",
       "alternativas": {
-        "a": "Partículas de fumaça que dispersam a luz dentro da câmara do sensor",
-        "b": "Aumento da pressão atmosférica no ambiente",
-        "c": "Variação do nível de umidade do piso",
-        "d": "Ruído produzido pelas chamas"
+        "a": "Partículas de fumaça que dispersam um feixe de luz dentro da câmara óptica",
+        "b": "Elevação rápida da temperatura ambiente captada por um termistor interno",
+        "c": "Aumento da concentração de gás combustível medido por sensor eletroquímico",
+        "d": "Vibração sonora de alta frequência produzida pelas chamas do incêndio"
       },
       "correta": "a",
       "ativa": true
@@ -73,10 +90,10 @@
       "chave": "detector-termico-principio",
       "texto": "Um detector térmico atua respondendo principalmente a:",
       "alternativas": {
-        "a": "Presença de gás combustível no ar",
-        "b": "Temperatura fixa ou taxa de elevação da temperatura",
-        "c": "Cor da fumaça gerada pelo material em combustão",
-        "d": "Corrente elétrica consumida pelo circuito"
+        "a": "Dispersão da luz causada pela fumaça dentro de uma câmara óptica",
+        "b": "Temperatura fixa pré-definida ou à taxa de elevação da temperatura",
+        "c": "Concentração de monóxido de carbono liberado durante a combustão",
+        "d": "Interrupção de um feixe infravermelho por partículas suspensas no ar"
       },
       "correta": "b",
       "ativa": true
@@ -85,10 +102,10 @@
       "chave": "detector-linear-aplicacao",
       "texto": "O detector linear de fumaça (feixe óptico) é especialmente indicado para:",
       "alternativas": {
-        "a": "Armários elétricos e espaços muito pequenos",
-        "b": "Áreas externas sem cobertura",
-        "c": "Grandes áreas e ambientes de pé-direito alto, como galpões",
-        "d": "Dutos de ar-condicionado residenciais"
+        "a": "Armários elétricos e ambientes muito pequenos, com pouca distância entre paredes",
+        "b": "Áreas externas totalmente descobertas, sem qualquer proteção contra chuva",
+        "c": "Grandes áreas e ambientes de pé-direito alto, como galpões e depósitos",
+        "d": "Dutos de ar-condicionado residenciais de pequeno diâmetro e baixa vazão"
       },
       "correta": "c",
       "ativa": true
@@ -97,10 +114,10 @@
       "chave": "acionador-manual-funcao",
       "texto": "Para que serve o acionador manual (botoeira) de um SDAI?",
       "alternativas": {
-        "a": "Permitir que uma pessoa dispare o alarme ao perceber o incêndio",
-        "b": "Desligar a energia elétrica de todo o prédio",
-        "c": "Silenciar definitivamente as sirenes do sistema",
-        "d": "Ajustar a sensibilidade dos detectores do ambiente"
+        "a": "Permitir que uma pessoa dispare manualmente o alarme ao perceber o incêndio",
+        "b": "Desligar automaticamente a energia elétrica de todo o prédio protegido",
+        "c": "Silenciar de forma definitiva todas as sirenes instaladas no sistema",
+        "d": "Ajustar remotamente a sensibilidade dos detectores do ambiente monitorado"
       },
       "correta": "a",
       "ativa": true
@@ -109,10 +126,10 @@
       "chave": "isolador-curto-circuito",
       "texto": "Qual é a função do isolador de curto-circuito em um laço endereçável?",
       "alternativas": {
-        "a": "Aumentar o volume sonoro das sirenes do laço",
-        "b": "Isolar o trecho em curto, mantendo o restante do laço em operação",
-        "c": "Converter o laço endereçável em convencional",
-        "d": "Armazenar energia para alimentar a central"
+        "a": "Aumentar o volume sonoro emitido pelas sirenes conectadas ao laço",
+        "b": "Isolar o trecho em curto-circuito, mantendo o restante do laço em operação",
+        "c": "Converter automaticamente o laço endereçável em um laço convencional",
+        "d": "Armazenar energia suficiente para alimentar a central por algumas horas"
       },
       "correta": "b",
       "ativa": true
@@ -121,10 +138,10 @@
       "chave": "modulo-entrada-saida",
       "texto": "Em um sistema endereçável, qual é a diferença entre módulo de entrada e módulo de saída?",
       "alternativas": {
-        "a": "Não há diferença: são nomes comerciais do mesmo produto",
-        "b": "O de entrada alimenta a central e o de saída alimenta os detectores",
-        "c": "O de entrada monitora sinais de outros equipamentos; o de saída comanda dispositivos externos",
-        "d": "O de entrada funciona de dia e o de saída apenas à noite"
+        "a": "Não há diferença real entre os dois: são apenas nomes comerciais do mesmo produto",
+        "b": "O módulo de entrada alimenta a central e o de saída alimenta os detectores",
+        "c": "O de entrada monitora sinais externos; o de saída comanda dispositivos externos",
+        "d": "O módulo de entrada opera durante o dia e o de saída apenas durante a noite"
       },
       "correta": "c",
       "ativa": true
@@ -133,10 +150,10 @@
       "chave": "sirene-audiovisual",
       "texto": "Por que uma sirene audiovisual combina sinal sonoro e sinal visual?",
       "alternativas": {
-        "a": "Para reduzir o consumo de energia do sistema",
-        "b": "Apenas por questão estética do projeto",
-        "c": "Para funcionar como iluminação de emergência do ambiente",
-        "d": "Para alertar também em locais ruidosos e pessoas com deficiência auditiva"
+        "a": "Para reduzir o consumo total de energia elétrica do sistema instalado",
+        "b": "Apenas por uma questão estética prevista no projeto arquitetônico",
+        "c": "Para funcionar também como iluminação de emergência complementar",
+        "d": "Para alertar em locais ruidosos e pessoas com deficiência auditiva"
       },
       "correta": "d",
       "ativa": true
@@ -146,9 +163,9 @@
       "texto": "Qual é a finalidade da iluminação de emergência em uma edificação?",
       "alternativas": {
         "a": "Garantir visibilidade para a saída segura das pessoas na falta de energia",
-        "b": "Substituir a iluminação normal durante a madrugada",
-        "c": "Sinalizar a localização dos extintores durante o dia",
-        "d": "Economizar energia elétrica no horário de pico"
+        "b": "Substituir integralmente a iluminação normal durante toda a madrugada",
+        "c": "Sinalizar a localização exata dos extintores durante o período diurno",
+        "d": "Reduzir o consumo de energia elétrica do prédio no horário de pico"
       },
       "correta": "a",
       "ativa": true
@@ -157,10 +174,10 @@
       "chave": "balizamento-rota-fuga",
       "texto": "O balizamento de rota de fuga tem como objetivo:",
       "alternativas": {
-        "a": "Delimitar as vagas do estacionamento do edifício",
-        "b": "Indicar o caminho a ser seguido até a saída de emergência",
-        "c": "Iluminar as áreas de trabalho fora do expediente",
-        "d": "Marcar o ponto de instalação dos detectores no teto"
+        "a": "Delimitar visualmente as vagas do estacionamento do edifício protegido",
+        "b": "Indicar o caminho a ser seguido até a saída de emergência mais próxima",
+        "c": "Iluminar as áreas de trabalho fora do horário comercial do prédio",
+        "d": "Marcar no piso o ponto exato de instalação dos detectores do teto"
       },
       "correta": "b",
       "ativa": true
@@ -169,10 +186,10 @@
       "chave": "repetidor-wireless",
       "texto": "Em um sistema wireless de detecção, para que serve um repetidor de sinal?",
       "alternativas": {
-        "a": "Aumentar a sensibilidade dos detectores instalados",
-        "b": "Gravar em vídeo o ambiente monitorado",
-        "c": "Estender o alcance da comunicação entre os dispositivos e a central",
-        "d": "Substituir a bateria dos dispositivos automaticamente"
+        "a": "Aumentar a sensibilidade dos detectores já instalados no ambiente",
+        "b": "Gravar em vídeo todo o ambiente monitorado pelo sistema sem fio",
+        "c": "Estender o alcance de comunicação entre dispositivos e a central",
+        "d": "Substituir automaticamente a bateria dos dispositivos conectados"
       },
       "correta": "c",
       "ativa": true
@@ -181,10 +198,10 @@
       "chave": "manutencao-importancia",
       "texto": "Por que a manutenção periódica de um SDAI é indispensável?",
       "alternativas": {
-        "a": "Porque garante que os dispositivos vão funcionar quando forem realmente necessários",
-        "b": "Porque reduz o valor do condomínio do edifício",
-        "c": "Porque dispensa a realização de treinamentos de abandono",
-        "d": "Porque substitui a vistoria do Corpo de Bombeiros"
+        "a": "Garante que os dispositivos vão funcionar quando forem realmente necessários",
+        "b": "Reduz diretamente o valor do condomínio cobrado no edifício monitorado",
+        "c": "Dispensa por completo a realização de treinamentos de abandono do local",
+        "d": "Substitui integralmente a vistoria periódica feita pelo Corpo de Bombeiros"
       },
       "correta": "a",
       "ativa": true
@@ -193,10 +210,10 @@
       "chave": "obstrucao-detector",
       "texto": "Qual destas práticas compromete o funcionamento de um SDAI?",
       "alternativas": {
-        "a": "Realizar testes funcionais programados no sistema",
-        "b": "Cobrir ou obstruir detectores por questão estética ou durante reformas",
-        "c": "Manter o plano de emergência do local atualizado",
-        "d": "Registrar as ocorrências de alarme em relatório"
+        "a": "Realizar testes funcionais programados regularmente no sistema instalado",
+        "b": "Cobrir ou obstruir detectores por estética ou durante uma reforma",
+        "c": "Manter o plano de emergência do local sempre revisado e atualizado",
+        "d": "Registrar em relatório todas as ocorrências de alarme do período"
       },
       "correta": "b",
       "ativa": true
@@ -226,6 +243,470 @@
       "correta": "a",
       "ativa": true,
       "revisar": true
+    },
+
+    {
+      "chave": "sdai-obrigatoriedade",
+      "texto": "SDAI é normalmente exigido principalmente em:",
+      "alternativas": {
+        "a": "Edificações e áreas de risco definidas pela legislação de segurança contra incêndio",
+        "b": "Residências unifamiliares construídas em um único pavimento térreo, sem porão",
+        "c": "Propriedades rurais distantes de qualquer área urbana ou zona industrial",
+        "d": "Embarcações marítimas de grande porte utilizadas apenas em transporte comercial"
+      },
+      "correta": "a",
+      "dificuldade": "iniciante",
+      "ativa": true
+    },
+    {
+      "chave": "deteccao-fumaca-o-que-e",
+      "texto": "De forma simples, o que faz um detector de fumaça?",
+      "alternativas": {
+        "a": "Mede continuamente a umidade relativa do ar dentro do ambiente",
+        "b": "Identifica a presença de fumaça e avisa a central de alarme",
+        "c": "Apaga automaticamente qualquer princípio de incêndio detectado",
+        "d": "Controla remotamente a iluminação geral do ambiente monitorado"
+      },
+      "correta": "b",
+      "dificuldade": "iniciante",
+      "ativa": true
+    },
+    {
+      "chave": "sirene-funcao-basica",
+      "texto": "Qual é a função básica de uma sirene de alarme de incêndio?",
+      "alternativas": {
+        "a": "Resfriar rapidamente o ambiente onde ocorre o princípio de incêndio",
+        "b": "Acionar de forma automática o chuveiro de emergência do ambiente",
+        "c": "Emitir sinal sonoro, e muitas vezes visual, para alertar as pessoas",
+        "d": "Cortar imediatamente a energia elétrica de todo o edifício protegido"
+      },
+      "correta": "c",
+      "dificuldade": "iniciante",
+      "ativa": true
+    },
+    {
+      "chave": "wireless-vantagem-basica",
+      "texto": "Qual é a principal vantagem de um sistema de detecção wireless (sem fio)?",
+      "alternativas": {
+        "a": "Dispensa completamente a manutenção periódica dos dispositivos",
+        "b": "Elimina totalmente a necessidade de uma central de alarme no sistema",
+        "c": "Funciona plenamente sem depender de qualquer fonte de energia",
+        "d": "Reduz a necessidade de cabeamento entre os dispositivos e a central"
+      },
+      "correta": "d",
+      "dificuldade": "iniciante",
+      "ativa": true
+    },
+    {
+      "chave": "deteccao-gas-funcao",
+      "texto": "Para que serve um detector de gás GLP num SDAI?",
+      "alternativas": {
+        "a": "Detectar vazamento de gás liquefeito de petróleo (GLP) no ambiente",
+        "b": "Medir com precisão a temperatura interna do ambiente da cozinha",
+        "c": "Substituir por completo o detector de fumaça em qualquer ambiente",
+        "d": "Funcionar como luminária de emergência durante a falta de energia"
+      },
+      "correta": "a",
+      "dificuldade": "iniciante",
+      "ativa": true
+    },
+    {
+      "chave": "central-coracao-sistema",
+      "texto": "Por que a central de alarme costuma ser chamada de \"coração\" do SDAI?",
+      "alternativas": {
+        "a": "Porque possui, na maioria dos modelos, um formato circular compacto",
+        "b": "Concentra o processamento das informações de todos os dispositivos",
+        "c": "Porque fica obrigatoriamente instalada no térreo de qualquer prédio",
+        "d": "Porque é o único equipamento do sistema ligado à rede elétrica"
+      },
+      "correta": "b",
+      "dificuldade": "iniciante",
+      "ativa": true
+    },
+    {
+      "chave": "acionador-rearmavel",
+      "texto": "O que significa um acionador manual \"rearmável\", como o AMF-E da Ilumac?",
+      "alternativas": {
+        "a": "Só pode ser utilizado uma única vez durante toda a vida útil do produto",
+        "b": "Precisa necessariamente ter o vidro quebrado para poder funcionar",
+        "c": "Pode ser acionado e reposicionado sem quebrar nada, ao contrário do vidro",
+        "d": "Reinicia sozinho toda a central de alarme conectada ao sistema"
+      },
+      "correta": "c",
+      "dificuldade": "iniciante",
+      "ativa": true
+    },
+    {
+      "chave": "deteccao-local-instalacao",
+      "texto": "Detectores de fumaça geralmente NÃO devem ficar instalados:",
+      "alternativas": {
+        "a": "No teto de corredores de circulação com fluxo constante de pessoas",
+        "b": "Em salas de reunião utilizadas com frequência pela equipe",
+        "c": "Em recepções e áreas comuns de acesso ao público em geral",
+        "d": "Próximos a saídas de ar-condicionado, que dispersam a fumaça"
+      },
+      "correta": "d",
+      "dificuldade": "iniciante",
+      "ativa": true
+    },
+    {
+      "chave": "iluminacao-emergencia-quando-liga",
+      "texto": "Quando a iluminação de emergência normalmente entra em ação?",
+      "alternativas": {
+        "a": "Quando falta energia elétrica no ambiente monitorado",
+        "b": "Todas as noites, de forma automática, mesmo com energia normal",
+        "c": "Apenas durante feriados prolongados e finais de semana",
+        "d": "Somente quando alguém aciona manualmente a sirene do sistema"
+      },
+      "correta": "a",
+      "dificuldade": "iniciante",
+      "ativa": true
+    },
+    {
+      "chave": "modulo-saida-exemplo",
+      "texto": "Um módulo de saída endereçável pode, por exemplo:",
+      "alternativas": {
+        "a": "Medir diretamente a concentração de fumaça presente no ambiente",
+        "b": "Acionar um relé para, por exemplo, desligar o ar-condicionado no alarme",
+        "c": "Substituir automaticamente a bateria interna da central de alarme",
+        "d": "Registrar a leitura de temperatura do ambiente monitorado"
+      },
+      "correta": "b",
+      "dificuldade": "iniciante",
+      "revisar": true,
+      "ativa": true
+    },
+    {
+      "chave": "manutencao-causa-falha",
+      "texto": "Segundo as masterclasses da Ilumac, qual é uma das principais causas de falha em detectores?",
+      "alternativas": {
+        "a": "O excesso de iluminação artificial presente no ambiente monitorado",
+        "b": "A cor escolhida para a pintura do teto onde o detector foi instalado",
+        "c": "A sujeira e a poeira acumuladas na câmara sensora do detector",
+        "d": "O tipo de piso instalado no ambiente onde o detector está fixado"
+      },
+      "correta": "c",
+      "dificuldade": "iniciante",
+      "ativa": true
+    },
+    {
+      "chave": "central-log-eventos",
+      "texto": "Para que serve o log de eventos registrado pela central de alarme?",
+      "alternativas": {
+        "a": "Sincronizar automaticamente o horário da central com um servidor externo",
+        "b": "Armazenar as configurações de fábrica originais do equipamento",
+        "c": "Controlar o estoque de peças de reposição disponíveis no depósito",
+        "d": "Guardar o histórico de ocorrências, com data e hora, para consulta"
+      },
+      "correta": "d",
+      "dificuldade": "iniciante",
+      "ativa": true
+    },
+
+    {
+      "chave": "laco-classe-a-b",
+      "texto": "Qual é a diferença entre um laço Classe A e um laço Classe B num sistema endereçável?",
+      "alternativas": {
+        "a": "O laço Classe A tem um caminho de retorno redundante até a central",
+        "b": "Não existe diferença técnica real entre as duas classes de laço",
+        "c": "O laço Classe A é sempre sem fio e o Classe B é sempre cabeado",
+        "d": "O laço Classe B transmite dados numa velocidade maior que o Classe A"
+      },
+      "correta": "a",
+      "dificuldade": "intermediaria",
+      "ativa": true
+    },
+    {
+      "chave": "protocolo-comunicacao-endereco",
+      "texto": "O que um protocolo de comunicação endereçável permite fazer, na prática?",
+      "alternativas": {
+        "a": "Aumentar a velocidade de resposta dos relés de saída do sistema",
+        "b": "Identificar e endereçar cada dispositivo individualmente na rede",
+        "c": "Aumentar a voltagem da rede elétrica geral do prédio monitorado",
+        "d": "Eliminar por completo a necessidade de uma central de alarme"
+      },
+      "correta": "b",
+      "dificuldade": "intermediaria",
+      "ativa": true
+    },
+    {
+      "chave": "central-niveis-acesso",
+      "texto": "Por que uma central de alarme costuma ter diferentes níveis de acesso (usuário, operador, instalador)?",
+      "alternativas": {
+        "a": "Para cobrar valores diferentes de acordo com o perfil de usuário",
+        "b": "Para permitir que a central funcione em diversos idiomas distintos",
+        "c": "Para restringir quem pode alterar as configurações críticas do sistema",
+        "d": "Para permitir o acionamento de sirenes diferentes por nível de acesso"
+      },
+      "correta": "c",
+      "dificuldade": "intermediaria",
+      "ativa": true
+    },
+    {
+      "chave": "optico-fumaca-latente",
+      "texto": "O detector óptico de fumaça costuma ser mais sensível a:",
+      "alternativas": {
+        "a": "Fumaças escuras, produzidas apenas por incêndios já em chamas",
+        "b": "Vapor de água liberado em banheiros e cozinhas do ambiente",
+        "c": "Poeira levantada durante obras de reforma recém concluídas",
+        "d": "Fumaças de combustão lenta, típicas de fogos latentes (smoldering)"
+      },
+      "correta": "d",
+      "dificuldade": "intermediaria",
+      "revisar": true,
+      "ativa": true
+    },
+    {
+      "chave": "cabo-3-vias-ke80",
+      "texto": "Em centrais endereçáveis Ilumac com rede de 3 vias (como a KE-80), esse cabo carrega:",
+      "alternativas": {
+        "a": "Alimentação e comunicação de dados ao mesmo tempo, no mesmo cabo",
+        "b": "Apenas a alimentação elétrica de todos os dispositivos do laço",
+        "c": "Apenas o sinal de acionamento enviado às sirenes do sistema",
+        "d": "Apenas a comunicação de dados, sem transportar energia elétrica"
+      },
+      "correta": "a",
+      "dificuldade": "intermediaria",
+      "ativa": true
+    },
+    {
+      "chave": "supervisor-rs232-quantidade",
+      "texto": "Via saída serial RS232/RS485, um painel supervisor da linha KE-DUAL pode interligar quantas centrais numa mesma sub-rede?",
+      "alternativas": {
+        "a": "Até 2 centrais na mesma sub-rede supervisionada pelo painel",
+        "b": "Até 8 centrais na mesma sub-rede supervisionada pelo painel",
+        "c": "Até 20 centrais na mesma sub-rede supervisionada pelo painel",
+        "d": "Até 100 centrais na mesma sub-rede supervisionada pelo painel"
+      },
+      "correta": "b",
+      "dificuldade": "intermediaria",
+      "ativa": true
+    },
+    {
+      "chave": "lyax-zonas",
+      "texto": "Quantas zonas a central wireless Lyax da Ilumac suporta configurar?",
+      "alternativas": {
+        "a": "Até 8 zonas configuráveis na central",
+        "b": "Até 16 zonas configuráveis na central",
+        "c": "Até 32 zonas configuráveis na central",
+        "d": "Até 64 zonas configuráveis na central"
+      },
+      "correta": "c",
+      "dificuldade": "intermediaria",
+      "ativa": true
+    },
+    {
+      "chave": "lyax-alcance-externo",
+      "texto": "Em ambiente aberto, qual é o alcance aproximado de comunicação sem fio da central Lyax?",
+      "alternativas": {
+        "a": "10 metros de alcance em ambiente aberto",
+        "b": "25 metros de alcance em ambiente aberto",
+        "c": "100 metros de alcance em ambiente aberto",
+        "d": "500 metros de alcance em ambiente aberto"
+      },
+      "correta": "d",
+      "dificuldade": "intermediaria",
+      "ativa": true
+    },
+    {
+      "chave": "me1e-dispositivos-convencionais",
+      "texto": "O módulo de entrada endereçável ME1-E permite conectar quantos dispositivos convencionais a ele?",
+      "alternativas": {
+        "a": "Até 10 dispositivos convencionais conectados ao módulo",
+        "b": "Até 2 dispositivos convencionais conectados ao módulo",
+        "c": "Apenas 1 dispositivo convencional conectado ao módulo",
+        "d": "Uma quantidade ilimitada de dispositivos conectados ao módulo"
+      },
+      "correta": "a",
+      "dificuldade": "intermediaria",
+      "ativa": true
+    },
+    {
+      "chave": "resistor-fim-de-linha",
+      "texto": "Para que serve o resistor de fim de linha (RFL) numa entrada convencional supervisionada?",
+      "alternativas": {
+        "a": "Aumentar a corrente elétrica que circula pelo circuito monitorado",
+        "b": "Permitir que a central detecte rompimento ou curto na fiação",
+        "c": "Reduzir a intensidade luminosa dos LEDs indicadores do dispositivo",
+        "d": "Armazenar energia extra para alimentar a sirene em caso de queda"
+      },
+      "correta": "b",
+      "dificuldade": "intermediaria",
+      "revisar": true,
+      "ativa": true
+    },
+    {
+      "chave": "detector-termico-ip65",
+      "texto": "Detectores térmicos com proteção IP65, como os da linha TDPW da Ilumac, são indicados especialmente para:",
+      "alternativas": {
+        "a": "Escritórios climatizados com ar-condicionado central instalado",
+        "b": "Datacenters mantidos sob temperatura e umidade controladas",
+        "c": "Ambientes com umidade ou jatos de água, como cozinhas industriais",
+        "d": "Elevadores de passageiros instalados em prédios comerciais"
+      },
+      "correta": "c",
+      "dificuldade": "intermediaria",
+      "ativa": true
+    },
+    {
+      "chave": "detector-linear-temperatura-cabo",
+      "texto": "O detector linear de temperatura por cabo sensor, como o DWTC-302, é indicado principalmente para:",
+      "alternativas": {
+        "a": "Ambientes pequenos e totalmente fechados, sem circulação de ar",
+        "b": "Substituir integralmente os acionadores manuais do sistema",
+        "c": "Medir com precisão a umidade relativa do ar do ambiente",
+        "d": "Proteção contínua de áreas extensas, como túneis e correias"
+      },
+      "correta": "d",
+      "dificuldade": "intermediaria",
+      "ativa": true
+    },
+
+    {
+      "chave": "norma-17240-abrangencia",
+      "texto": "A NBR 17240 estabelece principalmente:",
+      "alternativas": {
+        "a": "Requisitos de projeto, instalação, manutenção e operação de SDAI",
+        "b": "Dimensionamento de reservatórios de água potável em edificações",
+        "c": "Normas de acessibilidade obrigatórias em edificações públicas",
+        "d": "Requisitos gerais de instalações elétricas de baixa tensão"
+      },
+      "correta": "a",
+      "dificuldade": "dificil",
+      "revisar": true,
+      "ativa": true
+    },
+    {
+      "chave": "isolador-efeito-sem-protecao",
+      "texto": "Se um laço endereçável não tivesse isoladores de curto-circuito distribuídos, o que poderia acontecer em caso de falha num único ponto?",
+      "alternativas": {
+        "a": "Melhoraria a velocidade de comunicação de todo o laço endereçável",
+        "b": "Um curto num único ponto derrubaria a comunicação de todo o laço",
+        "c": "Aumentaria a autonomia da bateria interna da central de alarme",
+        "d": "Ativaria automaticamente o sistema de sprinklers do ambiente"
+      },
+      "correta": "b",
+      "dificuldade": "dificil",
+      "revisar": true,
+      "ativa": true
+    },
+    {
+      "chave": "classe-a-topologia-retorno",
+      "texto": "Numa topologia de laço Classe A, o que acontece com o cabo depois que ele passa por todos os dispositivos?",
+      "alternativas": {
+        "a": "O cabo termina no último dispositivo da rede, sem qualquer retorno físico",
+        "b": "O cabo se conecta direto à sirene mais próxima, sem passar pela central",
+        "c": "O cabo retorna à central por um caminho físico diferente, criando redundância",
+        "d": "Essa topologia específica não é mais utilizada em sistemas endereçáveis"
+      },
+      "correta": "c",
+      "dificuldade": "dificil",
+      "revisar": true,
+      "ativa": true
+    },
+    {
+      "chave": "lyax-protocolo-tecnologia",
+      "texto": "A central Lyax opera com qual protocolo/tecnologia de comunicação sem fio?",
+      "alternativas": {
+        "a": "Wi-Fi convencional na faixa de 2,4GHz, padrão doméstico",
+        "b": "Bluetooth Low Energy, o mesmo usado em fones sem fio",
+        "c": "Sinal de rádio AM de longo alcance, sem criptografia",
+        "d": "Protocolo IEEE 802.15.4, com tecnologia de rede MiWi-Mesh"
+      },
+      "correta": "d",
+      "dificuldade": "dificil",
+      "ativa": true
+    },
+    {
+      "chave": "lyax-capacidade-dispositivos",
+      "texto": "Quantos dispositivos, no máximo, a central Lyax consegue conectar?",
+      "alternativas": {
+        "a": "Até 250 dispositivos conectados à mesma central",
+        "b": "Até 50 dispositivos conectados à mesma central",
+        "c": "Até 1.000 dispositivos conectados à mesma central",
+        "d": "Até 16 dispositivos conectados à mesma central"
+      },
+      "correta": "a",
+      "dificuldade": "dificil",
+      "ativa": true
+    },
+    {
+      "chave": "manutencao-motivos-masterclass",
+      "texto": "Segundo a masterclass de manutenção da Ilumac, a manutenção periódica do SDAI (orientada pela NBR 17240) é importante principalmente para:",
+      "alternativas": {
+        "a": "Decorar de forma mais organizada o quadro elétrico do prédio",
+        "b": "Reduzir risco de falha em emergência e manter conformidade normativa",
+        "c": "Aumentar o consumo geral de energia elétrica do edifício monitorado",
+        "d": "Substituir totalmente a necessidade de treinar a brigada de incêndio"
+      },
+      "correta": "b",
+      "dificuldade": "dificil",
+      "ativa": true
+    },
+    {
+      "chave": "kedual-flexibilidade-lacos",
+      "texto": "A central KE-DUAL permite operar, no mesmo equipamento, com:",
+      "alternativas": {
+        "a": "Apenas 1 laço Classe B, sem qualquer outra opção disponível",
+        "b": "Apenas comunicação sem fio, sem suporte a laços cabeados",
+        "c": "2 laços Classe B ou 1 laço Classe A, à escolha do instalador",
+        "d": "Apenas laços convencionais, sem qualquer tipo de endereçamento"
+      },
+      "correta": "c",
+      "dificuldade": "dificil",
+      "ativa": true
+    },
+    {
+      "chave": "protocolo-alf500",
+      "texto": "O protocolo de comunicação proprietário utilizado pelos dispositivos endereçáveis compatíveis com a linha KE-DUAL da Ilumac é chamado de:",
+      "alternativas": {
+        "a": "MODBUS-FIRE",
+        "b": "ZigBee-SDAI",
+        "c": "LoRa-Alarm",
+        "d": "ALF-500"
+      },
+      "correta": "d",
+      "dificuldade": "dificil",
+      "ativa": true
+    },
+    {
+      "chave": "detector-nomenclatura-sdo",
+      "texto": "Na nomenclatura de detectores de fumaça da Ilumac, a letra final da sigla (como em SDO-C, SDO-E, SDO-D, SDO-A) diferencia principalmente:",
+      "alternativas": {
+        "a": "O tipo de sistema do detector: convencional, endereçável ou analógico",
+        "b": "A cor de identificação da carcaça externa utilizada no produto",
+        "c": "Apenas o tamanho físico do sensor instalado no ambiente monitorado",
+        "d": "Exclusivamente o preço de fábrica sugerido pelo fabricante do produto"
+      },
+      "correta": "a",
+      "dificuldade": "dificil",
+      "ativa": true
+    },
+    {
+      "chave": "detector-linear-tanda-nome",
+      "texto": "Qual é o nome do detector linear de fumaça por feixe óptico convencional da linha Ilumac?",
+      "alternativas": {
+        "a": "LYAX",
+        "b": "TANDA",
+        "c": "ME1-E",
+        "d": "AMF-E"
+      },
+      "correta": "b",
+      "dificuldade": "dificil",
+      "ativa": true
+    },
+    {
+      "chave": "lyax-memoria-eventos",
+      "texto": "A central Lyax armazena, em memória, até quantos eventos com data e hora?",
+      "alternativas": {
+        "a": "100 eventos armazenados com data e hora",
+        "b": "500 eventos armazenados com data e hora",
+        "c": "5.000 eventos armazenados com data e hora",
+        "d": "50.000 eventos armazenados com data e hora"
+      },
+      "correta": "c",
+      "dificuldade": "dificil",
+      "ativa": true
     }
   ]
 }

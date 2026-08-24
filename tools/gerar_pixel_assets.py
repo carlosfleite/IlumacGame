@@ -376,6 +376,11 @@ def main():
                    os.path.join(DESTINO_SPRITE, "idle.png"),
                    altura=ALTURA_MASCOTE)
 
+    print("Llumaquinho com o trofeu (painel admin):")
+    pixelar_sprite(os.path.join(ORIGEM, "ilumaquinho-trofeu.png"),
+                   os.path.join(DESTINO_SPRITE, "trofeu.png"),
+                   altura=ALTURA_MASCOTE + 40)
+
     print("Llumaquinho triste encostado na Central Lyax:")
     compor_triste_na_lyax(
         os.path.join(ORIGEM, "ilumaquinho-triste.png"),

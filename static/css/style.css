@@ -313,6 +313,23 @@ body {
   width: 100%;
   max-width: 360px;
   margin: 18px auto 0; /* menos vão entre o texto e os botões */
+  flex-shrink: 0;
+}
+
+.abertura-seta {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%) rotate(180deg);
+  width: 30px;
+  height: auto;
+  margin-bottom: 6px;
+  animation: seta-aponta 1s steps(2) infinite;
+}
+
+@keyframes seta-aponta {
+  0%, 100% { transform: translate(-50%, 0) rotate(180deg); }
+  50%      { transform: translate(-50%, calc(var(--px) * 2)) rotate(180deg); }
 }
 
 .abertura-btn {
@@ -1061,6 +1078,34 @@ body {
 }
 
 /* ---- Ranking ---- */
+.ranking-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.ranking-tab {
+  flex: 1;
+  min-height: 56px;
+  padding: 12px 16px;
+  border: var(--px) solid var(--sobre-vermelho);
+  background: transparent;
+  color: var(--sobre-vermelho-medio);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.08s steps(1), color 0.08s steps(1);
+}
+
+.ranking-tab.is-ativa {
+  background: var(--cartao);
+  color: var(--vermelho);
+  border-color: var(--cartao);
+}
+
 .ranking-wrap {
   flex: 1;
   min-height: 0;
@@ -1108,12 +1153,6 @@ body {
   font-weight: 700;
   line-height: 1.25;
   color: var(--tinta);
-}
-
-.ranking-empresa {
-  margin: 4px 0 0;
-  font-size: 0.9rem;
-  color: var(--tinta-fraca);
 }
 
 .ranking-stats { text-align: right; }

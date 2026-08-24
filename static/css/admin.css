@@ -1,0 +1,300 @@
+/* ==========================================================================
+   Painel admin — Quiz SDAI Ilumac.
+
+   Ferramenta de trabalho pro marketing, mas com a cara do jogo: cabeçalho
+   vermelho com o padrão do brasão, título em pixel art e o Ilumaquinho
+   comemorando com o troféu — igual ao resto do totem. A tabela em si
+   continua só em Montserrat: é o "texto corrido" que precisa ser lido com
+   atenção, e Press Start 2P em corpo pequeno vira ruído (mesma regra
+   documentada em style.css). Cartões e botões usam a mesma sombra sólida
+   deslocada e cantos retos do resto da marca.
+   ========================================================================== */
+
+@font-face {
+  font-family: "Press Start 2P";
+  src: url("/static/fonts/pressstart2p.woff2") format("woff2");
+  font-weight: 400;
+  font-display: block;
+}
+@font-face {
+  font-family: "Montserrat";
+  src: url("/static/fonts/montserrat-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Montserrat";
+  src: url("/static/fonts/montserrat-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Montserrat";
+  src: url("/static/fonts/montserrat-700.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --px: 4px;
+  --vermelho: #c31922;
+  --vermelho-escuro: #a5141c;
+  --vermelho-noite: #560a0f;
+  --tinta: #1c1517;
+  --tinta-media: #5d5052;
+  --tinta-fraca: #857779;
+  --papel: #f7f4f3;
+  --cartao: #ffffff;
+  --linha: #e7e0de;
+  --verde: #1f8a4c;
+  --font: "Montserrat", "Segoe UI", Tahoma, sans-serif;
+  --font-pixel: "Press Start 2P", "Courier New", monospace;
+}
+
+* { box-sizing: border-box; }
+
+img { image-rendering: pixelated; image-rendering: crisp-edges; }
+
+body.page-admin {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px 20px;
+  border: var(--px) solid var(--tinta);
+  background: var(--vermelho);
+  color: #fff;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
+  transition: transform 0.08s steps(2), background 0.08s steps(1);
+}
+
+.admin-btn:hover { background: var(--vermelho-escuro); }
+
+.admin-btn:active {
+  transform: translate(var(--px), var(--px));
+  box-shadow: var(--px) var(--px) 0 0 var(--vermelho-noite);
+}
+
+.admin-btn-secundario {
+  background: var(--cartao);
+  color: var(--tinta);
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--linha);
+}
+
+.admin-btn-secundario:hover { background: var(--papel); }
+
+.admin-btn-secundario:active {
+  box-shadow: var(--px) var(--px) 0 0 var(--linha);
+}
+
+/* ---- Cabeçalho ---- */
+
+.admin-topo {
+  position: relative;
+  background-color: var(--vermelho);
+  background-image: url("/static/img/padrao-brasao.svg");
+  background-size: cover;
+  background-position: center center;
+  color: #fff;
+  padding: 20px 28px;
+  border-bottom: var(--px) solid var(--vermelho-noite);
+  overflow: hidden;
+}
+
+.admin-topo-conteudo {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-topo-marca {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-topo-logo { height: 30px; width: auto; flex-shrink: 0; }
+
+.admin-topo-tag {
+  margin: 0 0 6px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.admin-topo h1 {
+  font-family: var(--font-pixel);
+  font-size: clamp(0.85rem, 2vw, 1.1rem);
+  margin: 0;
+  line-height: 1.4;
+  text-transform: uppercase;
+  text-shadow: var(--px) var(--px) 0 var(--vermelho-noite);
+}
+
+.admin-topo-mascote {
+  height: 108px;
+  width: auto;
+  flex-shrink: 0;
+  filter: drop-shadow(calc(var(--px) * 2) calc(var(--px) * 2) 0 var(--vermelho-noite));
+}
+
+/* ---- Corpo ---- */
+
+.admin-corpo {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 28px 48px;
+}
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.admin-stat {
+  background: var(--cartao);
+  border: var(--px) solid var(--tinta);
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-escuro);
+  padding: 16px 18px;
+}
+
+.admin-stat .valor {
+  font-family: var(--font-pixel);
+  font-size: 1.5rem;
+  color: var(--vermelho);
+  line-height: 1.2;
+}
+
+.admin-stat .rotulo {
+  font-size: 0.78rem;
+  color: var(--tinta-fraca);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 8px;
+}
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.admin-exportar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-exportar .admin-btn {
+  width: auto;
+  padding: 10px 18px;
+  font-size: 0.82rem;
+}
+
+.admin-busca {
+  flex: 1;
+  min-width: 220px;
+  max-width: 320px;
+  padding: 12px 14px;
+  border: var(--px) solid var(--tinta);
+  background: var(--cartao);
+  font-family: var(--font);
+  font-size: 0.88rem;
+}
+
+.admin-busca:focus { outline: none; border-color: var(--vermelho); }
+
+.admin-tabela-wrap {
+  background: var(--cartao);
+  border: var(--px) solid var(--tinta);
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--linha);
+  overflow: auto;
+}
+
+.admin-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+
+.admin-tabela th {
+  text-align: left;
+  padding: 12px 14px;
+  background: var(--tinta);
+  color: #fff;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  position: sticky;
+  top: 0;
+}
+
+.admin-tabela td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--linha);
+  color: var(--tinta);
+}
+
+.admin-tabela tbody tr:hover { background: var(--papel); }
+.admin-tabela tbody tr:last-child td { border-bottom: none; }
+
+.admin-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border: 1px solid transparent;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.admin-pill-sim { background: #e7f6ed; color: var(--verde); border-color: #bfe6cf; }
+.admin-pill-nao { background: #f3ecec; color: var(--tinta-fraca); border-color: var(--linha); }
+
+.admin-vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 20px;
+  color: var(--tinta-fraca);
+  text-align: center;
+}
+
+.admin-vazio img { height: 96px; width: auto; }
+
+@media (max-width: 640px) {
+  .admin-corpo { padding: 16px; }
+  .admin-topo { padding: 16px; }
+  .admin-topo-mascote { height: 76px; }
+  .admin-toolbar { flex-direction: column; align-items: stretch; }
+  .admin-busca { max-width: none; }
+}

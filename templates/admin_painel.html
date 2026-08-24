@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel admin — Quiz SDAI Ilumac</title>
+  <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body class="page-admin">
+  <div class="admin-topo">
+    <div class="admin-topo-conteudo">
+      <div class="admin-topo-marca">
+        <img class="admin-topo-logo" src="/static/img/logo-ilumac-branco.svg" alt="Ilumac">
+        <div>
+          <p class="admin-topo-tag">Fire Show 2026</p>
+          <h1>Painel do Marketing</h1>
+        </div>
+      </div>
+      <img class="admin-topo-mascote" src="/static/img/ilumaquinho/trofeu.png" alt="Ilumaquinho comemorando com o troféu">
+    </div>
+  </div>
+
+  <div class="admin-corpo">
+    <div class="admin-stats">
+      <div class="admin-stat">
+        <div class="valor">{{ total }}</div>
+        <div class="rotulo">Cadastros</div>
+      </div>
+      <div class="admin-stat">
+        <div class="valor">{{ jogaram }}</div>
+        <div class="rotulo">Jogaram o quiz</div>
+      </div>
+      <div class="admin-stat">
+        <div class="valor">{{ consentiram }}</div>
+        <div class="rotulo">Consentiram LGPD</div>
+      </div>
+    </div>
+
+    <div class="admin-toolbar">
+      <input class="admin-busca" type="text" id="busca" placeholder="Buscar por nome, e-mail ou telefone…">
+      <div class="admin-exportar">
+        <a class="admin-btn" href="/admin/exportar/participantes.xlsx">Excel</a>
+        <a class="admin-btn admin-btn-secundario" href="/admin/exportar/participantes.pdf">PDF</a>
+        <a class="admin-btn admin-btn-secundario" href="/admin/exportar/participantes.csv">CSV</a>
+      </div>
+    </div>
+
+    <div class="admin-tabela-wrap">
+      {% if participantes %}
+        <table class="admin-tabela">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Telefone</th>
+              <th>E-mail</th>
+              <th>Cadastro</th>
+              <th>LGPD</th>
+              <th>Pontos</th>
+              <th>Tempo</th>
+              <th>Prêmio</th>
+              <th>Jogou</th>
+            </tr>
+          </thead>
+          <tbody id="corpo-tabela">
+            {% for p in participantes %}
+            <tr>
+              <td>{{ p.nome }}</td>
+              <td>{{ p.telefone }}</td>
+              <td>{{ p.email }}</td>
+              <td>{{ p.data_cadastro }}</td>
+              <td>
+                <span class="admin-pill {{ 'admin-pill-sim' if p.consentimento else 'admin-pill-nao' }}">
+                  {{ 'Sim' if p.consentimento else 'Não' }}
+                </span>
+              </td>
+              <td>{{ p.pontuacao if p.pontuacao is not none else '—' }}</td>
+              <td>{{ p.tempo or '—' }}</td>
+              <td>{{ p.premio or '—' }}</td>
+              <td>
+                <span class="admin-pill {{ 'admin-pill-sim' if p.jogou else 'admin-pill-nao' }}">
+                  {{ 'Sim' if p.jogou else 'Não' }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="admin-vazio">
+          <img src="/static/img/ilumaquinho/idle.png" alt="">
+          <p>Nenhum cadastro ainda.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <script src="/static/js/admin.js"></script>
+</body>
+</html>

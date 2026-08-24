@@ -48,21 +48,23 @@ O banco (`quiz.db`) nunca deve ser apagado durante o evento — ele guarda os ca
 
 1. Abertura (tela de repouso do totem) → 2. Cadastro (LGPD obrigatório) → 3. Regras → 4. Quiz (5 perguntas) → 5. Resultado → 6. Ranking → volta pra Abertura
 
-## Exportar os dados (pós-feira)
+## Painel do marketing (pós-feira)
 
 Com o totem ligado, conecte o teclado/mouse wireless e abra no navegador:
 
 ```
-http://127.0.0.1:5000/admin/exportar/participantes.csv
+http://127.0.0.1:5000/admin
 ```
 
-Baixa um CSV com todos os cadastros — inclusive de quem se cadastrou mas
-não terminou o quiz, porque para captação a lista de leads importa
-inteira. Uma linha por participante: dados de contato, consentimento
-LGPD, melhor pontuação, tempo e prêmio ganho (se houver).
+Tabela com todos os cadastros — inclusive de quem se cadastrou mas não
+terminou o quiz, porque para captação a lista de leads importa inteira
+— e botões para exportar em **Excel**, **PDF** ou **CSV**. Cada linha
+traz o que o marketing precisa pra entrar em contato: nome, telefone,
+e-mail, consentimento LGPD, data de cadastro, melhor pontuação, tempo e
+prêmio ganho (se houver). Tem uma busca simples por nome/e-mail/telefone
+acima da tabela.
 
-Abre direto no Excel em português sem passar pelo assistente de
-importação (delimitador `;` e acentuação em UTF-8 com BOM). Não fica
-linkado em nenhuma tela do jogo — é só para a equipe. Como o `run.py`
-sobe o Flask apenas em `127.0.0.1`, esse endereço não é alcançável de
-fora da própria máquina do totem.
+Sem senha de propósito: não fica linkado em nenhuma tela do jogo, e
+como o `run.py` sobe o Flask apenas em `127.0.0.1`, esse endereço não é
+alcançável de fora da própria máquina do totem — só quem está sentado
+nela (ou sabe o endereço) abre.
