@@ -220,9 +220,9 @@ body {
 
 .brand-eyebrow {
   margin: 0 0 14px;
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 0.75rem;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.70rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--sobre-vermelho-medio);
@@ -282,125 +282,108 @@ body {
 .abertura-eyebrow,
 .abertura-sub {
   text-align: center;
+  line-height: 1.6
 }
 
 .abertura-titulo {
   text-align: center;
+  margin-bottom: 15px;
+  font-size: 35px;
 }
 
 .abertura-sub {
   max-width: 52ch;
 }
 
-/* Palco: mascote grande no centro, decorações flutuando ao redor. Tudo
-   posicionado em torno do próprio mascote (position relative nele), então
-   a composição inteira escala junto no media query do totem. */
-.abertura-palco {
-  --palco-h: 240px;
-  position: relative;
+.abertura-imagem {
+  display: block;
   width: 100%;
-  flex: 1;
-  min-height: 0;
+  max-width: 500px;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* ---- botões ---- */
+.abertura-botoes {
+  position: relative; /* referência para as estrelas */
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  margin: 12px 0;
-}
-
-.abertura-mascote {
-  width: calc(var(--palco-h) * 113 / 128);
-  height: var(--palco-h);
-  background-image: url("/static/img/ilumaquinho/idle.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center bottom;
-  /* respiração sutil: chama atenção de longe sem parecer nervoso */
-  animation: mascote-respira 1.6s steps(2) infinite;
-}
-
-@keyframes mascote-respira {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(calc(var(--px) * -2)); }
-}
-
-.abertura-estrela {
-  position: absolute;
-  width: 44px;
-  height: auto;
-  animation: estrela-brilha 1.8s steps(1) infinite;
-}
-
-.abertura-estrela-1 {
-  top: 6%;
-  left: 12%;
-  animation-delay: 0s;
-}
-
-.abertura-estrela-2 {
-  top: 14%;
-  right: 14%;
-  width: 34px;
-  animation-delay: 0.6s;
-}
-
-@keyframes estrela-brilha {
-  0%, 40%  { opacity: 1; }
-  50%      { opacity: 0.35; }
-  60%, 100% { opacity: 1; }
-}
-
-.abertura-balao {
-  position: absolute;
-  top: 2%;
-  right: 4%;
-  width: 128px;
-  height: auto;
-  animation: balao-flutua 2.4s steps(4) infinite;
-}
-
-@keyframes balao-flutua {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(calc(var(--px) * -1)); }
-}
-
-.abertura-cta {
-  position: relative;
+  gap: 14px;
   width: 100%;
-  flex-shrink: 0;
-  padding-top: 8px;
-}
-
-.abertura-seta {
-  position: absolute;
-  left: 50%;
-  bottom: 100%;
-  transform: translateX(-50%) rotate(180deg);
-  width: 30px;
-  height: auto;
-  margin-bottom: 6px;
-  animation: seta-aponta 1s steps(2) infinite;
-}
-
-@keyframes seta-aponta {
-  0%, 100% { transform: translate(-50%, 0) rotate(180deg); }
-  50%      { transform: translate(-50%, calc(var(--px) * 2)) rotate(180deg); }
+  max-width: 360px;
+  margin: 18px auto 0; /* menos vão entre o texto e os botões */
 }
 
 .abertura-btn {
+  display: block;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.abertura-btn-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none; /* clique sempre pega no <a>, não na img */
+}
+
+/* JOGAR maior, é a ação principal */
+.abertura-btn--jogar {
+  width: 100%;
+  max-width: 340px;
   animation: cta-respira 1.6s steps(2) infinite;
 }
 
-/* A animação usa transform (scale) e o :active de .btn também usa transform
-   (translate) para o feedback do toque — uma sobrescreveria a outra.
-   Desliga a respiração enquanto o dedo está na tela, senão o toque não
-   parece "encostar". */
-.abertura-btn:active {
+.abertura-btn--jogar:active {
   animation: none;
+}
+
+/* RANKING um pouco menor */
+.abertura-btn--ranking {
+  width: 82%;
+  max-width: 280px;
 }
 
 @keyframes cta-respira {
   0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.015); }
+  50%      { transform: scale(1.04); }
+}
+
+/* ---- estrelas flutuando em volta dos botões ---- */
+.estrela {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  animation: estrela-flutua 3s ease-in-out infinite;
+}
+
+.estrela-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: estrela-brilha 2.4s ease-in-out infinite;
+}
+
+.estrela-1 { top: -14px;   left: -28px;  width: 20px; animation-duration: 3.2s; }
+.estrela-2 { top: 4px;     right: -32px; width: 16px; animation-duration: 2.6s; animation-direction: reverse; }
+.estrela-3 { top: 50%;     left: -100px;  width: 14px; animation-duration: 3.6s; animation-delay: .6s; }
+.estrela-4 { top: 46%;     right: -100px; width: 22px; animation-duration: 3s;   animation-delay: .3s; animation-direction: reverse; }
+.estrela-5 { bottom: 10px; left: -22px;  width: 16px; animation-duration: 2.8s; animation-delay: .9s; }
+.estrela-6 { bottom: -12px; right: -50px; width: 20px; animation-duration: 3.4s; animation-delay: .2s; animation-direction: reverse; }
+
+.estrela-1 .estrela-img,
+.estrela-3 .estrela-img,
+.estrela-5 .estrela-img { animation-delay: .3s; }
+
+@keyframes estrela-flutua {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50%      { transform: translate(4px, -10px) rotate(15deg); }
+}
+
+@keyframes estrela-brilha {
+  0%, 100% { opacity: .5;  transform: scale(.85); }
+  50%      { opacity: 1;   transform: scale(1.1); }
 }
 
 /* ---- Botões ---- */
@@ -547,7 +530,8 @@ body {
   padding: 14px 16px;
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
+  border-left-width: calc(var(--px) * 3);
+  border-left-color: var(--vermelho);
   color: var(--erro);
   font-weight: 700;
   font-size: 0.98rem;
@@ -1019,6 +1003,8 @@ body {
   margin: 4px 0 16px;
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
+  border-top-width: calc(var(--px) * 4);
+  border-top-color: var(--vermelho);
   box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
 }
 
@@ -1104,23 +1090,7 @@ body {
   box-shadow: var(--px) var(--px) 0 0 var(--vermelho-noite);
 }
 
-.ranking-item.top-1 {
-  position: relative;
-  overflow: hidden;
-}
-
-.ranking-item.top-1::after {
-  content: "TOP";
-  position: absolute;
-  top: 8px;
-  left: -28px;
-  background: var(--vermelho);
-  color: var(--cartao);
-  font-family: var(--font-display);
-  font-size: 0.65rem;
-  padding: 2px 32px;
-  transform: rotate(-45deg);
-}
+.ranking-item.top-1 { border-left-width: calc(var(--px) * 3); border-left-color: var(--vermelho); }
 
 .ranking-pos {
   font-family: var(--font-display);
