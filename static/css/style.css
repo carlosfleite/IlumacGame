@@ -420,7 +420,7 @@ body {
   font-family: var(--font-display);
   font-size: 1.5rem;
   line-height: 1;
-  color: var(--fogo-medio);
+  color: var(--sobre-vermelho);
   text-shadow: var(--px) var(--px) 0 var(--vermelho-noite);
 }
 
@@ -456,14 +456,15 @@ body {
   background-position: center bottom;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  animation: mascote-respira 0.9s steps(2) infinite;
+  animation: mascote-respira 1.6s ease-in-out infinite;
 }
 
-/* Sobe 1 pixel da grade e volta: o suficiente para o olho perceber vida
-   de longe, sem custo de repaint. */
+/* Sobe e desce suavemente: como não troca de quadro de sprite (é uma
+   translação da mesma imagem), steps() aqui só produzia um "tic" solto
+   a cada ~450ms — trocado por ease-in-out. */
 @keyframes mascote-respira {
   0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(calc(var(--px) * -1)); }
+  50%      { transform: translateY(calc(var(--px) * -1.5)); }
 }
 
 .chamada-fala {
@@ -1250,7 +1251,7 @@ body {
   background-position: center bottom;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  animation: mascote-respira 0.9s steps(2) infinite;
+  animation: mascote-respira 1.6s ease-in-out infinite;
 }
 
 .resultado-label {
