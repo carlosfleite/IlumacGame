@@ -14,43 +14,47 @@
         <span class="brand-divider" aria-hidden="true"></span>
         <img class="brand-logo-fs" src="/static/img/logo-fireshow-branco.png" alt="Fire Show 2026">
       </div>
-      <span class="tag">Regras</span>
+      <span class="tag">Passo 2 de 3</span>
     </div>
 
-    <header class="brand-header">
-      <p class="brand-eyebrow">Fire Show 2026 · Stand D73/D124</p>
-      <h1 class="brand-title">Como jogar</h1>
-    </header>
+    <main class="palco palco-regras">
+      <header class="brand-header">
+        <p class="brand-eyebrow">Fire Show 2026 · Stand D73/D124</p>
+        <h1 class="brand-title">Como jogar</h1>
+      </header>
 
-    <ul class="regras-grade">
-      <li class="regras-card">
-        <span class="regras-num">01</span>
-        <strong>5 perguntas</strong>
-        <p>Sorteadas do banco SDAI — sem repetir na mesma partida.</p>
-      </li>
-      <li class="regras-card">
-        <span class="regras-num">02</span>
-        <strong>2 pontos por acerto</strong>
-        <p>Cada acerto acende um bloco da barra de fogo. Máximo: 10 pontos.</p>
-      </li>
-      <li class="regras-card">
-        <span class="regras-num">03</span>
-        <strong>Cronômetro ligado</strong>
-        <p>O tempo total aparece no topo e corre enquanto você responde.</p>
-      </li>
-      <li class="regras-card">
-        <span class="regras-num">04</span>
-        <strong>Desempate por tempo</strong>
-        <p>Mesma pontuação? Ganha quem respondeu mais rápido.</p>
-      </li>
-    </ul>
+      <ul class="regras-grade">
+        <li class="regras-card">
+          <span class="regras-num">01</span>
+          <strong>5 perguntas</strong>
+          <p>Sorteadas do banco SDAI — sem repetir na mesma partida.</p>
+        </li>
+        <li class="regras-card">
+          <span class="regras-num">02</span>
+          <strong>2 pontos por acerto</strong>
+          <p>Cada acerto acende um bloco da barra de fogo. Máximo: 10 pontos.</p>
+        </li>
+        <li class="regras-card">
+          <span class="regras-num">03</span>
+          <strong>Cronômetro ligado</strong>
+          <p>O tempo total aparece no topo e corre enquanto você responde.</p>
+        </li>
+        <li class="regras-card">
+          <span class="regras-num">04</span>
+          <strong>Desempate por tempo</strong>
+          <p>Mesma pontuação? Ganha quem respondeu mais rápido.</p>
+        </li>
+      </ul>
+    </main>
 
     {# href real: se o pid não vier na URL, o script abaixo completa pelo
        sessionStorage. Assim o botão funciona mesmo sem JS. #}
-    <a class="btn btn-primary btn-block" id="btn-iniciar"
-       href="/quiz{% if pid %}?pid={{ pid }}{% endif %}">
-      Começar o quiz
-    </a>
+    <footer class="rodape">
+      <a class="btn btn-primary btn-block" id="btn-iniciar"
+         href="/quiz{% if pid %}?pid={{ pid }}{% endif %}">
+        Começar o quiz
+      </a>
+    </footer>
   </div>
 
   <script src="/static/js/kiosk.js"></script>

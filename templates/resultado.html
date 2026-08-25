@@ -17,34 +17,40 @@
       <span class="tag">Resultado</span>
     </div>
 
-    <header class="brand-header">
-      <p class="brand-eyebrow">Quiz concluído</p>
-      <h1 class="brand-title">RESULTADO</h1>
-      <p class="brand-sub" id="resultado-nome">—</p>
-    </header>
+    <main class="palco palco-resultado">
+      <header class="brand-header">
+        <p class="brand-eyebrow">Quiz concluído</p>
+        <h1 class="brand-title" id="resultado-nome">—</h1>
+      </header>
 
-    <div class="resultado-score">
-      <p class="resultado-label">Pontuação</p>
-      <p class="resultado-pontos" id="resultado-pontos">0</p>
-      <p class="resultado-max">de 10</p>
-    </div>
-
-    <div class="resultado-grid">
-      <div>
-        <p class="resultado-label">Tempo total</p>
-        <p class="resultado-dado" id="resultado-tempo">00:00</p>
+      <!-- Placar + mascote lado a lado: o número sozinho deixava metade da
+           largura vazia numa tela de 1080. -->
+      <div class="resultado-score">
+        <div class="resultado-score-num">
+          <p class="resultado-label">Pontuação</p>
+          <p class="resultado-pontos" id="resultado-pontos">0</p>
+          <p class="resultado-max">de 10 pontos</p>
+        </div>
+        <div class="resultado-mascote" role="img" aria-label="Ilumaquinho com troféu"></div>
       </div>
-      <div>
-        <p class="resultado-label">Seu prêmio</p>
-        <p class="resultado-dado" id="resultado-premio">—</p>
-        <p class="resultado-desc" id="resultado-premio-desc"></p>
-      </div>
-    </div>
 
-    <div class="btn-stack">
-      <a class="btn btn-primary btn-block" href="/ranking">Ver ranking</a>
-      <a class="btn btn-ghost btn-block" href="/" id="btn-novo">Novo participante</a>
-    </div>
+      <div class="resultado-grid">
+        <div>
+          <p class="resultado-label">Tempo total</p>
+          <p class="resultado-dado" id="resultado-tempo">00:00</p>
+        </div>
+        <div>
+          <p class="resultado-label">Seu prêmio</p>
+          <p class="resultado-dado" id="resultado-premio">—</p>
+          <p class="resultado-desc" id="resultado-premio-desc"></p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="rodape rodape-duplo">
+      <a class="btn btn-primary" href="/ranking">Ver ranking</a>
+      <a class="btn btn-ghost" href="/" id="btn-novo">Novo participante</a>
+    </footer>
   </div>
 
   <script src="/static/js/kiosk.js"></script>

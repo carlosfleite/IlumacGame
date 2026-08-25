@@ -7,62 +7,75 @@
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body class="page-cadastro" data-kiosk-timeout="90">
-  <div class="screen">
+  <div class="screen screen-cadastro">
     <div class="topbar">
       <div class="brand-lockup">
         <img class="brand-logo" src="/static/img/logo-ilumac-branco.svg" alt="Ilumac">
         <span class="brand-divider" aria-hidden="true"></span>
         <img class="brand-logo-fs" src="/static/img/logo-fireshow-branco.png" alt="Fire Show 2026">
       </div>
-      <span class="tag">Cadastro</span>
+      <span class="tag">Passo 1 de 3</span>
     </div>
 
-    <header class="brand-header">
-      <p class="brand-eyebrow">Fire Show 2026 · Stand D73/D124</p>
-      <h1 class="brand-title">Quiz SDAI</h1>
-      <p class="brand-sub">Cadastre-se para jogar</p>
-    </header>
+    <main class="palco palco-cadastro">
+      <header class="brand-header">
+        <p class="brand-eyebrow">Fire Show 2026 · Stand D73/D124</p>
+        <h1 class="brand-title">Cadastro</h1>
+        <p class="brand-sub">Seus dados entram no ranking e valem o prêmio no stand.</p>
+      </header>
 
-    <form id="form-cadastro" class="form-cadastro" novalidate>
-      <label class="field" id="campo-nome">
-        <span>Nome completo *</span>
-        <input type="text" name="nome" id="nome" required autocomplete="name"
-               enterkeyhint="next" placeholder="Nome e sobrenome"
-               autocapitalize="words" maxlength="80">
-        <span class="dica" id="dica-nome" hidden></span>
-      </label>
+      <form id="form-cadastro" class="form-cadastro" novalidate>
+        <div class="form-campos">
+          <label class="field" id="campo-nome">
+            <span>Nome completo *</span>
+            <input type="text" name="nome" id="nome" required autocomplete="name"
+                   enterkeyhint="next" placeholder="Nome e sobrenome"
+                   autocapitalize="words" maxlength="80">
+            <span class="dica" id="dica-nome" hidden></span>
+          </label>
 
-      <label class="field" id="campo-telefone">
-        <span>Telefone *</span>
-        <input type="tel" name="telefone" id="telefone" required autocomplete="tel"
-               enterkeyhint="next" inputmode="numeric" placeholder="(00) 00000-0000"
-               maxlength="15">
-        <span class="dica" id="dica-telefone" hidden></span>
-      </label>
+          <label class="field" id="campo-telefone">
+            <span>Telefone *</span>
+            <input type="tel" name="telefone" id="telefone" required autocomplete="tel"
+                   enterkeyhint="next" inputmode="numeric" placeholder="(00) 00000-0000"
+                   maxlength="15">
+            <span class="dica" id="dica-telefone" hidden></span>
+          </label>
 
-      <label class="field" id="campo-email">
-        <span>E-mail *</span>
-        <input type="email" name="email" id="email" required autocomplete="email"
-               enterkeyhint="done" inputmode="email" placeholder="nome@empresa.com.br"
-               autocapitalize="off" spellcheck="false" maxlength="120">
-        <span class="dica" id="dica-email" hidden></span>
-      </label>
+          <label class="field" id="campo-email">
+            <span>E-mail *</span>
+            <input type="email" name="email" id="email" required autocomplete="email"
+                   enterkeyhint="done" inputmode="email" placeholder="nome@empresa.com.br"
+                   autocapitalize="off" spellcheck="false" maxlength="120">
+            <span class="dica" id="dica-email" hidden></span>
+          </label>
+        </div>
 
-      <label class="consent">
-        <input type="checkbox" name="consentimento_lgpd" id="consentimento_lgpd" required>
-        <span>
-          Li e concordo com o uso dos meus dados pessoais pela Ilumac para fins do evento
-          Fire Show 2026 (cadastro, ranking e contato relacionado à premiação),
-          conforme a Lei Geral de Proteção de Dados (LGPD). *
-        </span>
-      </label>
+        <label class="consent">
+          <input type="checkbox" name="consentimento_lgpd" id="consentimento_lgpd" required>
+          <span>
+            Li e concordo com o uso dos meus dados pessoais pela Ilumac para fins do evento
+            Fire Show 2026 (cadastro, ranking e contato relacionado à premiação),
+            conforme a Lei Geral de Proteção de Dados (LGPD). *
+          </span>
+        </label>
 
-      <p id="erro-cadastro" class="form-error" hidden></p>
+        <p id="erro-cadastro" class="form-error" hidden></p>
 
-      <button type="submit" class="btn btn-primary btn-block" id="btn-cadastrar">
-        Continuar
-      </button>
-    </form>
+        <div class="chamada chamada-cadastro">
+          <div class="chamada-mascote" role="img" aria-label="Ilumaquinho"></div>
+          <div class="chamada-fala">
+            <p>Preenche aí que eu já separei as perguntas!</p>
+          </div>
+        </div>
+
+        <div class="rodape rodape-form">
+          <button type="submit" class="btn btn-primary btn-block" id="btn-cadastrar">
+            Continuar
+          </button>
+        </div>
+      </form>
+    </main>
   </div>
 
   <script src="/static/js/kiosk.js"></script>

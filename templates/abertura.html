@@ -8,31 +8,48 @@
 </head>
 <body class="page-abertura">
   <div class="screen screen-abertura">
+
+    <!-- Campo de estrelas do tamanho da tela inteira: a decoração precisa
+         ocupar as bordas, não se amontoar em volta dos botões. -->
+    <div class="ceu" aria-hidden="true">
+      <span class="ceu-estrela e1"><img src="/static/img/estrela.png" alt=""></span>
+      <span class="ceu-estrela e2"><img src="/static/img/estrela.png" alt=""></span>
+      <span class="ceu-estrela e3"><img src="/static/img/estrela.png" alt=""></span>
+      <span class="ceu-estrela e4"><img src="/static/img/estrela.png" alt=""></span>
+      <span class="ceu-estrela e5"><img src="/static/img/estrela.png" alt=""></span>
+      <span class="ceu-estrela e6"><img src="/static/img/estrela.png" alt=""></span>
+      <span class="ceu-estrela e7"><img src="/static/img/estrela.png" alt=""></span>
+      <span class="ceu-estrela e8"><img src="/static/img/estrela.png" alt=""></span>
+      <span class="ceu-estrela e9"><img src="/static/img/estrela.png" alt=""></span>
+    </div>
+
     <div class="topbar">
       <div class="brand-lockup">
         <img class="brand-logo" src="/static/img/logo-ilumac-branco.svg" alt="Ilumac">
         <span class="brand-divider" aria-hidden="true"></span>
         <img class="brand-logo-fs" src="/static/img/logo-fireshow-branco.png" alt="Fire Show 2026">
       </div>
+      <span class="tag tag-stand">Stand D73 / D124</span>
     </div>
 
-    <div class="abertura-corpo">
-      <p class="brand-eyebrow abertura-eyebrow">Fire Show 2026 · Stand D73/D124</p>
-      <img class="abertura-imagem" src="/static/img/IlumaGameNovo.png" alt="Ilumagame" aria-hidden="true">
-      <h1 class="brand-title abertura-titulo">Quiz SDAI</h1>
-      <p class="brand-eyebrow abertura-eyebrow">Teste o que você sabe sobre detecção<br>e alarme de incêndio.</p>
-      <p class="brand-sub abertura-sub">Teste o que você sabe sobre detecção e alarme de incêndio!</p>
+    <main class="palco palco-abertura">
+      <div class="abertura-hero">
+        <p class="abertura-eyebrow">Fire Show 2026 · São Paulo</p>
+        <img class="abertura-imagem" src="/static/img/IlumaGameNovo.png" alt="Iluma Game">
+        <h1 class="abertura-titulo">Quiz SDAI</h1>
+        <p class="abertura-sub">Teste o que você sabe sobre detecção e alarme de incêndio</p>
+      </div>
 
-    </div>
+      <!-- Faixa de números: enche a faixa morta entre o herói e os botões
+           com a informação que decide o participante a jogar. -->
+      <ul class="abertura-numeros">
+        <li><b>5</b><span>perguntas</span></li>
+        <li><b>10</b><span>pontos</span></li>
+        <li><b>2min</b><span>de jogo</span></li>
+      </ul>
+    </main>
 
-    <div class="abertura-botoes">
-      <span class="estrela estrela-1" aria-hidden="true"><img src="/static/img/estrela.png" alt="" class="estrela-img"></span>
-      <span class="estrela estrela-2" aria-hidden="true"><img src="/static/img/estrela.png" alt="" class="estrela-img"></span>
-      <span class="estrela estrela-3" aria-hidden="true"><img src="/static/img/estrela.png" alt="" class="estrela-img"></span>
-      <span class="estrela estrela-4" aria-hidden="true"><img src="/static/img/estrela.png" alt="" class="estrela-img"></span>
-      <span class="estrela estrela-5" aria-hidden="true"><img src="/static/img/estrela.png" alt="" class="estrela-img"></span>
-      <span class="estrela estrela-6" aria-hidden="true"><img src="/static/img/estrela.png" alt="" class="estrela-img"></span>
-
+    <footer class="rodape rodape-abertura">
       <a class="abertura-btn abertura-btn--jogar" href="/cadastro">
         <img src="/static/img/BotaoBeje.png" alt="Jogar" class="abertura-btn-img">
       </a>
@@ -40,7 +57,7 @@
       <a class="abertura-btn abertura-btn--ranking" href="/ranking">
         <img src="/static/img/BotaoVinho.png" alt="Ranking" class="abertura-btn-img">
       </a>
-    </div>
+    </footer>
   </div>
 
   <script src="/static/js/kiosk.js"></script>
