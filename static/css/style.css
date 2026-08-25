@@ -670,7 +670,11 @@ body {
 }
 
 /* Empurra a ação para a base sem depender de altura fixa. */
-.rodape-form { margin-top: auto; padding-top: 8px; }
+/* Sem auto aqui: o respiro livre do formulário vai inteiro para cima da
+   chamada (margin-top:auto nela), não dividido meio a meio com este
+   rodapé — senão a chamada fica flutuando isolada no meio da tela em vez
+   de encostada perto do botão. */
+.rodape-form { padding-top: 8px; }
 
 /* No cadastro a chamada é opcional: some quando não há altura para ela,
    em vez de espremer o formulário. */
@@ -762,9 +766,10 @@ body {
 }
 
 /* ---- Regras: 4 cards, não lista ----
-   Os cards têm altura pelo próprio conteúdo (não esticam para preencher
-   a faixa inteira) e o bloco fica centralizado no espaço livre. */
-.palco-regras { justify-content: center; }
+   Os cards têm altura pelo próprio conteúdo, não esticada até preencher
+   a tela — mas o bloco também não fica plantado sozinho no meio de um
+   vermelho vazio: encosta perto do topo, como as outras telas. */
+.palco-regras { justify-content: flex-start; }
 
 .regras-grade {
   flex: 0 1 auto;
@@ -782,7 +787,8 @@ body {
   flex-direction: column;
   justify-content: center;
   gap: 8px;
-  padding: 20px 20px 18px;
+  min-height: 220px;
+  padding: 26px 24px 22px;
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
   box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
@@ -852,7 +858,7 @@ body {
 /* Enunciado em Montserrat: é o texto que exige leitura atenta.
    Em Press Start 2P ficava bonito e ilegível. */
 .quiz-pergunta {
-  margin: 0;
+  margin: 0 0 clamp(16px, 3vh, 32px);
   font-family: var(--font-body);
   font-weight: 700;
   font-size: clamp(1.3rem, 3.4vw, 1.75rem);
@@ -864,15 +870,17 @@ body {
 
 /* As alternativas ocupam a faixa livre, mas com altura do próprio
    conteúdo — esticá-las a ponto de virar lajotas de 300px desperdiçava
-   espaço e ficava desproporcional. O bloco fica centralizado no que sobra
-   e o espaçamento extra vira gap, não altura de botão. */
+   espaço e ficava desproporcional. Ficam encostadas logo abaixo da
+   pergunta (flex-start), não centralizadas na faixa toda: centralizar
+   reabria um vão grande entre a pergunta e a 1ª alternativa, que era
+   exatamente o problema. O que sobra vira respiro abaixo da última. */
 .quiz-alternativas {
   display: flex;
   flex-direction: column;
   gap: 18px;
   flex: 1;
   min-height: 0;
-  justify-content: center;
+  justify-content: flex-start;
   overflow-y: auto;
   padding: 0 var(--px) var(--px) 0;
   -webkit-overflow-scrolling: touch;
@@ -885,7 +893,7 @@ body {
   gap: 18px;
   width: 100%;
   min-height: 84px;
-  padding: 16px 20px;
+  padding: 20px 24px;
   text-align: left;
   border: var(--px) solid var(--contorno);
   background: var(--cartao);
@@ -1398,14 +1406,22 @@ body {
   flex-shrink: 0;
 }
 
+/* 2º e 3º dividem a mesma altura FIXA (não min-height) — um nome de duas
+   linhas no 3º lugar deixava o card do bronze mais alto que o da prata,
+   invertendo a hierarquia visual do pódio. Só o 1º lugar foge dessa régua.
+   O nome ganha clamp de 2 linhas (.podio-nome) para caber dentro da altura
+   fixa mesmo com nomes longos. */
 .podio-posto {
   flex: 1;
   min-width: 0;
+  height: 210px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   padding: 18px 12px 16px;
+  overflow: hidden;
   background: var(--vermelho-noite);
   border: var(--px) solid var(--contorno);
   box-shadow: var(--px) var(--px) 0 0 rgba(0, 0, 0, 0.4);
@@ -1414,6 +1430,7 @@ body {
 
 .podio-posto.posto-1 {
   order: 2;
+  height: 254px;
   padding-top: 26px;
   padding-bottom: 22px;
   background: var(--cartao);
@@ -1435,6 +1452,10 @@ body {
 
 .podio-nome {
   margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   font-family: var(--font-body);
   font-weight: 700;
   font-size: 0.92rem;
@@ -1641,8 +1662,8 @@ body {
   .consent input { width: 44px; height: 44px; }
 
   /* ---- regras ---- */
-  .regras-grade { gap: 22px; }
-  .regras-card { padding: 26px 26px 22px; }
+  .regras-grade { gap: 26px; }
+  .regras-card { min-height: 300px; padding: 38px 34px 32px; }
   .regras-num { min-width: 66px; height: 56px; font-size: 0.92rem; }
   .regras-card strong { font-size: 1rem; }
   .regras-card p { font-size: 1.18rem; }
@@ -1652,7 +1673,7 @@ body {
   #quiz-pontos { font-size: 1rem; }
   .quiz-pergunta { font-size: clamp(1.8rem, 3.4vw, 2.4rem); }
   .quiz-alternativas { gap: 24px; }
-  .alt-btn { min-height: 108px; font-size: 1.3rem; padding: 20px 28px; gap: 26px; }
+  .alt-btn { min-height: 108px; font-size: 1.35rem; padding: 26px 30px; gap: 26px; }
   .alt-letra { width: 78px; height: 78px; font-size: 1.1rem; }
 
   .barra-trilho { height: 46px; }
@@ -1695,8 +1716,8 @@ body {
   .ranking-tempo { font-size: 1rem; }
 
   .ranking-podio { gap: 24px; margin-bottom: 28px; }
-  .podio-posto { padding: 26px 20px 22px; gap: 14px; }
-  .podio-posto.posto-1 { padding-top: 36px; padding-bottom: 30px; }
+  .podio-posto { height: 268px; padding: 26px 20px 22px; gap: 14px; }
+  .podio-posto.posto-1 { height: 324px; padding-top: 36px; padding-bottom: 30px; }
   .podio-medalha { width: 82px; }
   .podio-posto.posto-1 .podio-medalha { width: 110px; }
   .podio-nome { font-size: 1.2rem; }
@@ -1743,8 +1764,8 @@ body {
   .palco { overflow-y: auto; justify-content: flex-start; }
   .ranking-item { grid-template-columns: 48px 1fr auto; padding: 14px 16px; }
   .ranking-podio { gap: 8px; }
-  .podio-posto { padding: 12px 8px 10px; gap: 6px; }
-  .podio-posto.posto-1 { padding-top: 18px; padding-bottom: 14px; }
+  .podio-posto { height: 156px; padding: 12px 8px 10px; gap: 6px; }
+  .podio-posto.posto-1 { height: 188px; padding-top: 18px; padding-bottom: 14px; }
   .podio-medalha { width: 40px; }
   .podio-posto.posto-1 .podio-medalha { width: 54px; }
   .podio-nome { font-size: 0.76rem; }
