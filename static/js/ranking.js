@@ -7,6 +7,7 @@
  */
 (function () {
   var lista = document.getElementById("ranking-lista");
+  var podio = document.getElementById("ranking-podio");
   var btnReiniciar = document.getElementById("btn-reiniciar");
   var tabDia = document.getElementById("tab-dia");
   var tabGeral = document.getElementById("tab-geral");
@@ -27,6 +28,31 @@
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
+  }
+
+  var MEDALHA_POR_POSTO = {
+    1: { src: "/static/img/TROFÉU.png", alt: "Troféu de 1º lugar" },
+    2: { src: "/static/img/MedalhaPrata.png", alt: "Medalha de 2º lugar" },
+    3: { src: "/static/img/MedalhaBronze.png", alt: "Medalha de 3º lugar" },
+  };
+
+  // Pódio: 1º, 2º e 3º viram três cards com a medalha correspondente, o
+  // do 1º maior e no centro (a ordem visual vem do CSS, não do DOM).
+  function renderPodio(topRows) {
+    podio.innerHTML = topRows
+      .map(function (r) {
+        var medalha = MEDALHA_POR_POSTO[r.posicao];
+        if (!medalha) return "";
+        return (
+          '<div class="podio-posto posto-' + r.posicao + '">' +
+            '<img class="podio-medalha" src="' + medalha.src + '" alt="' + medalha.alt + '">' +
+            '<p class="podio-nome">' + escapeHtml(r.nome) + "</p>" +
+            '<p class="podio-pts">' + r.pontuacao + " pts</p>" +
+            '<p class="podio-tempo">' + fmtMs(r.tempo_total_ms) + "</p>" +
+          "</div>"
+        );
+      })
+      .join("");
   }
 
   btnReiniciar.addEventListener("click", function () {
@@ -59,6 +85,7 @@
         }
         var rows = data.ranking || [];
         if (rows.length === 0) {
+          podio.innerHTML = "";
           lista.innerHTML =
             escopo === "dia"
               ? '<li class="ranking-vazio">Nenhuma partida hoje ainda. Seja o primeiro!</li>'
@@ -66,26 +93,33 @@
           return;
         }
 
-        lista.innerHTML = rows
-          .map(function (r) {
-            var topClass = r.posicao === 1 ? " top-1" : "";
-            return (
-              '<li class="ranking-item' + topClass + '">' +
-                '<span class="ranking-pos">' + r.posicao + "º</span>" +
-                "<div>" +
-                  '<p class="ranking-nome">' + escapeHtml(r.nome) + "</p>" +
-                "</div>" +
-                '<div class="ranking-stats">' +
-                  '<p class="ranking-pts">' + r.pontuacao + " pts</p>" +
-                  '<p class="ranking-tempo">' + fmtMs(r.tempo_total_ms) + "</p>" +
-                "</div>" +
-              "</li>"
-            );
-          })
-          .join("");
+        var topRows = rows.slice(0, 3);
+        var restoRows = rows.slice(3);
+
+        renderPodio(topRows);
+
+        lista.innerHTML = restoRows.length === 0
+          ? ""
+          : restoRows
+              .map(function (r) {
+                return (
+                  '<li class="ranking-item">' +
+                    '<span class="ranking-pos">' + r.posicao + "º</span>" +
+                    "<div>" +
+                      '<p class="ranking-nome">' + escapeHtml(r.nome) + "</p>" +
+                    "</div>" +
+                    '<div class="ranking-stats">' +
+                      '<p class="ranking-pts">' + r.pontuacao + " pts</p>" +
+                      '<p class="ranking-tempo">' + fmtMs(r.tempo_total_ms) + "</p>" +
+                    "</div>" +
+                  "</li>"
+                );
+              })
+              .join("");
       })
       .catch(function (err) {
         if (meuPedido !== pedidoEmAndamento) return;
+        podio.innerHTML = "";
         lista.innerHTML =
           '<li class="ranking-vazio">' + escapeHtml(err.message) + "</li>";
       });

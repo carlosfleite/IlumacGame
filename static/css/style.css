@@ -90,7 +90,7 @@
   --safe-bottom: 28px;
   --zona-gap: 22px;
   --largura-max: 1240px;
-  --barra-h: 132px;
+  --barra-h: 104px;
 
   --font-display: "Press Start 2P", "Courier New", monospace;
   --font-body: "Montserrat", "Segoe UI", Tahoma, sans-serif;
@@ -343,7 +343,12 @@ body {
 .screen-abertura { text-align: center; }
 
 .palco-abertura {
+  /* A dupla herói + números é centralizada como bloco em vez de o herói
+     ficar colado embaixo da topbar: um respiro acima equilibra a
+     composição em telas altas. */
   align-items: center;
+  justify-content: center;
+  gap: clamp(32px, 6vh, 96px);
 }
 
 /* ---- herói ---- */
@@ -756,17 +761,15 @@ body {
   font-size: 0.98rem;
 }
 
-/* ---- Regras: 4 cards, não lista ---- */
-/* Os quatro cards esticam para preencher a faixa central inteira em vez
-   de formarem um bloco compacto no meio da tela. */
-.palco-regras { justify-content: flex-start; }
+/* ---- Regras: 4 cards, não lista ----
+   Os cards têm altura pelo próprio conteúdo (não esticam para preencher
+   a faixa inteira) e o bloco fica centralizado no espaço livre. */
+.palco-regras { justify-content: center; }
 
 .regras-grade {
-  flex: 1;
-  min-height: 0;
+  flex: 0 1 auto;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-auto-rows: 1fr;
   gap: 18px;
   margin: 0;
   padding: 0;
@@ -778,8 +781,8 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 10px;
-  padding: 28px 22px 24px;
+  gap: 8px;
+  padding: 20px 20px 18px;
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
   box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
@@ -859,27 +862,25 @@ body {
   flex-shrink: 0;
 }
 
-/* As alternativas dividem entre si toda a altura que sobra: numa tela de
-   1920px, quatro botões de 84px no meio do vermelho eram um desperdício
-   de área e de alvo de toque. */
+/* As alternativas ocupam a faixa livre, mas com altura do próprio
+   conteúdo — esticá-las a ponto de virar lajotas de 300px desperdiçava
+   espaço e ficava desproporcional. O bloco fica centralizado no que sobra
+   e o espaçamento extra vira gap, não altura de botão. */
 .quiz-alternativas {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   flex: 1;
   min-height: 0;
-  justify-content: space-between;
+  justify-content: center;
   overflow-y: auto;
   padding: 0 var(--px) var(--px) 0;
   -webkit-overflow-scrolling: touch;
 }
 
-/* max-height impede que 3 ou 4 alternativas curtas virem lajotas de 300px;
-   o que sobra volta como respiro entre elas. */
 .alt-btn {
   display: flex;
-  flex: 1 1 0;
-  max-height: 160px;
+  flex: 0 1 auto;
   align-items: center;
   gap: 18px;
   width: 100%;
@@ -983,7 +984,7 @@ body {
 .barra-trilho {
   display: flex;
   gap: var(--px);
-  height: 40px;
+  height: 32px;
   padding: var(--px);
   background: var(--vermelho-noite);
   border: var(--px) solid var(--contorno);
@@ -1013,8 +1014,8 @@ body {
 /* Nicho da chama: mesma moldura dos demais componentes */
 .chama-caixa {
   flex-shrink: 0;
-  width: 96px;
-  height: 96px;
+  width: 76px;
+  height: 76px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -1024,31 +1025,45 @@ body {
   box-shadow: inset 0 var(--px) 0 0 rgba(255, 255, 255, 0.08);
 }
 
+/* Sprite de 4 quadros (16x22 cada), línguas de fogo irregulares e bandas
+   de cor núcleo->borda — gerado em tools/gerar_chama.py a partir da
+   paleta --fogo-*. A largura acompanha a proporção nativa (16/22) pra
+   não esticar o sprite. */
 .chama {
-  --chama-w: 51.2px;  /* 16px do sprite * 3.2 */
-  --chama-h: 64px;    /* 20px do sprite * 3.2 */
+  --chama-h: 64px;
+  --chama-w: calc(var(--chama-h) * 16 / 22);
   width: var(--chama-w);
   height: var(--chama-h);
   background-image: url("/static/img/chama.png");
-  background-size: calc(var(--chama-w) * 3) var(--chama-h);
+  background-size: calc(var(--chama-w) * 4) var(--chama-h);
   background-repeat: no-repeat;
   background-position: 0 0;
   transform-origin: 50% 100%;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  animation: chama-quadros 0.36s steps(1) infinite,
-             chama-chacoalho 0.72s steps(2) infinite;
+  animation: chama-quadros 0.48s steps(1) infinite,
+             chama-chacoalho 0.72s steps(2) infinite,
+             chama-vida 2.4s ease-in-out infinite;
 }
 
 @keyframes chama-quadros {
-  0%  { background-position: 0 0; }
-  33% { background-position: calc(var(--chama-w) * -1) 0; }
-  66% { background-position: calc(var(--chama-w) * -2) 0; }
+  0%   { background-position: 0 0; }
+  25%  { background-position: calc(var(--chama-w) * -1) 0; }
+  50%  { background-position: calc(var(--chama-w) * -2) 0; }
+  75%  { background-position: calc(var(--chama-w) * -3) 0; }
 }
 
 @keyframes chama-chacoalho {
   0%  { transform: translateX(0) scaleY(1); }
   50% { transform: translateX(-2px) scaleY(1.05); }
+}
+
+/* Vida de cor: um leve giro de matiz e brilho, contínuo (não é troca de
+   quadro de sprite, então usa ease em vez de steps). Sutil de propósito —
+   é só o suficiente pra chama não parecer estática. */
+@keyframes chama-vida {
+  0%, 100% { filter: hue-rotate(0deg) brightness(1); }
+  50%      { filter: hue-rotate(-6deg) brightness(1.12); }
 }
 
 /* Cresce com os acertos; no 10/10 aumenta e acelera */
@@ -1059,9 +1074,8 @@ body {
 .chama[data-nivel="4"] { opacity: 1; }
 .chama[data-nivel="5"] {
   opacity: 1;
-  --chama-w: 64px;
   --chama-h: 80px;
-  animation-duration: 0.24s, 0.48s;
+  animation-duration: 0.24s, 0.48s, 1.2s;
 }
 
 /* ==========================================================================
@@ -1371,32 +1385,84 @@ body {
   border-left-color: var(--cartao-2);
 }
 
-/* Pódio: o ranking.js só marca o 1º lugar, então 2º e 3º saem daqui pela
-   posição na lista. Uma tarja lateral basta para hierarquizar de longe —
-   nada de imagem nova para carregar no totem. */
-.ranking-lista > .ranking-item:nth-child(1) { border-left-color: #e8b923; }
-.ranking-lista > .ranking-item:nth-child(2) { border-left-color: #b9bfc6; }
-.ranking-lista > .ranking-item:nth-child(3) { border-left-color: #c98a4b; }
+/* ---- Pódio: 1º, 2º e 3º saem da lista e viram três cards com o
+   troféu/medalha correspondente (static/img/TROFÉU.png, MedalhaPrata.png,
+   MedalhaBronze.png). O card do 1º lugar fica maior e no centro, mesmo
+   sendo o primeiro item do JSON — daí o order na flex. */
+.ranking-podio {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  flex-shrink: 0;
+}
 
-.ranking-item.top-1 {
-  position: relative;
-  overflow: hidden;
+.podio-posto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 12px 16px;
+  background: var(--vermelho-noite);
+  border: var(--px) solid var(--contorno);
+  box-shadow: var(--px) var(--px) 0 0 rgba(0, 0, 0, 0.4);
+  text-align: center;
+}
+
+.podio-posto.posto-1 {
+  order: 2;
   padding-top: 26px;
-  padding-bottom: 26px;
+  padding-bottom: 22px;
+  background: var(--cartao);
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
 }
 
-.ranking-item.top-1::after {
-  content: "TOP";
-  position: absolute;
-  top: 8px;
-  left: -28px;
-  background: var(--vermelho);
-  color: var(--cartao);
-  font-family: var(--font-display);
-  font-size: 0.65rem;
-  padding: 2px 32px;
-  transform: rotate(-45deg);
+.podio-posto.posto-2 { order: 1; }
+.podio-posto.posto-3 { order: 3; }
+
+.podio-medalha {
+  display: block;
+  width: 56px;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
+
+.podio-posto.posto-1 .podio-medalha { width: 76px; }
+
+.podio-nome {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.92rem;
+  line-height: 1.25;
+  color: var(--sobre-vermelho);
+}
+
+.podio-posto.posto-1 .podio-nome { font-size: 1rem; color: var(--tinta); }
+
+.podio-pts {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  color: var(--sobre-vermelho);
+}
+
+.podio-posto.posto-1 .podio-pts { color: var(--vermelho); font-size: 0.88rem; }
+
+.podio-tempo {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.74rem;
+  color: var(--sobre-vermelho-fraco);
+  font-variant-numeric: tabular-nums;
+}
+
+.podio-posto.posto-1 .podio-tempo { color: var(--tinta-fraca); }
 
 .ranking-pos {
   font-family: var(--font-display);
@@ -1404,8 +1470,6 @@ body {
   color: var(--tinta-fraca);
   text-align: center;
 }
-
-.ranking-item.top-1 .ranking-pos { color: var(--vermelho); font-size: 1rem; }
 
 .ranking-nome {
   margin: 0;
@@ -1510,7 +1574,7 @@ body {
 @media (min-height: 1200px) {
   :root {
     --px: 6px;
-    --barra-h: 200px;
+    --barra-h: 150px;
     --safe-top: 44px;
     --safe-side: 56px;
     --safe-bottom: 44px;
@@ -1577,8 +1641,8 @@ body {
   .consent input { width: 44px; height: 44px; }
 
   /* ---- regras ---- */
-  .regras-grade { gap: 26px; }
-  .regras-card { padding: 40px 32px; }
+  .regras-grade { gap: 22px; }
+  .regras-card { padding: 26px 26px 22px; }
   .regras-num { min-width: 66px; height: 56px; font-size: 0.92rem; }
   .regras-card strong { font-size: 1rem; }
   .regras-card p { font-size: 1.18rem; }
@@ -1588,15 +1652,15 @@ body {
   #quiz-pontos { font-size: 1rem; }
   .quiz-pergunta { font-size: clamp(1.8rem, 3.4vw, 2.4rem); }
   .quiz-alternativas { gap: 24px; }
-  .alt-btn { min-height: 150px; max-height: 250px; font-size: 1.5rem; padding: 20px 28px; gap: 26px; }
+  .alt-btn { min-height: 108px; font-size: 1.3rem; padding: 20px 28px; gap: 26px; }
   .alt-letra { width: 78px; height: 78px; font-size: 1.1rem; }
 
-  .barra-trilho { height: 62px; }
+  .barra-trilho { height: 46px; }
   .barra-rotulo { font-size: 0.8rem; }
   .barra-rotulo b { font-size: 0.9rem; }
-  .chama-caixa { width: 148px; height: 148px; }
-  .chama { --chama-w: 76px; --chama-h: 95px; }
-  .chama[data-nivel="5"] { --chama-w: 96px; --chama-h: 120px; }
+  .chama-caixa { width: 112px; height: 112px; }
+  .chama { --chama-h: 82px; }
+  .chama[data-nivel="5"] { --chama-h: 100px; }
 
   /* ---- feedback ---- */
   .fb-reboque { width: min(100%, 900px); }
@@ -1626,11 +1690,20 @@ body {
   .ranking-lista { gap: 18px; }
   .ranking-item { grid-template-columns: 100px 1fr auto; padding: 26px 32px; }
   .ranking-pos { font-size: 1.1rem; }
-  .ranking-item.top-1 .ranking-pos { font-size: 1.5rem; }
   .ranking-nome { font-size: 1.5rem; }
   .ranking-pts { font-size: 1.05rem; }
   .ranking-tempo { font-size: 1rem; }
-  .ranking-item.top-1::after { font-size: 0.78rem; }
+
+  .ranking-podio { gap: 24px; margin-bottom: 28px; }
+  .podio-posto { padding: 26px 20px 22px; gap: 14px; }
+  .podio-posto.posto-1 { padding-top: 36px; padding-bottom: 30px; }
+  .podio-medalha { width: 82px; }
+  .podio-posto.posto-1 .podio-medalha { width: 110px; }
+  .podio-nome { font-size: 1.2rem; }
+  .podio-posto.posto-1 .podio-nome { font-size: 1.35rem; }
+  .podio-pts { font-size: 1rem; }
+  .podio-posto.posto-1 .podio-pts { font-size: 1.15rem; }
+  .podio-tempo { font-size: 0.92rem; }
 
   .selo-ilumagame { height: 48px; }
 }
@@ -1669,6 +1742,15 @@ body {
      conteúdo atrás da borda. No totem ele nunca rola. */
   .palco { overflow-y: auto; justify-content: flex-start; }
   .ranking-item { grid-template-columns: 48px 1fr auto; padding: 14px 16px; }
+  .ranking-podio { gap: 8px; }
+  .podio-posto { padding: 12px 8px 10px; gap: 6px; }
+  .podio-posto.posto-1 { padding-top: 18px; padding-bottom: 14px; }
+  .podio-medalha { width: 40px; }
+  .podio-posto.posto-1 .podio-medalha { width: 54px; }
+  .podio-nome { font-size: 0.76rem; }
+  .podio-posto.posto-1 .podio-nome { font-size: 0.86rem; }
+  .podio-pts { font-size: 0.68rem; }
+  .podio-tempo { font-size: 0.62rem; }
   .brand-logo { height: 30px; }
   .brand-logo-fs { height: 24px; }
   .regras-grade { grid-template-columns: 1fr; grid-auto-rows: auto; overflow-y: auto; }
