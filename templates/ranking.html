@@ -14,27 +14,31 @@
         <span class="brand-divider" aria-hidden="true"></span>
         <img class="brand-logo-fs" src="/static/img/logo-fireshow-branco.png" alt="Fire Show 2026">
       </div>
-      <span class="tag">Ranking</span>
+      <span class="tag tag-live">Ao vivo</span>
     </div>
 
-    <header class="brand-header">
-      <p class="brand-eyebrow">Ao vivo · Fire Show 2026</p>
-      <h1 class="brand-title">RANKING</h1>
-      <p class="brand-sub">Pontos · desempate por tempo</p>
-    </header>
+    <main class="palco palco-ranking">
+      <header class="brand-header brand-header--linha">
+        <div>
+          <p class="brand-eyebrow">Fire Show 2026 · Stand D73/D124</p>
+          <h1 class="brand-title">Ranking</h1>
+        </div>
+        <div class="ranking-tabs" role="tablist">
+          <button type="button" class="ranking-tab is-ativa" id="tab-dia" role="tab" aria-selected="true">Hoje</button>
+          <button type="button" class="ranking-tab" id="tab-geral" role="tab" aria-selected="false">3 dias</button>
+        </div>
+      </header>
 
-    <div class="ranking-tabs" role="tablist">
-      <button type="button" class="ranking-tab is-ativa" id="tab-dia" role="tab" aria-selected="true">Hoje</button>
-      <button type="button" class="ranking-tab" id="tab-geral" role="tab" aria-selected="false">3 dias</button>
-    </div>
+      <div class="ranking-wrap">
+        <ol class="ranking-lista" id="ranking-lista">
+          <li class="ranking-vazio">Carregando…</li>
+        </ol>
+      </div>
+    </main>
 
-    <div class="ranking-wrap">
-      <ol class="ranking-lista" id="ranking-lista">
-        <li class="ranking-vazio">Carregando…</li>
-      </ol>
-    </div>
-
-    <a class="btn btn-primary btn-block" href="/" id="btn-reiniciar">Novo jogador</a>
+    <footer class="rodape">
+      <a class="btn btn-primary btn-block" href="/" id="btn-reiniciar">Novo jogador</a>
+    </footer>
   </div>
   <script src="/static/js/kiosk.js"></script>
   <script src="/static/js/ranking.js"></script>

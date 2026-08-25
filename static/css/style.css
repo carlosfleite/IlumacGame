@@ -83,8 +83,13 @@
   --ok: #1c8a5a;
   --erro: #b01521;
 
+  /* Zonas da tela. O totem é 1080x1920: o layout é full-bleed e dividido
+     em topo / palco / rodapé, nunca uma coluna estreita no meio. */
   --safe-top: 28px;
   --safe-side: 32px;
+  --safe-bottom: 28px;
+  --zona-gap: 22px;
+  --largura-max: 1240px;
   --barra-h: 132px;
 
   --font-display: "Press Start 2P", "Courier New", monospace;
@@ -130,17 +135,51 @@ body {
   background-repeat: no-repeat;
 }
 
+/* Esqueleto único de todas as telas.
+
+   Antes era uma coluna de 860px com justify-content:center — numa tela de
+   1080x1920 isso deixava 220px de vermelho morto nas laterais e empilhava
+   tudo no miolo. Agora é uma grade de três faixas: a topbar encosta no
+   topo, o rodapé encosta na base e o palco (1fr) estica no que sobra. */
 .screen {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 860px;
+  max-width: var(--largura-max);
   height: 100%;
-  padding: var(--safe-top) var(--safe-side) 24px;
-  display: flex;
-  flex-direction: column;
+  padding: var(--safe-top) var(--safe-side) var(--safe-bottom);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  row-gap: var(--zona-gap);
   overflow: hidden;
 }
+
+/* Faixa do meio: recebe todo o espaço livre e distribui os filhos nele.
+   space-between é o que espalha o conteúdo em vez de agrupá-lo no centro. */
+.palco {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--zona-gap);
+}
+
+/* Faixa de baixo: a ação principal mora sempre na mesma altura, colada na
+   base — o polegar do visitante já sabe onde procurar. */
+.rodape {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+}
+
+.rodape-duplo {
+  flex-direction: row;
+  gap: 20px;
+}
+
+.rodape-duplo > .btn { flex: 1; }
 
 /* ---- Cabeçalho ---- */
 .topbar {
@@ -148,9 +187,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  flex-shrink: 0;
   padding-bottom: 16px;
-  margin-bottom: 24px;
   border-bottom: var(--px) solid var(--linha-vermelho);
 }
 
@@ -171,6 +208,8 @@ body {
   flex-shrink: 0;
 }
 
+/* Selo de contexto da tela, na ponta direita da topbar: equilibra o peso
+   dos logos à esquerda em vez de deixar a faixa pela metade. */
 .tag {
   font-family: var(--font-body);
   font-weight: 700;
@@ -182,6 +221,23 @@ body {
   background: var(--veu-branco);
   padding: 8px 14px;
   white-space: nowrap;
+}
+
+.tag-stand {
+  background: var(--vermelho-noite);
+  border-color: var(--vermelho-noite);
+}
+
+/* Ponto pulsante: sinaliza que o ranking é atualizado durante o evento. */
+.tag-live::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 10px;
+  vertical-align: middle;
+  background: var(--fogo-medio);
+  animation: pisca 1.2s steps(1) infinite;
 }
 
 /* Cronômetro: rótulo em Montserrat, dígitos em pixel (curto e grande) */
@@ -214,8 +270,17 @@ body {
 
 .brand-header {
   text-align: left;
-  margin-bottom: 24px;
   flex-shrink: 0;
+}
+
+/* Cabeçalho em linha: título à esquerda, controles à direita. Usa a
+   largura toda em vez de empilhar dois blocos estreitos. */
+.brand-header--linha {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .brand-eyebrow {
@@ -252,6 +317,11 @@ body {
    qualquer reset ou fim de partida. Fica visível a maior parte do tempo
    entre um participante e outro, então precisa chamar atenção de longe
    sem pesar na CPU: só animações em steps(), sem blur.
+
+   Composição em quatro alturas, do topo à base — herói, números, mascote,
+   botões — para que o olho percorra a tela inteira. Nada é centralizado
+   verticalmente: o palco usa space-between e cada bloco ancora na sua
+   faixa.
    ========================================================================== */
 
 .selo-ilumagame {
@@ -261,79 +331,183 @@ body {
   flex-shrink: 0;
 }
 
-/* Não usa align-items:center no .screen: isso encolheria a .topbar para o
-   conteúdo e quebraria o justify-content:space-between dela (o selo Iluma
-   Game colaria no logo em vez de ir pra ponta direita). A centralização
-   fica só nos filhos internos que precisam dela. */
-.screen-abertura {
-  text-align: center;
+/* O céu é posicionado, então os irmãos precisam de contexto próprio para
+   não ficarem por baixo dele. */
+.screen-abertura > .topbar,
+.screen-abertura > .palco,
+.screen-abertura > .rodape {
+  position: relative;
+  z-index: 1;
 }
 
-.abertura-corpo {
-  flex: 1;
+.screen-abertura { text-align: center; }
+
+.palco-abertura {
+  align-items: center;
+}
+
+/* ---- herói ---- */
+.abertura-hero {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: safe center;
-  min-height: 0;
   width: 100%;
 }
 
-.abertura-eyebrow,
-.abertura-sub {
-  text-align: center;
-  line-height: 1.6
-}
-
-.abertura-titulo {
-  text-align: center;
-  margin-bottom: 15px;
-  font-size: 35px;
-}
-
-.abertura-sub {
-  max-width: 52ch;
+.abertura-eyebrow {
+  margin: 0 0 18px;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--sobre-vermelho-medio);
 }
 
 .abertura-imagem {
   display: block;
   width: 100%;
-  max-width: 500px;
+  max-width: 560px;
   height: auto;
   margin: 0 auto;
 }
 
-/* ---- botões ---- */
-.abertura-botoes {
-  position: relative; /* referência para as estrelas */
+.abertura-titulo {
+  margin: 8px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 6vw, 2.6rem);
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sobre-vermelho);
+  text-shadow: var(--px) var(--px) 0 var(--vermelho-noite);
+}
+
+.abertura-sub {
+  margin: 18px auto 0;
+  max-width: 30ch;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--sobre-vermelho-medio);
+}
+
+/* ---- faixa de números ----
+   Ocupa toda a largura útil e resume a partida em três dados grandes,
+   legíveis a vários metros. */
+.abertura-numeros {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  width: 100%;
+  margin: 0;
+  padding: 20px 0;
+  list-style: none;
+  border-top: var(--px) solid var(--linha-vermelho);
+  border-bottom: var(--px) solid var(--linha-vermelho);
+}
+
+.abertura-numeros li {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
+}
+
+.abertura-numeros li + li {
+  border-left: var(--px) solid var(--linha-vermelho);
+}
+
+.abertura-numeros b {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--fogo-medio);
+  text-shadow: var(--px) var(--px) 0 var(--vermelho-noite);
+}
+
+.abertura-numeros span {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sobre-vermelho-fraco);
+}
+
+/* ---- mascote + balão de fala (componente compartilhado) ----
+   Assimétrico de propósito: o mascote encosta na margem esquerda e o balão
+   se estende até a direita, ocupando a largura inteira da faixa. Usado na
+   abertura e no cadastro, sempre para preencher a faixa que sobraria
+   vazia entre o conteúdo e o botão. */
+.chamada {
+  display: flex;
+  align-items: center;
+  gap: 20px;
   width: 100%;
-  max-width: 360px;
+  text-align: left;
+}
+
+.chamada-mascote {
   flex-shrink: 0;
-  margin: 18px auto 0; /* menos vão entre o texto e os botões */
+  width: 113px;
+  height: 128px;
+  background-image: url("/static/img/ilumaquinho/idle.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  animation: mascote-respira 0.9s steps(2) infinite;
 }
 
-.abertura-seta {
+/* Sobe 1 pixel da grade e volta: o suficiente para o olho perceber vida
+   de longe, sem custo de repaint. */
+@keyframes mascote-respira {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(calc(var(--px) * -1)); }
+}
+
+.chamada-fala {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding: 20px 22px;
+  background: var(--cartao);
+  border: var(--px) solid var(--contorno);
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
+}
+
+/* Bico do balão apontando para o mascote, em blocos e não em triângulo
+   suave — coerente com o resto da interface em pixel. */
+.chamada-fala::before {
+  content: "";
   position: absolute;
-  left: 50%;
-  bottom: 100%;
-  transform: translateX(-50%) rotate(180deg);
-  width: 30px;
-  height: auto;
-  margin-bottom: 6px;
-  animation: seta-aponta 1s steps(2) infinite;
+  top: 50%;
+  right: 100%;
+  width: var(--px);
+  height: calc(var(--px) * 4);
+  margin-top: calc(var(--px) * -2);
+  background: var(--contorno);
+  box-shadow: calc(var(--px) * -1) 0 0 0 var(--contorno),
+              var(--px) 0 0 0 var(--cartao);
 }
 
-@keyframes seta-aponta {
-  0%, 100% { transform: translate(-50%, 0) rotate(180deg); }
-  50%      { transform: translate(-50%, calc(var(--px) * 2)) rotate(180deg); }
+.chamada-fala p {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 1.02rem;
+  line-height: 1.4;
+  color: var(--tinta);
+}
+
+/* ---- botões ---- */
+.rodape-abertura {
+  gap: 14px;
 }
 
 .abertura-btn {
   display: block;
+  width: 100%;
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
 }
@@ -347,8 +521,7 @@ body {
 
 /* JOGAR maior, é a ação principal */
 .abertura-btn--jogar {
-  width: 100%;
-  max-width: 340px;
+  max-width: 420px;
   animation: cta-respira 1.6s steps(2) infinite;
 }
 
@@ -358,40 +531,52 @@ body {
 
 /* RANKING um pouco menor */
 .abertura-btn--ranking {
-  width: 82%;
-  max-width: 280px;
+  max-width: 300px;
 }
 
 @keyframes cta-respira {
   0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.04); }
+  50%      { transform: scale(1.03); }
 }
 
-/* ---- estrelas flutuando em volta dos botões ---- */
-.estrela {
+/* ---- céu de estrelas ----
+   Camada do tamanho da tela inteira, atrás do conteúdo. As estrelas ficam
+   nas bordas e nos cantos justamente onde antes sobrava vermelho liso. */
+.ceu {
   position: absolute;
-  z-index: 2;
+  inset: 0;
+  z-index: 0;
   pointer-events: none;
+  overflow: hidden;
+}
+
+.ceu-estrela {
+  position: absolute;
+  display: block;
   animation: estrela-flutua 3s ease-in-out infinite;
 }
 
-.estrela-img {
+.ceu-estrela img {
   display: block;
   width: 100%;
   height: auto;
   animation: estrela-brilha 2.4s ease-in-out infinite;
 }
 
-.estrela-1 { top: -14px;   left: -28px;  width: 20px; animation-duration: 3.2s; }
-.estrela-2 { top: 4px;     right: -32px; width: 16px; animation-duration: 2.6s; animation-direction: reverse; }
-.estrela-3 { top: 50%;     left: -100px;  width: 14px; animation-duration: 3.6s; animation-delay: .6s; }
-.estrela-4 { top: 46%;     right: -100px; width: 22px; animation-duration: 3s;   animation-delay: .3s; animation-direction: reverse; }
-.estrela-5 { bottom: 10px; left: -22px;  width: 16px; animation-duration: 2.8s; animation-delay: .9s; }
-.estrela-6 { bottom: -12px; right: -50px; width: 20px; animation-duration: 3.4s; animation-delay: .2s; animation-direction: reverse; }
+.ceu-estrela.e1 { top:  7%; left:  8%; width: 30px; animation-duration: 3.2s; }
+.ceu-estrela.e2 { top: 13%; right: 10%; width: 22px; animation-duration: 2.6s; animation-direction: reverse; }
+.ceu-estrela.e3 { top: 30%; left:  4%; width: 18px; animation-duration: 3.6s; animation-delay: .6s; }
+.ceu-estrela.e4 { top: 26%; right:  6%; width: 34px; animation-duration: 3s;   animation-delay: .3s; animation-direction: reverse; }
+.ceu-estrela.e5 { top: 48%; left:  9%; width: 24px; animation-duration: 2.8s; animation-delay: .9s; }
+.ceu-estrela.e6 { top: 55%; right:  5%; width: 20px; animation-duration: 3.4s; animation-delay: .2s; animation-direction: reverse; }
+.ceu-estrela.e7 { bottom: 22%; left:  5%; width: 28px; animation-duration: 3.1s; animation-delay: .5s; }
+.ceu-estrela.e8 { bottom: 14%; right:  8%; width: 24px; animation-duration: 2.9s; animation-delay: .8s; animation-direction: reverse; }
+.ceu-estrela.e9 { bottom:  5%; left: 14%; width: 18px; animation-duration: 3.5s; animation-delay: .1s; }
 
-.estrela-1 .estrela-img,
-.estrela-3 .estrela-img,
-.estrela-5 .estrela-img { animation-delay: .3s; }
+.ceu-estrela.e1 img,
+.ceu-estrela.e3 img,
+.ceu-estrela.e5 img,
+.ceu-estrela.e7 img { animation-delay: .3s; }
 
 @keyframes estrela-flutua {
   0%, 100% { transform: translate(0, 0) rotate(0deg); }
@@ -456,17 +641,30 @@ body {
 }
 
 /* ---- Cadastro ---- */
+/* O formulário é a faixa elástica: os campos ficam no topo dela, o
+   consentimento logo abaixo e o botão desce até a base da tela. */
 .form-cadastro {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: safe center;
-  gap: 20px;
+  gap: 22px;
   min-height: 0;
   overflow-y: auto;
-  padding-bottom: 8px;
   -webkit-overflow-scrolling: touch;
 }
+
+.form-campos {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Empurra a ação para a base sem depender de altura fixa. */
+.rodape-form { margin-top: auto; padding-top: 8px; }
+
+/* No cadastro a chamada é opcional: some quando não há altura para ela,
+   em vez de espremer o formulário. */
+.chamada-cadastro { margin-top: auto; }
 
 .field {
   display: flex;
@@ -554,24 +752,29 @@ body {
 }
 
 /* ---- Regras: 4 cards, não lista ---- */
-.screen-regras { justify-content: center; }
+/* Os quatro cards esticam para preencher a faixa central inteira em vez
+   de formarem um bloco compacto no meio da tela. */
+.palco-regras { justify-content: flex-start; }
 
 .regras-grade {
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin: 0 0 24px;
+  grid-auto-rows: 1fr;
+  gap: 18px;
+  margin: 0;
   padding: 0;
   list-style: none;
-  flex-shrink: 0;
 }
 
 .regras-card {
   position: relative;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 10px;
-  padding: 24px 18px 20px;
+  padding: 28px 22px 24px;
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
   box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
@@ -611,13 +814,17 @@ body {
 }
 
 /* ---- Quiz ---- */
-.screen-quiz { padding-bottom: calc(var(--barra-h) + 20px); }
+.screen-quiz {
+  grid-template-rows: auto minmax(0, 1fr);
+  padding-bottom: calc(var(--barra-h) + 20px);
+}
+
+.palco-quiz { justify-content: flex-start; gap: 20px; }
 
 .quiz-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
   font-family: var(--font-body);
   font-weight: 700;
   font-size: 0.78rem;
@@ -634,19 +841,10 @@ body {
   color: var(--sobre-vermelho);
 }
 
-.quiz-corpo {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: safe center;
-  min-height: 0;
-  overflow: hidden;
-}
-
 /* Enunciado em Montserrat: é o texto que exige leitura atenta.
    Em Press Start 2P ficava bonito e ilegível. */
 .quiz-pergunta {
-  margin: 0 0 24px;
+  margin: 0;
   font-family: var(--font-body);
   font-weight: 700;
   font-size: clamp(1.3rem, 3.4vw, 1.75rem);
@@ -656,24 +854,32 @@ body {
   flex-shrink: 0;
 }
 
+/* As alternativas dividem entre si toda a altura que sobra: numa tela de
+   1920px, quatro botões de 84px no meio do vermelho eram um desperdício
+   de área e de alvo de toque. */
 .quiz-alternativas {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  flex: 0 1 auto;
+  gap: 16px;
+  flex: 1;
   min-height: 0;
+  justify-content: space-between;
   overflow-y: auto;
   padding: 0 var(--px) var(--px) 0;
   -webkit-overflow-scrolling: touch;
 }
 
+/* max-height impede que 3 ou 4 alternativas curtas virem lajotas de 300px;
+   o que sobra volta como respiro entre elas. */
 .alt-btn {
   display: flex;
+  flex: 1 1 0;
+  max-height: 160px;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
   width: 100%;
   min-height: 84px;
-  padding: 14px 16px;
+  padding: 16px 20px;
   text-align: left;
   border: var(--px) solid var(--contorno);
   background: var(--cartao);
@@ -729,7 +935,7 @@ body {
   bottom: 0;
   z-index: 20;
   width: 100%;
-  max-width: 860px;
+  max-width: var(--largura-max);
   height: var(--barra-h);
   display: flex;
   align-items: center;
@@ -1011,15 +1217,36 @@ body {
 }
 
 /* ---- Resultado ---- */
-.screen-resultado { justify-content: center; }
 
+/* Placar e mascote dividem a largura: o número sozinho num card centrado
+   deixava metade da tela vazia. */
 .resultado-score {
-  text-align: center;
-  padding: 28px 16px;
-  margin: 4px 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 28px 32px;
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
   box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
+}
+
+.resultado-score-num {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.resultado-mascote {
+  flex-shrink: 0;
+  width: 138px;
+  height: 168px;
+  background-image: url("/static/img/ilumaquinho/trofeu.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  animation: mascote-respira 0.9s steps(2) infinite;
 }
 
 .resultado-label {
@@ -1033,9 +1260,9 @@ body {
 }
 
 .resultado-pontos {
-  margin: 18px 0 0;
+  margin: 14px 0 0;
   font-family: var(--font-display);
-  font-size: 3rem;
+  font-size: 3.4rem;
   line-height: 1;
   color: var(--vermelho);
   text-shadow: var(--px) var(--px) 0 var(--contorno);
@@ -1049,10 +1276,16 @@ body {
   color: var(--tinta-media);
 }
 
-.resultado-grid { display: grid; gap: 12px; }
+/* Duas colunas: usa a largura toda em vez de duas tiras empilhadas. */
+.resultado-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-items: stretch;
+  gap: 18px;
+}
 
 .resultado-grid > div {
-  padding: 18px;
+  padding: 24px;
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
   box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
@@ -1075,17 +1308,17 @@ body {
 }
 
 /* ---- Ranking ---- */
+.palco-ranking { justify-content: flex-start; }
+
 .ranking-tabs {
   display: flex;
   gap: 12px;
-  margin-bottom: 16px;
   flex-shrink: 0;
 }
 
 .ranking-tab {
-  flex: 1;
   min-height: 56px;
-  padding: 12px 16px;
+  padding: 12px 26px;
   border: var(--px) solid var(--sobre-vermelho);
   background: transparent;
   color: var(--sobre-vermelho-medio);
@@ -1108,7 +1341,6 @@ body {
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  margin-bottom: 16px;
   padding-right: var(--px);
 }
 
@@ -1123,18 +1355,29 @@ body {
 
 .ranking-item {
   display: grid;
-  grid-template-columns: 60px 1fr auto;
-  gap: 14px;
+  grid-template-columns: 76px 1fr auto;
+  gap: 18px;
   align-items: center;
-  padding: 14px 16px;
+  padding: 18px 22px;
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
   box-shadow: var(--px) var(--px) 0 0 var(--vermelho-noite);
+  border-left-width: calc(var(--px) * 3);
+  border-left-color: var(--cartao-2);
 }
+
+/* Pódio: o ranking.js só marca o 1º lugar, então 2º e 3º saem daqui pela
+   posição na lista. Uma tarja lateral basta para hierarquizar de longe —
+   nada de imagem nova para carregar no totem. */
+.ranking-lista > .ranking-item:nth-child(1) { border-left-color: #e8b923; }
+.ranking-lista > .ranking-item:nth-child(2) { border-left-color: #b9bfc6; }
+.ranking-lista > .ranking-item:nth-child(3) { border-left-color: #c98a4b; }
 
 .ranking-item.top-1 {
   position: relative;
   overflow: hidden;
+  padding-top: 26px;
+  padding-bottom: 26px;
 }
 
 .ranking-item.top-1::after {
@@ -1251,32 +1494,110 @@ body {
 
 .kiosk-inatividade-btn:active { background: var(--vermelho-escuro); }
 
-/* ---- Totem alto (1080x1920) ---- */
+/* ==========================================================================
+   Totem alto (1080x1920, 23" em retrato)
+
+   O visitante lê esta tela de pé, a 1,5–3 m de distância, num corredor de
+   feira concorrido. Tudo aqui é uma escala acima do que faria sentido num
+   monitor de mesa: logos, números, alvos de toque e as margens de
+   segurança. A tela é usada de borda a borda — sem coluna estreita.
+   ========================================================================== */
 @media (min-height: 1200px) {
   :root {
     --px: 6px;
-    --barra-h: 176px;
-    --safe-top: 40px;
-    --safe-side: 44px;
+    --barra-h: 200px;
+    --safe-top: 44px;
+    --safe-side: 56px;
+    --safe-bottom: 44px;
+    --zona-gap: 40px;
   }
 
-  html, body { font-size: 22px; }
+  html, body { font-size: 24px; }
 
-  .brand-logo { height: 56px; }
-  .brand-logo-fs { height: 44px; }
-  .brand-divider { height: 44px; }
-  .brand-title { font-size: clamp(2rem, 4.6vw, 2.9rem); }
-  .quiz-pergunta { font-size: clamp(1.5rem, 3vw, 2rem); }
-  .alt-btn { min-height: 108px; font-size: 1.3rem; }
-  .alt-letra { width: 60px; height: 60px; font-size: 0.9rem; }
-  .btn { min-height: 92px; font-size: 1rem; }
-  .field input { min-height: 78px; font-size: 1.35rem; }
-  .barra-trilho { height: 52px; }
-  .chama-caixa { width: 124px; height: 124px; }
-  .chama { --chama-w: 64px; --chama-h: 80px; }
-  .chama[data-nivel="5"] { --chama-w: 80px; --chama-h: 100px; }
-  .resultado-pontos { font-size: 4rem; }
-  .fb-reboque { width: min(100%, 820px); }
+  /* Marca maior: é o que se enxerga primeiro do corredor. */
+  .brand-logo { height: 76px; }
+  .brand-logo-fs { height: 60px; }
+  .brand-divider { height: 60px; }
+  .topbar { padding-bottom: 26px; }
+  .tag { font-size: 0.82rem; padding: 14px 22px; }
+  .tag-live::before { width: 14px; height: 14px; }
+  .timer-topo { padding: 14px 22px; gap: 18px; }
+  .timer-topo .rotulo { font-size: 0.74rem; }
+  .timer-topo .valor { font-size: 1.1rem; }
+
+  .brand-eyebrow { font-size: 0.82rem; margin-bottom: 18px; }
+  .brand-title { font-size: clamp(2.2rem, 5.4vw, 3.2rem); }
+  .brand-sub { font-size: 1.2rem; }
+
+  .btn { min-height: 108px; font-size: 1.15rem; }
+  .rodape { gap: 22px; }
+  .rodape-duplo { gap: 28px; }
+
+  /* ---- abertura ---- */
+  .abertura-eyebrow { font-size: 0.92rem; letter-spacing: 0.3em; }
+  .abertura-imagem { max-width: 800px; }
+  .abertura-titulo { font-size: 3.4rem; letter-spacing: 0.08em; }
+  .abertura-sub { font-size: 1.5rem; max-width: 26ch; margin-top: 26px; }
+
+  .abertura-numeros { padding: 30px 0; }
+  .abertura-numeros b { font-size: 2.4rem; }
+  .abertura-numeros span { font-size: 0.86rem; }
+
+  .chamada { gap: 32px; }
+  .chamada-mascote { width: 226px; height: 256px; }
+  .chamada-fala { padding: 32px 36px; }
+  .chamada-fala p { font-size: 1.4rem; }
+
+  /* Os botões ocupam a base inteira: alvo de toque enorme e visível de
+     longe, que é o único gesto que esta tela precisa provocar. */
+  .abertura-btn--jogar { max-width: 760px; }
+  .abertura-btn--ranking { max-width: 480px; }
+
+  .ceu-estrela.e1 { width: 62px; }
+  .ceu-estrela.e2 { width: 44px; }
+  .ceu-estrela.e3 { width: 36px; }
+  .ceu-estrela.e4 { width: 70px; }
+  .ceu-estrela.e5 { width: 50px; }
+  .ceu-estrela.e6 { width: 40px; }
+  .ceu-estrela.e7 { width: 58px; }
+  .ceu-estrela.e8 { width: 48px; }
+  .ceu-estrela.e9 { width: 36px; }
+
+  /* ---- cadastro ---- */
+  .field input { min-height: 116px; font-size: 1.5rem; padding: 16px 22px; }
+  .form-cadastro { gap: 34px; }
+  .form-campos { gap: 34px; }
+  .field > span { font-size: 0.86rem; }
+  .consent { padding: 24px; font-size: 1.1rem; }
+  .consent input { width: 44px; height: 44px; }
+
+  /* ---- regras ---- */
+  .regras-grade { gap: 26px; }
+  .regras-card { padding: 40px 32px; }
+  .regras-num { min-width: 66px; height: 56px; font-size: 0.92rem; }
+  .regras-card strong { font-size: 1rem; }
+  .regras-card p { font-size: 1.18rem; }
+
+  /* ---- quiz ---- */
+  .quiz-meta { font-size: 0.88rem; }
+  #quiz-pontos { font-size: 1rem; }
+  .quiz-pergunta { font-size: clamp(1.8rem, 3.4vw, 2.4rem); }
+  .quiz-alternativas { gap: 24px; }
+  .alt-btn { min-height: 150px; max-height: 250px; font-size: 1.5rem; padding: 20px 28px; gap: 26px; }
+  .alt-letra { width: 78px; height: 78px; font-size: 1.1rem; }
+
+  .barra-trilho { height: 62px; }
+  .barra-rotulo { font-size: 0.8rem; }
+  .barra-rotulo b { font-size: 0.9rem; }
+  .chama-caixa { width: 148px; height: 148px; }
+  .chama { --chama-w: 76px; --chama-h: 95px; }
+  .chama[data-nivel="5"] { --chama-w: 96px; --chama-h: 120px; }
+
+  /* ---- feedback ---- */
+  .fb-reboque { width: min(100%, 900px); }
+  .fb-faixa { font-size: 0.9rem; padding: 18px 24px; }
+  .feedback-msg { font-size: 1.5rem; }
+  .feedback-pontos { font-size: 1rem; padding: 14px 24px; }
   .fb-mascote { width: 230px; height: 256px; background-size: 460px 256px; }
   .fb-mascote.parado.is-ruim { width: 369px; }
   @keyframes mascote-anda {
@@ -1284,17 +1605,74 @@ body {
     50% { background-position: -230px 0; }
   }
 
+  /* ---- resultado ---- */
+  .resultado-score { padding: 44px 48px; gap: 40px; }
+  .resultado-label { font-size: 0.86rem; }
+  .resultado-pontos { font-size: 6rem; }
+  .resultado-max { font-size: 1.15rem; }
+  .resultado-mascote { width: 246px; height: 300px; }
+  .resultado-grid { gap: 26px; }
+  .resultado-grid > div { padding: 32px; }
+  .resultado-dado { font-size: 1.25rem; }
+  .resultado-desc { font-size: 1.1rem; }
+
+  /* ---- ranking ---- */
+  .ranking-tab { min-height: 76px; font-size: 0.86rem; padding: 14px 34px; }
+  .ranking-lista { gap: 18px; }
+  .ranking-item { grid-template-columns: 100px 1fr auto; padding: 26px 32px; }
+  .ranking-pos { font-size: 1.1rem; }
+  .ranking-item.top-1 .ranking-pos { font-size: 1.5rem; }
+  .ranking-nome { font-size: 1.5rem; }
+  .ranking-pts { font-size: 1.05rem; }
+  .ranking-tempo { font-size: 1rem; }
+  .ranking-item.top-1::after { font-size: 0.78rem; }
+
   .selo-ilumagame { height: 48px; }
-  .abertura-palco { --palco-h: 380px; }
-  .abertura-estrela { width: 68px; }
-  .abertura-estrela-2 { width: 52px; }
-  .abertura-balao { width: 190px; }
-  .abertura-seta { width: 44px; }
 }
 
-@media (max-width: 420px) {
-  :root { --safe-side: 16px; }
-  .ranking-item { grid-template-columns: 44px 1fr auto; }
+/* Entre o desktop de desenvolvimento e o totem: mantém a composição
+   distribuída, só com a escala intermediária. */
+@media (min-height: 860px) and (max-height: 1199px) {
+  :root { --zona-gap: 30px; --safe-side: 40px; }
+  .abertura-imagem { max-width: 640px; }
+  .abertura-btn--jogar { max-width: 540px; }
+  .abertura-btn--ranking { max-width: 360px; }
+  .alt-btn { min-height: 110px; }
+}
+
+/* Telas baixas (monitor deitado, janela de desenvolvimento): o mascote e a
+   faixa de números são os primeiros a sair — o herói e o botão de jogar
+   são o que não pode faltar. */
+@media (max-height: 1000px) {
+  .chamada { display: none; }
+}
+
+@media (max-height: 820px) {
+  :root { --zona-gap: 16px; --safe-top: 20px; --safe-bottom: 20px; }
+  .abertura-numeros { display: none; }
+  .abertura-imagem { max-width: 420px; }
+  .abertura-btn--jogar { max-width: 320px; }
+  .abertura-btn--ranking { max-width: 230px; }
+  .abertura-sub { display: none; }
+}
+
+/* Celular: uma coluna, alvos ainda confortáveis. Não é o alvo do projeto,
+   mas é onde a equipe testa no dia a dia. */
+@media (max-width: 560px) {
+  :root { --safe-side: 18px; }
+  /* Rede de segurança: em tela de celular o palco rola em vez de esconder
+     conteúdo atrás da borda. No totem ele nunca rola. */
+  .palco { overflow-y: auto; justify-content: flex-start; }
+  .ranking-item { grid-template-columns: 48px 1fr auto; padding: 14px 16px; }
   .brand-logo { height: 30px; }
-  .regras-grade { grid-template-columns: 1fr; }
+  .brand-logo-fs { height: 24px; }
+  .regras-grade { grid-template-columns: 1fr; grid-auto-rows: auto; overflow-y: auto; }
+  .resultado-grid { grid-template-columns: 1fr; }
+  .resultado-score { flex-direction: column; text-align: center; }
+  .resultado-score-num { text-align: center; }
+  .rodape-duplo { flex-direction: column; }
+  .brand-header--linha { align-items: flex-start; }
+  .tag-stand { display: none; }
+  .abertura-numeros b { font-size: 1.1rem; }
+  .abertura-numeros span { font-size: 0.6rem; letter-spacing: 0.1em; }
 }
