@@ -311,9 +311,9 @@ body {
   align-items: center;
   gap: 14px;
   width: 100%;
-<<<<<<< Updated upstream
+  max-width: 360px;
   flex-shrink: 0;
-  padding-top: 8px;
+  margin: 18px auto 0; /* menos vão entre o texto e os botões */
 }
 
 .abertura-seta {
@@ -330,10 +330,6 @@ body {
 @keyframes seta-aponta {
   0%, 100% { transform: translate(-50%, 0) rotate(180deg); }
   50%      { transform: translate(-50%, calc(var(--px) * 2)) rotate(180deg); }
-=======
-  max-width: 360px;
-  margin: 18px auto 0; /* menos vão entre o texto e os botões */
->>>>>>> Stashed changes
 }
 
 .abertura-btn {
