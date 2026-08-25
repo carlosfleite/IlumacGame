@@ -519,10 +519,14 @@ body {
   pointer-events: none; /* clique sempre pega no <a>, não na img */
 }
 
-/* JOGAR maior, é a ação principal */
+/* JOGAR maior, é a ação principal.
+   Diferente dos sprites da tela (que usam steps() de propósito, para
+   parecerem pixel art), esta é uma escala contínua de um botão vetorial:
+   steps() aqui só criava saltos perceptíveis a cada ~400ms, lidos como
+   travamento. ease-in-out interpola o quadro inteiro. */
 .abertura-btn--jogar {
   max-width: 420px;
-  animation: cta-respira 1.6s steps(2) infinite;
+  animation: cta-respira 1.6s ease-in-out infinite;
 }
 
 .abertura-btn--jogar:active {
@@ -536,7 +540,7 @@ body {
 
 @keyframes cta-respira {
   0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.03); }
+  50%      { transform: scale(1.025); }
 }
 
 /* ---- céu de estrelas ----
