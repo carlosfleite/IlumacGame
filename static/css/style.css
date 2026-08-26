@@ -541,7 +541,7 @@ body {
 
 /* RANKING um pouco menor */
 .abertura-btn--ranking {
-  max-width: 300px;
+  max-width: 340px;
 }
 
 @keyframes cta-respira {
@@ -1641,7 +1641,7 @@ body {
   /* Os botões ocupam a base inteira: alvo de toque enorme e visível de
      longe, que é o único gesto que esta tela precisa provocar. */
   .abertura-btn--jogar { max-width: 760px; }
-  .abertura-btn--ranking { max-width: 480px; }
+  .abertura-btn--ranking { max-width: 600px; }
 
   .ceu-estrela.e1 { width: 62px; }
   .ceu-estrela.e2 { width: 44px; }
@@ -1735,7 +1735,7 @@ body {
   :root { --zona-gap: 30px; --safe-side: 40px; }
   .abertura-imagem { max-width: 640px; }
   .abertura-btn--jogar { max-width: 540px; }
-  .abertura-btn--ranking { max-width: 360px; }
+  .abertura-btn--ranking { max-width: 430px; }
   .alt-btn { min-height: 110px; }
 }
 
@@ -1751,7 +1751,7 @@ body {
   .abertura-numeros { display: none; }
   .abertura-imagem { max-width: 420px; }
   .abertura-btn--jogar { max-width: 320px; }
-  .abertura-btn--ranking { max-width: 230px; }
+  .abertura-btn--ranking { max-width: 270px; }
   .abertura-sub { display: none; }
 }
 
