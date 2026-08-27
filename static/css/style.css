@@ -766,15 +766,16 @@ body {
 }
 
 /* ---- Regras: 4 cards, não lista ----
-   Os cards têm altura pelo próprio conteúdo, não esticada até preencher
-   a tela — mas o bloco também não fica plantado sozinho no meio de um
-   vermelho vazio: encosta perto do topo, como as outras telas. */
+   As duas linhas de cards dividem toda a faixa livre entre o título e o
+   botão. Com altura só de conteúdo sobrava um vão de vermelho morto
+   acima do rodapé; esticando as linhas o bloco fecha a tela. */
 .palco-regras { justify-content: flex-start; }
 
 .regras-grade {
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: 18px;
   margin: 0;
   padding: 0;
@@ -886,9 +887,13 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Todas as 52 perguntas do banco têm exatamente 4 alternativas, então
+   deixar os cards crescerem divide a sobra em quatro partes previsíveis —
+   é o que fecha o vão que ficava entre a última opção e a barra de fogo.
+   Em tela apertada o flex-grow não age e o overflow acima assume. */
 .alt-btn {
   display: flex;
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   align-items: center;
   gap: 18px;
   width: 100%;
@@ -1671,10 +1676,25 @@ body {
   /* ---- quiz ---- */
   .quiz-meta { font-size: 0.88rem; }
   #quiz-pontos { font-size: 1rem; }
-  .quiz-pergunta { font-size: clamp(2.1rem, 4vw, 2.8rem); }
-  .quiz-alternativas { gap: 32px; }
-  .alt-btn { min-height: 140px; font-size: 1.6rem; padding: 34px 38px; gap: 32px; }
-  .alt-letra { width: 92px; height: 92px; font-size: 1.3rem; }
+  /* Tipografia e alturas em vh, não em valor fixo: esta faixa vai de 1200px
+     até o totem de 1920px, e o que preenche a tela lá estoura numa janela
+     de 1400px. A margem maior sob o enunciado empurra os cards para baixo. */
+  .quiz-pergunta {
+    font-size: clamp(1.7rem, 2.9vh, 2.6rem);
+    margin-bottom: clamp(28px, 2.6vh, 56px);
+  }
+  .quiz-alternativas { gap: clamp(20px, 1.7vh, 32px); }
+  .alt-btn {
+    min-height: clamp(105px, 7.8vh, 150px);
+    font-size: clamp(1.5rem, 2.3vh, 1.85rem);
+    padding: clamp(24px, 1.8vh, 34px) 40px;
+    gap: 32px;
+  }
+  .alt-letra {
+    width: clamp(72px, 5vh, 96px);
+    height: clamp(72px, 5vh, 96px);
+    font-size: clamp(1.1rem, 1.5vh, 1.4rem);
+  }
 
   .barra-trilho { height: 46px; }
   .barra-rotulo { font-size: 0.8rem; }
