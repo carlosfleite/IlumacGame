@@ -766,16 +766,17 @@ body {
 }
 
 /* ---- Regras: 4 cards, não lista ----
-   As duas linhas de cards dividem toda a faixa livre entre o título e o
-   botão. Com altura só de conteúdo sobrava um vão de vermelho morto
-   acima do rodapé; esticando as linhas o bloco fecha a tela. */
-.palco-regras { justify-content: flex-start; }
+   O card acompanha o próprio conteúdo. Esticar as linhas até encher a
+   tela deixava o texto boiando no meio de um retângulo branco vazio —
+   pior que a sobra que tentava resolver. O que fecha a tela aqui é
+   tipografia de totem (leitura em pé, a alguns passos) e o respiro
+   distribuído pelo space-evenly, não container inflado. */
+.palco-regras { justify-content: space-evenly; }
 
 .regras-grade {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: 18px;
   margin: 0;
   padding: 0;
@@ -1666,12 +1667,18 @@ body {
   .consent { padding: 24px; font-size: 1.1rem; }
   .consent input { width: 44px; height: 44px; }
 
-  /* ---- regras ---- */
-  .regras-grade { gap: 26px; }
-  .regras-card { min-height: 300px; padding: 38px 34px 32px; }
+  /* ---- regras ----
+     Altura vem do conteúdo (padding + corpo), não de um número fixo: o
+     card cresce junto com a tipografia em vez de abrir vão interno. */
+  .regras-grade { gap: clamp(20px, 2.2vh, 34px); }
+  .regras-card {
+    min-height: 0;
+    padding: clamp(30px, 3.2vh, 62px) clamp(28px, 3vw, 40px);
+    gap: clamp(10px, 1.1vh, 18px);
+  }
   .regras-num { min-width: 66px; height: 56px; font-size: 0.92rem; }
-  .regras-card strong { font-size: 1rem; }
-  .regras-card p { font-size: 1.18rem; }
+  .regras-card strong { font-size: clamp(1.05rem, 1.65vh, 1.5rem); }
+  .regras-card p { font-size: clamp(1.25rem, 2.15vh, 1.95rem); }
 
   /* ---- quiz ---- */
   .quiz-meta { font-size: 0.88rem; }
