@@ -669,12 +669,11 @@ body {
   gap: 22px;
 }
 
-/* Empurra a ação para a base sem depender de altura fixa. */
-/* Sem auto aqui: o respiro livre do formulário vai inteiro para cima da
-   chamada (margin-top:auto nela), não dividido meio a meio com este
-   rodapé — senão a chamada fica flutuando isolada no meio da tela em vez
-   de encostada perto do botão. */
-.rodape-form { padding-top: 8px; }
+/* O auto mora aqui, não na chamada: assim o botão continua ancorado na
+   base e a sobra da tela cai entre o mascote e ele. Com o auto na chamada,
+   a sobra virava um vão único ACIMA do mascote (263px medidos no totem),
+   que era o que incomodava. */
+.rodape-form { padding-top: 8px; margin-top: auto; }
 
 /* No cadastro a chamada é opcional: some quando não há altura para ela,
    em vez de espremer o formulário.
@@ -683,16 +682,7 @@ body {
    único acima do mascote (263px medidos no totem, contra 34px abaixo).
    A sobra agora é absorvida pelos próprios campos — num totem, campo alto
    é alvo de toque melhor — e o que resta vira uma margem contida. */
-.chamada-cadastro { margin-top: clamp(16px, 2.4vh, 48px); }
-
-/* O mascote custa ~320px com a margem e o gap. Abaixo do totem isso e a
-   diferenca entre o botao CONTINUAR estar na tela ou atras do scroll — e
-   num totem touch, acao principal escondida trava o visitante. O limite
-   antigo (1000px, herdado do .chamada generico) so agia depois que o
-   formulario ja tinha estourado. */
-@media (max-height: 1599px) {
-  .chamada-cadastro { display: none; }
-}
+.chamada-cadastro { margin-top: 0; }
 
 .field {
   display: flex;
@@ -1670,18 +1660,12 @@ body {
   .ceu-estrela.e8 { width: 48px; }
   .ceu-estrela.e9 { width: 36px; }
 
-  /* ---- cadastro ----
-     Campo e espaçamento em vh: é aqui que a sobra da tela é absorvida,
-     em vez de virar vão morto acima do mascote. */
-  .field input {
-    min-height: clamp(116px, 7.4vh, 142px);
-    font-size: 1.5rem;
-    padding: 16px 22px;
-  }
-  .form-cadastro { gap: clamp(34px, 2.4vh, 46px); }
-  .form-campos { gap: clamp(34px, 2.4vh, 46px); }
+  /* ---- cadastro ---- */
+  .field input { min-height: 116px; font-size: 1.5rem; padding: 16px 22px; }
+  .form-cadastro { gap: 34px; }
+  .form-campos { gap: 34px; }
   .field > span { font-size: 0.86rem; }
-  .consent { padding: clamp(24px, 1.9vh, 36px); font-size: 1.1rem; }
+  .consent { padding: 24px; font-size: 1.1rem; }
   .consent input { width: 44px; height: 44px; }
 
   /* ---- regras ----
