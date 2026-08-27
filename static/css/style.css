@@ -374,8 +374,6 @@ body {
   max-width: 560px;
   height: auto;
   margin: 0 auto;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
 }
 
 .abertura-titulo {
