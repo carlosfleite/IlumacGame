@@ -9,11 +9,13 @@
     "  comecar: e por ela que o historico de respostas se liga a pergunta.",
     "- 'correta' aceita apenas: a, b, c ou d.",
     "- 'ativa': false tira a pergunta do sorteio sem apagar o historico dela.",
-    "- 'dificuldade' (iniciante/intermediaria/dificil) entra no sorteio: o",
-    "  totem revezar entre os grupos de dificuldade em vez de sortear puro",
-    "  do total, pra nao sair uma partida so de perguntas faceis (ou so",
-    "  dificeis) por azar. Pergunta sem 'dificuldade' cai no grupo 'geral'.",
-    "  Nao aparece pro jogador, so influencia quais perguntas saem juntas.",
+    "- 'dificuldade' (iniciante/intermediaria/dificil) hoje e so etiqueta:",
+    "  nao influencia mais o sorteio e nao aparece pro jogador. Ate ago/2026",
+    "  o totem revezava entre os grupos de dificuldade, mas como os grupos",
+    "  tem tamanhos diferentes isso fazia a pergunta do grupo menor sair",
+    "  quase 2x mais que a do maior. Agora o sorteio e uniforme e o que",
+    "  espalha e a janela de descanso: uma pergunta servida so pode voltar",
+    "  depois de ~6 partidas, entao nunca cai duas partidas seguidas.",
     "- E preciso ter pelo menos 'perguntas_por_partida' perguntas ativas.",
     "",
     "IMPORTANTE — nao deixe a resposta certa 'aparecer' pelo tamanho: ao",
@@ -56,23 +58,25 @@
       "alternativas": {
         "a": "Registrar o histórico de eventos, mas sem processar sinal algum dos dispositivos",
         "b": "Supervisionar os dispositivos, processar os sinais recebidos e comandar os alarmes",
-        "c": "Substituir integralmente o sistema de sprinklers em qualquer caso de incêndio",
+        "c": "Alimentar diretamente as luminárias de emergência instaladas na edificação",
         "d": "Controlar a climatização e a iluminação do edifício pela mesma rede de cabos"
       },
       "correta": "b",
-      "ativa": true
+      "ativa": true,
+      "revisar": true
     },
     {
       "chave": "convencional-vs-enderecavel",
       "texto": "Qual é a principal vantagem de um sistema endereçável sobre um convencional?",
       "alternativas": {
         "a": "Reduzir a bitola do cabo necessário para ligar os dispositivos ao laço",
-        "b": "Acionar as sirenes mais rápido do que um sistema convencional",
+        "b": "Acionar as sirenes bem mais rápido do que um sistema convencional",
         "c": "Identificar exatamente qual dispositivo do laço gerou o alarme disparado",
-        "d": "Dispensar o resistor de fim de linha nos circuitos supervisionados"
+        "d": "Dispensar o resistor de fim de linha em todos os circuitos supervisionados"
       },
       "correta": "c",
-      "ativa": true
+      "ativa": true,
+      "revisar": true
     },
     {
       "chave": "detector-optico-principio",
@@ -138,49 +142,53 @@
       "chave": "modulo-entrada-saida",
       "texto": "Em um sistema endereçável, qual é a diferença entre módulo de entrada e módulo de saída?",
       "alternativas": {
-        "a": "O de entrada é endereçável e o de saída é sempre convencional",
+        "a": "O módulo de entrada é endereçável e o módulo de saída é convencional",
         "b": "O módulo de entrada alimenta a central e o de saída alimenta os detectores",
         "c": "O de entrada monitora sinais externos; o de saída comanda dispositivos externos",
-        "d": "O de entrada opera em laço Classe A e o de saída em Classe B"
+        "d": "O módulo de entrada opera em laço Classe A e o de saída em Classe B"
       },
       "correta": "c",
-      "ativa": true
+      "ativa": true,
+      "revisar": true
     },
     {
       "chave": "sirene-audiovisual",
       "texto": "Por que uma sirene audiovisual combina sinal sonoro e sinal visual?",
       "alternativas": {
-        "a": "Para que a central identifique qual sirene está acionada",
-        "b": "Para atingir o nível sonoro de norma com potência menor",
+        "a": "Para que a central identifique qual sirene do laço está acionada",
+        "b": "Para atingir o nível sonoro exigido em norma com potência menor",
         "c": "Para funcionar também como iluminação de emergência complementar",
         "d": "Para alertar em locais ruidosos e pessoas com deficiência auditiva"
       },
       "correta": "d",
-      "ativa": true
+      "ativa": true,
+      "revisar": true
     },
     {
       "chave": "iluminacao-emergencia-funcao",
       "texto": "Qual é a finalidade da iluminação de emergência em uma edificação?",
       "alternativas": {
         "a": "Garantir visibilidade para a saída segura das pessoas na falta de energia",
-        "b": "Manter a iluminação dos corredores acesa fora do expediente",
-        "c": "Iluminar apenas as escadas, dispensando os corredores",
-        "d": "Alimentar os detectores de fumaça durante a falta de energia"
+        "b": "Manter a iluminação dos corredores acesa fora do horário de expediente",
+        "c": "Iluminar apenas as escadas de emergência, dispensando os corredores",
+        "d": "Alimentar os detectores de fumaça enquanto durar a falta de energia"
       },
       "correta": "a",
-      "ativa": true
+      "ativa": true,
+      "revisar": true
     },
     {
       "chave": "balizamento-rota-fuga",
       "texto": "O balizamento de rota de fuga tem como objetivo:",
       "alternativas": {
-        "a": "Iluminar o piso para evitar tropeços durante a operação normal",
+        "a": "Iluminar o piso para evitar tropeços durante a operação normal do prédio",
         "b": "Indicar o caminho a ser seguido até a saída de emergência mais próxima",
         "c": "Iluminar as áreas de trabalho fora do horário comercial do prédio",
-        "d": "Indicar onde estão os acionadores manuais do pavimento"
+        "d": "Indicar onde estão os acionadores manuais instalados em cada pavimento"
       },
       "correta": "b",
-      "ativa": true
+      "ativa": true,
+      "revisar": true
     },
     {
       "chave": "repetidor-wireless",
@@ -199,12 +207,13 @@
       "texto": "Por que a manutenção periódica de um SDAI é indispensável?",
       "alternativas": {
         "a": "Garante que os dispositivos vão funcionar quando forem realmente necessários",
-        "b": "Aumenta a quantidade de dispositivos que o laço suporta",
-        "c": "Permite adiar a vistoria periódica do Corpo de Bombeiros",
-        "d": "Zera o registro de eventos da central a cada visita técnica"
+        "b": "Aumenta a quantidade de dispositivos que cada laço endereçável suporta",
+        "c": "Permite adiar a vistoria periódica que o Corpo de Bombeiros realiza",
+        "d": "Zera o registro de eventos armazenado na central a cada manutenção"
       },
       "correta": "a",
-      "ativa": true
+      "ativa": true,
+      "revisar": true
     },
     {
       "chave": "obstrucao-detector",
@@ -250,13 +259,14 @@
       "texto": "SDAI é normalmente exigido principalmente em:",
       "alternativas": {
         "a": "Edificações e áreas de risco definidas pela legislação de segurança contra incêndio",
-        "b": "Apenas em edificações com mais de 12 metros de altura",
-        "c": "Somente em edificações construídas após a publicação da NBR 17240",
-        "d": "Exclusivamente em locais com armazenamento de líquidos inflamáveis"
+        "b": "Apenas em edificações comerciais com mais de 12 metros de altura entre pavimentos",
+        "c": "Somente em edificações construídas depois da publicação da NBR 17240 pela ABNT",
+        "d": "Exclusivamente em locais com armazenamento de líquidos inflamáveis em grande volume"
       },
       "correta": "a",
       "dificuldade": "iniciante",
-      "ativa": true
+      "ativa": true,
+      "revisar": true
     },
     {
       "chave": "deteccao-fumaca-o-que-e",
@@ -288,14 +298,15 @@
       "chave": "wireless-vantagem-basica",
       "texto": "Qual é a principal vantagem de um sistema de detecção wireless (sem fio)?",
       "alternativas": {
-        "a": "Aumenta o raio de cobertura de cada detector instalado",
+        "a": "Aumenta o raio de cobertura de cada detector instalado no ambiente",
         "b": "Permite instalar detectores sem seguir o espaçamento previsto em norma",
         "c": "Alimenta os dispositivos pelo próprio sinal de rádio, sem bateria",
         "d": "Reduz a necessidade de cabeamento entre os dispositivos e a central"
       },
       "correta": "d",
       "dificuldade": "iniciante",
-      "ativa": true
+      "ativa": true,
+      "revisar": true
     },
     {
       "chave": "deteccao-gas-funcao",
@@ -303,25 +314,27 @@
       "alternativas": {
         "a": "Detectar vazamento de gás liquefeito de petróleo (GLP) no ambiente",
         "b": "Medir com precisão a temperatura interna do ambiente da cozinha",
-        "c": "Substituir por completo o detector de fumaça em qualquer ambiente",
+        "c": "Detectar o monóxido de carbono gerado pela queima incompleta",
         "d": "Funcionar como luminária de emergência durante a falta de energia"
       },
       "correta": "a",
       "dificuldade": "iniciante",
-      "ativa": true
+      "ativa": true,
+      "revisar": true
     },
     {
       "chave": "central-coracao-sistema",
       "texto": "Por que a central de alarme costuma ser chamada de \"coração\" do SDAI?",
       "alternativas": {
-        "a": "Porque é o equipamento que mais consome energia do sistema",
+        "a": "Porque é o equipamento que mais consome energia elétrica do sistema",
         "b": "Concentra o processamento das informações de todos os dispositivos",
-        "c": "Porque é o único ponto do sistema com bateria de retaguarda",
-        "d": "Porque é sempre o primeiro dispositivo previsto no projeto"
+        "c": "Porque é o único ponto do sistema que possui bateria de retaguarda",
+        "d": "Porque é sempre o primeiro dispositivo previsto no projeto elétrico"
       },
       "correta": "b",
       "dificuldade": "iniciante",
-      "ativa": true
+      "ativa": true,
+      "revisar": true
     },
     {
       "chave": "acionador-rearmavel",
@@ -380,14 +393,15 @@
       "chave": "manutencao-causa-falha",
       "texto": "Segundo as masterclasses da Ilumac, qual é uma das principais causas de falha em detectores?",
       "alternativas": {
-        "a": "A variação normal de temperatura entre o dia e a noite",
-        "b": "A instalação a menos de 30 cm da parede mais próxima",
+        "a": "A variação normal de temperatura entre o dia e a noite no local",
+        "b": "A instalação do detector a menos de 30 cm da parede mais próxima",
         "c": "A sujeira e a poeira acumuladas na câmara sensora do detector",
         "d": "O uso de detectores de fabricantes diferentes no mesmo laço"
       },
       "correta": "c",
       "dificuldade": "iniciante",
-      "ativa": true
+      "ativa": true,
+      "revisar": true
     },
     {
       "chave": "central-log-eventos",
@@ -423,11 +437,12 @@
         "a": "Aumentar a velocidade de resposta dos relés de saída do sistema",
         "b": "Identificar e endereçar cada dispositivo individualmente na rede",
         "c": "Aumentar a voltagem da rede elétrica geral do prédio monitorado",
-        "d": "Eliminar por completo a necessidade de uma central de alarme"
+        "d": "Aumentar o número de laços que a central consegue suportar"
       },
       "correta": "b",
       "dificuldade": "intermediaria",
-      "ativa": true
+      "ativa": false,
+      "revisar": true
     },
     {
       "chave": "central-niveis-acesso",
@@ -519,7 +534,8 @@
       },
       "correta": "a",
       "dificuldade": "intermediaria",
-      "ativa": true
+      "ativa": true,
+      "revisar": true
     },
     {
       "chave": "resistor-fim-de-linha",
@@ -553,13 +569,14 @@
       "texto": "O detector linear de temperatura por cabo sensor, como o DWTC-302, é indicado principalmente para:",
       "alternativas": {
         "a": "Ambientes pequenos e totalmente fechados, sem circulação de ar",
-        "b": "Substituir integralmente os acionadores manuais do sistema",
+        "b": "Detectar fumaça ao longo de todo o comprimento do cabo sensor",
         "c": "Medir com precisão a umidade relativa do ar do ambiente",
         "d": "Proteção contínua de áreas extensas, como túneis e correias"
       },
       "correta": "d",
       "dificuldade": "intermediaria",
-      "ativa": true
+      "ativa": true,
+      "revisar": true
     },
 
     {
@@ -602,7 +619,7 @@
       "correta": "c",
       "dificuldade": "dificil",
       "revisar": true,
-      "ativa": true
+      "ativa": false
     },
     {
       "chave": "lyax-protocolo-tecnologia",
@@ -634,14 +651,15 @@
       "chave": "manutencao-motivos-masterclass",
       "texto": "Segundo a masterclass de manutenção da Ilumac, a manutenção periódica do SDAI (orientada pela NBR 17240) é importante principalmente para:",
       "alternativas": {
-        "a": "Liberar espaço na memória de eventos da central",
+        "a": "Manter livre a memória de eventos que a central registra no período",
         "b": "Reduzir risco de falha em emergência e manter conformidade normativa",
-        "c": "Estender a garantia de fábrica dos dispositivos instalados",
-        "d": "Permitir aumentar a sensibilidade dos detectores a cada visita"
+        "c": "Estender a garantia de fábrica de todos os dispositivos instalados",
+        "d": "Permitir aumentar a sensibilidade dos detectores a cada visita técnica"
       },
       "correta": "b",
       "dificuldade": "dificil",
-      "ativa": true
+      "ativa": false,
+      "revisar": true
     },
     {
       "chave": "kedual-flexibilidade-lacos",
