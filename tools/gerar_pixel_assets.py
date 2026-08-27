@@ -268,72 +268,91 @@ def folha_de_caminhada(quadros, destino):
 
 
 # ---------------------------------------------------------------------------
-# 2. Chama em pixel art (desenhada a mao, nao derivada de foto)
+# 2. Chama: recorte da folha do designer
 # ---------------------------------------------------------------------------
 
-# . = transparente
-# a = nucleo claro   b = laranja   c = vermelho   d = contorno escuro
-CHAMA_BASE = [
-    ".......dd.......",
-    "......dccd......",
-    "......dccd......",
-    ".....dcbbcd.....",
-    ".....dcbbcd.....",
-    "....dcbaabcd....",
-    "....dcbaabcd....",
-    "...dcbaaaabcd...",
-    "...dcbaaaabcd...",
-    "..dcbaaaaaabcd..",
-    "..dcbaaaaaabcd..",
-    ".dcbaaaaaaaabcd.",
-    ".dcbaaaaaaaabcd.",
-    "dcbaaaaaaaaaabcd",
-    "dcbaaaaaaaaaabcd",
-    "dcbaaaaaaaaaabcd",
-    ".dcbaaaaaaaabcd.",
-    "..dcbbbbbbbbcd..",
-    "...dcccccccd....",
-    "....ddddddd.....",
-]
+# A versao anterior desenhava a chama a mao aqui, em ASCII. Foi substituida
+# pela arte de img/sprite-fogo.webp (16 quadros num grid 4x4). ATENCAO: a
+# folha vem com fundo branco e o numero do quadro impresso em cinza no
+# canto — por isso o recorte nao pode ser um simples getbbox().
 
-PALETA_CHAMA = {
-    "a": (255, 240, 186, 255),
-    "b": (255, 166, 40, 255),
-    "c": (226, 51, 32, 255),
-    "d": (122, 14, 21, 255),
-    ".": (0, 0, 0, 0),
-}
+CHAMA_GRID = 4                       # 4x4 = 16 quadros
+CHAMA_ALTURA = 30                    # altura nativa; o CSS so amplia em 2x/3x/4x
 
-# A ponta balanca: os quadros so deslocam as linhas de cima, o que mantem
-# a base plantada e da o movimento de labareda sem redesenhar tudo.
-INCLINACAO = (0, -1, 1)
-LINHAS_DA_PONTA = 7
+# As tres cores reais da arte. Tudo que nao for "quente" (branco do fundo,
+# cinza do numero, franja da compressao webp) vira transparente, e o que
+# sobra e preso a estas tres — o webp e com perda e espalha dezenas de
+# tons intermediarios que sujariam a pixel art.
+CHAMA_PALETA = ((255, 200, 48), (251, 139, 6), (249, 58, 1))
 
 
-def _desloca(linha, dx):
-    if dx == 0:
-        return linha
-    if dx < 0:
-        return linha[-dx:] + "." * (-dx)
-    return "." * dx + linha[:-dx]
+def _quente(p):
+    r, g, b = p[:3]
+    return r > 140 and (r - b) > 60
 
 
-def gerar_chama(destino):
-    """Folha horizontal com os quadros da chama."""
-    alt = len(CHAMA_BASE)
-    larg = len(CHAMA_BASE[0])
-    assert all(len(l) == larg for l in CHAMA_BASE), "linhas de tamanhos diferentes"
+def _prender_na_paleta(p):
+    return min(CHAMA_PALETA,
+               key=lambda q: sum(abs(a - b) for a, b in zip(p[:3], q)))
 
-    folha = Image.new("RGBA", (larg * len(INCLINACAO), alt), (0, 0, 0, 0))
-    px = folha.load()
-    for i, dx in enumerate(INCLINACAO):
-        for y, linha in enumerate(CHAMA_BASE):
-            atual = _desloca(linha, dx) if y < LINHAS_DA_PONTA else linha
-            for x, ch in enumerate(atual):
-                px[i * larg + x, y] = PALETA_CHAMA[ch]
+
+def gerar_chama(origem, destino):
+    """
+    Folha horizontal de 16 quadros recortada do grid 4x4 do designer.
+
+    O recorte usa uma caixa unica para todos os quadros (a uniao das caixas
+    individuais), nao a caixa de cada um: recortado quadro a quadro, cada
+    labareda ficaria centrada na propria caixa e a chama pularia de lugar a
+    cada troca de quadro.
+    """
+    im = Image.open(origem).convert("RGB")
+    largura_celula = im.width // CHAMA_GRID
+    altura_celula = im.height // CHAMA_GRID
+    px = im.load()
+
+    def limpar(ox, oy):
+        cel = Image.new("RGBA", (largura_celula, altura_celula), (0, 0, 0, 0))
+        cp = cel.load()
+        for y in range(altura_celula):
+            for x in range(largura_celula):
+                p = px[ox + x, oy + y]
+                if _quente(p):
+                    cp[x, y] = _prender_na_paleta(p) + (255,)
+        return cel
+
+    total = CHAMA_GRID * CHAMA_GRID
+    quadros = [limpar((i % CHAMA_GRID) * largura_celula,
+                      (i // CHAMA_GRID) * altura_celula)
+               for i in range(total)]
+
+    esq = topo = 10 ** 9
+    dir_ = base = -1
+    for q in quadros:
+        caixa = q.getbbox()
+        if caixa:
+            esq, topo = min(esq, caixa[0]), min(topo, caixa[1])
+            dir_, base = max(dir_, caixa[2]), max(base, caixa[3])
+
+    larg = round((dir_ - esq) * CHAMA_ALTURA / (base - topo))
+
+    def reduzir(q):
+        s = q.crop((esq, topo, dir_, base)).resize(
+            (larg, CHAMA_ALTURA), Image.LANCZOS)
+        sp = s.load()
+        for y in range(CHAMA_ALTURA):
+            for x in range(larg):
+                p = sp[x, y]
+                # alpha binario: meio-tom de borda le como sujeira quando o
+                # CSS amplia com image-rendering: pixelated
+                sp[x, y] = (0, 0, 0, 0) if p[3] < 110 else _prender_na_paleta(p) + (255,)
+        return s
+
+    folha = Image.new("RGBA", (larg * total, CHAMA_ALTURA), (0, 0, 0, 0))
+    for i, q in enumerate(quadros):
+        folha.paste(reduzir(q), (i * larg, 0))
     folha.save(destino, "PNG", optimize=True)
-    _relatar(destino)
-    return larg, alt
+    _relatar(destino, os.path.getsize(origem))
+    return larg, CHAMA_ALTURA
 
 
 # ---------------------------------------------------------------------------
@@ -403,8 +422,9 @@ def main():
         os.remove(os.path.join(DESTINO_SPRITE, tmp))
     print("    -> celula da folha: %dx%d" % (larg, alt))
 
-    print("Chama da barra de progresso:")
-    clarg, calt = gerar_chama(os.path.join(DESTINO_IMG, "chama.png"))
+    print("Chama da barra de progresso (16 quadros da folha do designer):")
+    clarg, calt = gerar_chama(os.path.join(DESTINO_IMG, "sprite-fogo.webp"),
+                              os.path.join(DESTINO_IMG, "chama.png"))
     print("    -> celula da folha: %dx%d" % (clarg, calt))
 
     print("Elementos decorativos (tela de abertura):")

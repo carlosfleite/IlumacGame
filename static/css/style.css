@@ -455,7 +455,7 @@ body {
   flex-shrink: 0;
   width: 113px;
   height: 128px;
-  background-image: url("/static/img/ilumaquinho/idle.png");
+  background-image: url("/static/img/ilumaquinho/parado.png");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center bottom;
@@ -541,7 +541,7 @@ body {
 
 /* RANKING um pouco menor */
 .abertura-btn--ranking {
-  max-width: 300px;
+  max-width: 340px;
 }
 
 @keyframes cta-respira {
@@ -669,16 +669,20 @@ body {
   gap: 22px;
 }
 
-/* Empurra a ação para a base sem depender de altura fixa. */
-/* Sem auto aqui: o respiro livre do formulário vai inteiro para cima da
-   chamada (margin-top:auto nela), não dividido meio a meio com este
-   rodapé — senão a chamada fica flutuando isolada no meio da tela em vez
-   de encostada perto do botão. */
-.rodape-form { padding-top: 8px; }
+/* O auto mora aqui, não na chamada: assim o botão continua ancorado na
+   base e a sobra da tela cai entre o mascote e ele. Com o auto na chamada,
+   a sobra virava um vão único ACIMA do mascote (263px medidos no totem),
+   que era o que incomodava. */
+.rodape-form { padding-top: 8px; margin-top: auto; }
 
 /* No cadastro a chamada é opcional: some quando não há altura para ela,
-   em vez de espremer o formulário. */
-.chamada-cadastro { margin-top: auto; }
+   em vez de espremer o formulário.
+
+   Sem margin-top:auto aqui: com auto, toda a sobra da tela virava um vão
+   único acima do mascote (263px medidos no totem, contra 34px abaixo).
+   A sobra agora é absorvida pelos próprios campos — num totem, campo alto
+   é alvo de toque melhor — e o que resta vira uma margem contida. */
+.chamada-cadastro { margin-top: 0; }
 
 .field {
   display: flex;
@@ -766,10 +770,12 @@ body {
 }
 
 /* ---- Regras: 4 cards, não lista ----
-   Os cards têm altura pelo próprio conteúdo, não esticada até preencher
-   a tela — mas o bloco também não fica plantado sozinho no meio de um
-   vermelho vazio: encosta perto do topo, como as outras telas. */
-.palco-regras { justify-content: flex-start; }
+   O card acompanha o próprio conteúdo. Esticar as linhas até encher a
+   tela deixava o texto boiando no meio de um retângulo branco vazio —
+   pior que a sobra que tentava resolver. O que fecha a tela aqui é
+   tipografia de totem (leitura em pé, a alguns passos) e o respiro
+   distribuído pelo space-evenly, não container inflado. */
+.palco-regras { justify-content: space-evenly; }
 
 .regras-grade {
   flex: 0 1 auto;
@@ -886,9 +892,13 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Todas as 52 perguntas do banco têm exatamente 4 alternativas, então
+   deixar os cards crescerem divide a sobra em quatro partes previsíveis —
+   é o que fecha o vão que ficava entre a última opção e a barra de fogo.
+   Em tela apertada o flex-grow não age e o overflow acima assume. */
 .alt-btn {
   display: flex;
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   align-items: center;
   gap: 18px;
   width: 100%;
@@ -1033,45 +1043,42 @@ body {
   box-shadow: inset 0 var(--px) 0 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Sprite de 4 quadros (16x22 cada), línguas de fogo irregulares e bandas
-   de cor núcleo->borda — gerado em tools/gerar_chama.py a partir da
-   paleta --fogo-*. A largura acompanha a proporção nativa (16/22) pra
-   não esticar o sprite. */
+/* Folha de 16 quadros (21x30 cada), recortada da arte em
+   img/sprite-fogo.webp por tools/gerar_pixel_assets.py. Os 16 quadros
+   ja carregam o movimento do fogo, entao aqui nao ha chacoalho por
+   transform: a animacao e a propria arte.
+
+   A altura e sempre multiplo inteiro dos 30px nativos (2x, 3x, 4x) —
+   com image-rendering: pixelated, escala quebrada produz bloco de
+   tamanho irregular e a pixel art perde o alinhamento. */
 .chama {
-  --chama-h: 64px;
-  --chama-w: calc(var(--chama-h) * 16 / 22);
+  --chama-h: 60px;             /* 2x de 30px */
+  --chama-w: calc(var(--chama-h) * 21 / 30);
   width: var(--chama-w);
   height: var(--chama-h);
   background-image: url("/static/img/chama.png");
-  background-size: calc(var(--chama-w) * 4) var(--chama-h);
+  background-size: calc(var(--chama-w) * 16) var(--chama-h);
   background-repeat: no-repeat;
   background-position: 0 0;
   transform-origin: 50% 100%;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  animation: chama-quadros 0.48s steps(1) infinite,
-             chama-chacoalho 0.72s steps(2) infinite,
+  animation: chama-quadros 0.96s steps(16) infinite,
              chama-vida 2.4s ease-in-out infinite;
 }
 
+/* steps(16) percorre os 16 quadros sem precisar de 16 paradas escritas:
+   vai de 0 a -16w em saltos discretos, parando em -15w (jump-end). */
 @keyframes chama-quadros {
-  0%   { background-position: 0 0; }
-  25%  { background-position: calc(var(--chama-w) * -1) 0; }
-  50%  { background-position: calc(var(--chama-w) * -2) 0; }
-  75%  { background-position: calc(var(--chama-w) * -3) 0; }
+  from { background-position: 0 0; }
+  to   { background-position: calc(var(--chama-w) * -16) 0; }
 }
 
-@keyframes chama-chacoalho {
-  0%  { transform: translateX(0) scaleY(1); }
-  50% { transform: translateX(-2px) scaleY(1.05); }
-}
-
-/* Vida de cor: um leve giro de matiz e brilho, contínuo (não é troca de
-   quadro de sprite, então usa ease em vez de steps). Sutil de propósito —
-   é só o suficiente pra chama não parecer estática. */
+/* Só brilho, sem hue-rotate: a paleta de três cores é a da arte
+   original e girar matiz sujava o laranja. */
 @keyframes chama-vida {
-  0%, 100% { filter: hue-rotate(0deg) brightness(1); }
-  50%      { filter: hue-rotate(-6deg) brightness(1.12); }
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.1); }
 }
 
 /* Cresce com os acertos; no 10/10 aumenta e acelera */
@@ -1082,8 +1089,8 @@ body {
 .chama[data-nivel="4"] { opacity: 1; }
 .chama[data-nivel="5"] {
   opacity: 1;
-  --chama-h: 80px;
-  animation-duration: 0.24s, 0.48s, 1.2s;
+  --chama-h: 90px;             /* 3x */
+  animation-duration: 0.64s, 1.2s;
 }
 
 /* ==========================================================================
@@ -1641,7 +1648,7 @@ body {
   /* Os botões ocupam a base inteira: alvo de toque enorme e visível de
      longe, que é o único gesto que esta tela precisa provocar. */
   .abertura-btn--jogar { max-width: 760px; }
-  .abertura-btn--ranking { max-width: 480px; }
+  .abertura-btn--ranking { max-width: 600px; }
 
   .ceu-estrela.e1 { width: 62px; }
   .ceu-estrela.e2 { width: 44px; }
@@ -1661,27 +1668,48 @@ body {
   .consent { padding: 24px; font-size: 1.1rem; }
   .consent input { width: 44px; height: 44px; }
 
-  /* ---- regras ---- */
-  .regras-grade { gap: 26px; }
-  .regras-card { min-height: 300px; padding: 38px 34px 32px; }
+  /* ---- regras ----
+     Altura vem do conteúdo (padding + corpo), não de um número fixo: o
+     card cresce junto com a tipografia em vez de abrir vão interno. */
+  .regras-grade { gap: clamp(20px, 2.2vh, 34px); }
+  .regras-card {
+    min-height: 0;
+    padding: clamp(30px, 3.2vh, 62px) clamp(28px, 3vw, 40px);
+    gap: clamp(10px, 1.1vh, 18px);
+  }
   .regras-num { min-width: 66px; height: 56px; font-size: 0.92rem; }
-  .regras-card strong { font-size: 1rem; }
-  .regras-card p { font-size: 1.18rem; }
+  .regras-card strong { font-size: clamp(1.05rem, 1.65vh, 1.5rem); }
+  .regras-card p { font-size: clamp(1.25rem, 2.15vh, 1.95rem); }
 
   /* ---- quiz ---- */
   .quiz-meta { font-size: 0.88rem; }
   #quiz-pontos { font-size: 1rem; }
-  .quiz-pergunta { font-size: clamp(1.8rem, 3.4vw, 2.4rem); }
-  .quiz-alternativas { gap: 24px; }
-  .alt-btn { min-height: 108px; font-size: 1.35rem; padding: 26px 30px; gap: 26px; }
-  .alt-letra { width: 78px; height: 78px; font-size: 1.1rem; }
+  /* Tipografia e alturas em vh, não em valor fixo: esta faixa vai de 1200px
+     até o totem de 1920px, e o que preenche a tela lá estoura numa janela
+     de 1400px. A margem maior sob o enunciado empurra os cards para baixo. */
+  .quiz-pergunta {
+    font-size: clamp(1.7rem, 2.9vh, 2.6rem);
+    margin-bottom: clamp(28px, 2.6vh, 56px);
+  }
+  .quiz-alternativas { gap: clamp(20px, 1.7vh, 32px); }
+  .alt-btn {
+    min-height: clamp(105px, 7.8vh, 150px);
+    font-size: clamp(1.5rem, 2.3vh, 1.85rem);
+    padding: clamp(24px, 1.8vh, 34px) 40px;
+    gap: 32px;
+  }
+  .alt-letra {
+    width: clamp(72px, 5vh, 96px);
+    height: clamp(72px, 5vh, 96px);
+    font-size: clamp(1.1rem, 1.5vh, 1.4rem);
+  }
 
   .barra-trilho { height: 46px; }
   .barra-rotulo { font-size: 0.8rem; }
   .barra-rotulo b { font-size: 0.9rem; }
   .chama-caixa { width: 112px; height: 112px; }
-  .chama { --chama-h: 82px; }
-  .chama[data-nivel="5"] { --chama-h: 100px; }
+  .chama { --chama-h: 90px; }                      /* 3x de 30px */
+  .chama[data-nivel="5"] { --chama-h: 120px; }     /* 4x */
 
   /* ---- feedback ---- */
   .fb-reboque { width: min(100%, 900px); }
@@ -1735,8 +1763,9 @@ body {
   :root { --zona-gap: 30px; --safe-side: 40px; }
   .abertura-imagem { max-width: 640px; }
   .abertura-btn--jogar { max-width: 540px; }
-  .abertura-btn--ranking { max-width: 360px; }
-  .alt-btn { min-height: 110px; }
+  .abertura-btn--ranking { max-width: 430px; }
+  .alt-btn { min-height: 130px; font-size: 1.25rem; padding: 28px 32px; }
+  .alt-letra { width: 64px; height: 64px; }
 }
 
 /* Telas baixas (monitor deitado, janela de desenvolvimento): o mascote e a
@@ -1751,7 +1780,7 @@ body {
   .abertura-numeros { display: none; }
   .abertura-imagem { max-width: 420px; }
   .abertura-btn--jogar { max-width: 320px; }
-  .abertura-btn--ranking { max-width: 230px; }
+  .abertura-btn--ranking { max-width: 270px; }
   .abertura-sub { display: none; }
 }
 
