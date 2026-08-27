@@ -1039,45 +1039,42 @@ body {
   box-shadow: inset 0 var(--px) 0 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Sprite de 4 quadros (16x22 cada), línguas de fogo irregulares e bandas
-   de cor núcleo->borda — gerado em tools/gerar_chama.py a partir da
-   paleta --fogo-*. A largura acompanha a proporção nativa (16/22) pra
-   não esticar o sprite. */
+/* Folha de 16 quadros (21x30 cada), recortada da arte em
+   img/sprite-fogo.webp por tools/gerar_pixel_assets.py. Os 16 quadros
+   ja carregam o movimento do fogo, entao aqui nao ha chacoalho por
+   transform: a animacao e a propria arte.
+
+   A altura e sempre multiplo inteiro dos 30px nativos (2x, 3x, 4x) —
+   com image-rendering: pixelated, escala quebrada produz bloco de
+   tamanho irregular e a pixel art perde o alinhamento. */
 .chama {
-  --chama-h: 64px;
-  --chama-w: calc(var(--chama-h) * 16 / 22);
+  --chama-h: 60px;             /* 2x de 30px */
+  --chama-w: calc(var(--chama-h) * 21 / 30);
   width: var(--chama-w);
   height: var(--chama-h);
   background-image: url("/static/img/chama.png");
-  background-size: calc(var(--chama-w) * 4) var(--chama-h);
+  background-size: calc(var(--chama-w) * 16) var(--chama-h);
   background-repeat: no-repeat;
   background-position: 0 0;
   transform-origin: 50% 100%;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  animation: chama-quadros 0.48s steps(1) infinite,
-             chama-chacoalho 0.72s steps(2) infinite,
+  animation: chama-quadros 0.96s steps(16) infinite,
              chama-vida 2.4s ease-in-out infinite;
 }
 
+/* steps(16) percorre os 16 quadros sem precisar de 16 paradas escritas:
+   vai de 0 a -16w em saltos discretos, parando em -15w (jump-end). */
 @keyframes chama-quadros {
-  0%   { background-position: 0 0; }
-  25%  { background-position: calc(var(--chama-w) * -1) 0; }
-  50%  { background-position: calc(var(--chama-w) * -2) 0; }
-  75%  { background-position: calc(var(--chama-w) * -3) 0; }
+  from { background-position: 0 0; }
+  to   { background-position: calc(var(--chama-w) * -16) 0; }
 }
 
-@keyframes chama-chacoalho {
-  0%  { transform: translateX(0) scaleY(1); }
-  50% { transform: translateX(-2px) scaleY(1.05); }
-}
-
-/* Vida de cor: um leve giro de matiz e brilho, contínuo (não é troca de
-   quadro de sprite, então usa ease em vez de steps). Sutil de propósito —
-   é só o suficiente pra chama não parecer estática. */
+/* Só brilho, sem hue-rotate: a paleta de três cores é a da arte
+   original e girar matiz sujava o laranja. */
 @keyframes chama-vida {
-  0%, 100% { filter: hue-rotate(0deg) brightness(1); }
-  50%      { filter: hue-rotate(-6deg) brightness(1.12); }
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.1); }
 }
 
 /* Cresce com os acertos; no 10/10 aumenta e acelera */
@@ -1088,8 +1085,8 @@ body {
 .chama[data-nivel="4"] { opacity: 1; }
 .chama[data-nivel="5"] {
   opacity: 1;
-  --chama-h: 80px;
-  animation-duration: 0.24s, 0.48s, 1.2s;
+  --chama-h: 90px;             /* 3x */
+  animation-duration: 0.64s, 1.2s;
 }
 
 /* ==========================================================================
@@ -1707,8 +1704,8 @@ body {
   .barra-rotulo { font-size: 0.8rem; }
   .barra-rotulo b { font-size: 0.9rem; }
   .chama-caixa { width: 112px; height: 112px; }
-  .chama { --chama-h: 82px; }
-  .chama[data-nivel="5"] { --chama-h: 100px; }
+  .chama { --chama-h: 90px; }                      /* 3x de 30px */
+  .chama[data-nivel="5"] { --chama-h: 120px; }     /* 4x */
 
   /* ---- feedback ---- */
   .fb-reboque { width: min(100%, 900px); }
