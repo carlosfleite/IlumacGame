@@ -9,6 +9,7 @@ import random
 import re
 import threading
 import time
+from collections import deque
 from flask import Flask, jsonify, render_template, request
 
 from database import (
@@ -55,6 +56,12 @@ _sessoes = {}
 # porque uma pessoa parada lendo as perguntas não pode ser confundida com
 # abandono.
 _SESSAO_TTL_S = 30 * 60
+
+# Perguntas servidas nas últimas partidas, da mais antiga para a mais nova.
+# Só memória de processo: reiniciar o totem recomeça o rodízio, o que é
+# aceitável — o que não pode é repetir dentro da mesma fila de visitantes.
+_recentes_lock = threading.Lock()
+_recentes = deque()
 
 
 def _descartar_sessoes_expiradas():
@@ -237,39 +244,49 @@ def api_cadastro():
 
 def _sortear_perguntas(rows, quantidade):
     """
-    Sorteio estratificado por dificuldade: revezar entre os grupos
-    (iniciante/intermediaria/dificil/geral) embaralhados, em vez de um
-    random.sample() puro sobre o total.
+    Sorteio uniforme com janela de descanso.
 
-    Um sorteio uniforme, por puro azar, pode devolver 5 perguntas fáceis
-    de vez em quando — aí a fila inteira começa a comparar respostas
-    daquela combinação específica. Revezar os grupos espalha a exposição
-    de forma mais pareja entre o banco inteiro, dificultando decoreba
-    coletiva no estande. A ordem dos grupos também é embaralhada a cada
-    partida, para nenhum grupo ser sistematicamente "o primeiro".
+    A versão anterior revezava por dificuldade, tirando ~1 pergunta de cada
+    grupo por partida. Como os grupos têm tamanhos diferentes (11 a 17
+    perguntas no banco atual), a exposição por pergunta ficava desigual: as
+    do menor grupo saíam 11,4% das partidas contra 7,4% das do maior —
+    quase 2x, medido em 4000 partidas simuladas.
+
+    O motivo original era evitar uma rodada inteira de perguntas fáceis.
+    Só que isso tem 0,03% de chance num sorteio uniforme deste banco
+    (C(12,5)/C(52,5)): o remédio custava mais que a doença.
+
+    O que espalha a exposição de verdade aqui é a janela de descanso. Sem
+    ela, nada impede a mesma pergunta de cair em duas partidas seguidas —
+    e no estande as pessoas jogam em fila, uma vendo a tela da outra, então
+    repetir cedo entrega a resposta para quem está esperando.
     """
-    grupos = {}
-    for row in rows:
-        grupos.setdefault(row["dificuldade"] or "geral", []).append(row)
-    for lista in grupos.values():
-        random.shuffle(lista)
+    por_id = {row["id"]: row for row in rows}
 
-    ordem_grupos = list(grupos.keys())
-    random.shuffle(ordem_grupos)
+    # Quantas perguntas ficam de molho. Teto de 6 partidas para não zerar o
+    # sorteio, e piso que garante o dobro do necessário disponível — se
+    # alguém desativar meio banco pelo admin, isto continua tendo de onde
+    # sortear em vez de estourar.
+    janela = max(0, min(len(rows) - quantidade * 2, quantidade * 6))
 
-    selecionadas = []
-    indices = {g: 0 for g in ordem_grupos}
-    avancou = True
-    while len(selecionadas) < quantidade and avancou:
-        avancou = False
-        for g in ordem_grupos:
-            if len(selecionadas) >= quantidade:
-                break
-            i = indices[g]
-            if i < len(grupos[g]):
-                selecionadas.append(grupos[g][i])
-                indices[g] = i + 1
-                avancou = True
+    with _recentes_lock:
+        while len(_recentes) > janela:
+            _recentes.popleft()
+
+        descansando = set(_recentes)
+        disponiveis = [row for row in rows if row["id"] not in descansando]
+
+        # Banco pequeno demais para a janela: libera as mais antigas.
+        if len(disponiveis) < quantidade:
+            faltam = quantidade - len(disponiveis)
+            for pid in list(_recentes)[:faltam]:
+                if pid in por_id:
+                    disponiveis.append(por_id[pid])
+
+        selecionadas = random.sample(disponiveis, min(quantidade, len(disponiveis)))
+        for row in selecionadas:
+            _recentes.append(row["id"])
+
     return selecionadas
 
 
