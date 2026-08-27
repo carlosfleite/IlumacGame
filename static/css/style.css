@@ -1671,10 +1671,10 @@ body {
   /* ---- quiz ---- */
   .quiz-meta { font-size: 0.88rem; }
   #quiz-pontos { font-size: 1rem; }
-  .quiz-pergunta { font-size: clamp(1.8rem, 3.4vw, 2.4rem); }
-  .quiz-alternativas { gap: 24px; }
-  .alt-btn { min-height: 108px; font-size: 1.35rem; padding: 26px 30px; gap: 26px; }
-  .alt-letra { width: 78px; height: 78px; font-size: 1.1rem; }
+  .quiz-pergunta { font-size: clamp(2.1rem, 4vw, 2.8rem); }
+  .quiz-alternativas { gap: 32px; }
+  .alt-btn { min-height: 140px; font-size: 1.6rem; padding: 34px 38px; gap: 32px; }
+  .alt-letra { width: 92px; height: 92px; font-size: 1.3rem; }
 
   .barra-trilho { height: 46px; }
   .barra-rotulo { font-size: 0.8rem; }
@@ -1736,7 +1736,8 @@ body {
   .abertura-imagem { max-width: 640px; }
   .abertura-btn--jogar { max-width: 540px; }
   .abertura-btn--ranking { max-width: 430px; }
-  .alt-btn { min-height: 110px; }
+  .alt-btn { min-height: 130px; font-size: 1.25rem; padding: 28px 32px; }
+  .alt-letra { width: 64px; height: 64px; }
 }
 
 /* Telas baixas (monitor deitado, janela de desenvolvimento): o mascote e a
