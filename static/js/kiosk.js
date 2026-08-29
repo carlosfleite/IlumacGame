@@ -16,18 +16,76 @@
  * Tempo de inatividade por tela: atributo data-kiosk-timeout no <body>,
  * em segundos. 0 ou ausente desliga o reset (usado na tela de abertura,
  * que já é o estado de repouso).
+ *
+ * MODO DEV — abra qualquer tela com ?dev=1 para destravar F11/F12 e
+ * desligar o reset por inatividade enquanto você trabalha. A escolha fica
+ * no localStorage (senão o primeiro reset de navegação já a perderia) e
+ * um selo no canto avisa que o totem está destravado. ?dev=0 volta ao
+ * normal. O totem abre "/" sem parâmetro nenhum, então nunca cai aqui.
  */
 (function () {
   "use strict";
 
   var AVISO_S = 10; // segundos de contagem regressiva antes de resetar
   var URL_REPOUSO = "/";
+  var CHAVE_DEV = "kiosk-dev";
+
+  // ---------------------------------------------------------------------
+  // Modo dev
+  // ---------------------------------------------------------------------
+
+  function lerModoDev() {
+    try {
+      var p = new URLSearchParams(window.location.search);
+      if (p.has("dev")) {
+        if (p.get("dev") === "0") {
+          localStorage.removeItem(CHAVE_DEV);
+        } else {
+          localStorage.setItem(CHAVE_DEV, "1");
+        }
+      }
+      return localStorage.getItem(CHAVE_DEV) === "1";
+    } catch (e) {
+      // localStorage bloqueado: assume totem travado, que é o lado seguro
+      return false;
+    }
+  }
+
+  var modoDev = lerModoDev();
+
+  // Selo visível: sem ele, alguém que ligou o modo dev e esqueceu deixaria
+  // o totem destravado na feira sem nenhum sinal na tela.
+  function marcarModoDev() {
+    var selo = document.createElement("button");
+    selo.type = "button";
+    selo.textContent = "MODO DEV — destravado (?dev=0 sai)";
+    selo.title = "Clique para ocultar o selo nesta tela";
+    selo.setAttribute("style", [
+      "position:fixed", "z-index:9999", "left:0", "bottom:0",
+      "margin:0", "padding:4px 10px", "border:0",
+      "font:600 11px/1.4 monospace", "letter-spacing:.08em",
+      "color:#1c1517", "background:#ffd21e", "cursor:pointer",
+      "border-top-right-radius:2px"
+    ].join(";"));
+    // O selo pousa em cima da barra de fogo no quiz. Some no clique para
+    // nao atrapalhar a inspecao, e volta no proximo carregamento — o aviso
+    // de que o totem esta destravado nao se perde.
+    selo.addEventListener("click", function () {
+      selo.remove();
+    });
+    document.body.appendChild(selo);
+  }
 
   // ---------------------------------------------------------------------
   // Bloqueio de saída acidental
   // ---------------------------------------------------------------------
 
+  if (modoDev) {
+    marcarModoDev();
+  }
+
   document.addEventListener("contextmenu", function (ev) {
+    if (modoDev) return;
     ev.preventDefault();
   });
 
@@ -44,6 +102,7 @@
   document.addEventListener(
     "keydown",
     function (ev) {
+      if (modoDev) return;
       var k = ev.key;
 
       // Backspace fora de campo de texto navega para trás em alguns motores
@@ -83,6 +142,11 @@
   // ---------------------------------------------------------------------
   // Reset por inatividade
   // ---------------------------------------------------------------------
+
+  // No modo dev o reset por inatividade também sai: inspecionar elemento
+  // leva mais que o timeout, e a tela voltando para a abertura no meio da
+  // conferência é o mesmo estorvo que o bloqueio de tecla.
+  if (modoDev) return;
 
   var timeoutS = parseInt(document.body.getAttribute("data-kiosk-timeout"), 10);
   if (!timeoutS || timeoutS <= 0) return;
