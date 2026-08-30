@@ -480,6 +480,8 @@ def api_quiz_responder():
         "acertou": bool(acertou),
         "mensagem": mensagem,
         "feedback": feedback,
+        # já respondida: pode revelar a letra certa para a tela de feedback
+        "correta": correta,
         "pontos": PONTOS_POR_ACERTO if acertou else 0,
     })
 

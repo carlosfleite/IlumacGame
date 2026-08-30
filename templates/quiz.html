@@ -50,19 +50,42 @@
     </div>
   </footer>
 
-  <!-- Feedback: o Llumaquinho entra puxando o card pela corda -->
+  <!-- Feedback: o Ilumaquinho entra puxando a tela de resultado pela corda -->
   <div id="feedback-overlay" class="feedback-overlay" hidden>
     <div class="fb-reboque" id="fb-reboque">
-      <div class="fb-card" id="fb-card">
-        <div class="fb-faixa" id="fb-faixa"></div>
-        <div class="fb-corpo">
+      <div class="fb-painel" id="fb-card">
+        <div class="fb-topo" id="fb-faixa">
+          <svg class="fb-topo-icone fb-topo-icone--ok" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 13 L10 19 L20 5" fill="none" stroke="currentColor" stroke-width="4"></path>
+          </svg>
+          <svg class="fb-topo-icone fb-topo-icone--erro" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 5 L19 19 M19 5 L5 19" fill="none" stroke="currentColor" stroke-width="4"></path>
+          </svg>
+          <span id="fb-topo-txt">Resposta certa</span>
+        </div>
+
+        <div class="fb-miolo">
+          <div class="fb-estrelas" aria-hidden="true">
+            <img src="/static/img/estrela.png" alt="" class="fb-estrela x1">
+            <img src="/static/img/estrela.png" alt="" class="fb-estrela x2">
+            <img src="/static/img/estrela.png" alt="" class="fb-estrela x3">
+          </div>
+
           <p id="feedback-msg" class="feedback-msg"></p>
           <p id="feedback-pontos" class="feedback-pontos"></p>
-          <p class="feedback-tap">Toque para continuar</p>
+
+          <div class="fb-resposta">
+            <div class="fb-resposta-rotulo" id="fb-resposta-rotulo">Resposta</div>
+            <p class="fb-resposta-texto" id="feedback-detalhe"></p>
+          </div>
+
+          <div class="fb-mascote-area">
+            <div class="fb-mascote" id="fb-mascote" role="img" aria-label="Ilumaquinho"></div>
+          </div>
         </div>
+
+        <p class="feedback-tap">Toque para continuar</p>
       </div>
-      <span class="fb-corda" aria-hidden="true"></span>
-      <div class="fb-mascote" id="fb-mascote" role="img" aria-label="Llumaquinho"></div>
     </div>
   </div>
 
