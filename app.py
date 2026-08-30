@@ -259,11 +259,13 @@ def _sortear_perguntas(rows, quantidade):
     """
     por_id = {row["id"]: row for row in rows}
 
-    # Quantas perguntas ficam de molho. Teto de 6 partidas para não zerar o
-    # sorteio, e piso que garante o dobro do necessário disponível — se
-    # alguém desativar meio banco pelo admin, isto continua tendo de onde
-    # sortear em vez de estourar.
-    janela = max(0, min(len(rows) - quantidade * 2, quantidade * 6))
+    # Quantas perguntas ficam de molho entre uma aparição e outra. Deixamos
+    # descansar TODAS menos um pool de reserva — quanto maior o banco ativo,
+    # maior o intervalo até uma pergunta poder repetir. O pool de reserva
+    # (~3 partidas, mínimo 12) mantém variedade no sorteio e evita estourar
+    # se metade do banco for desativada pelo admin.
+    reserva = max(quantidade * 3, 12)
+    janela = max(0, len(rows) - reserva)
 
     with _recentes_lock:
         conn = get_connection()
@@ -312,6 +314,24 @@ def _sortear_perguntas(rows, quantidade):
     return selecionadas
 
 
+def _embaralhar_alternativas(row, pos_proibida=None):
+    """
+    Reembaralha a/b/c/d desta pergunta e devolve (alts, posição_da_correta).
+
+    Evita deixar a resposta certa em `pos_proibida` (onde ela caiu da última
+    vez que a pergunta apareceu). Com 4 posições, poucas tentativas bastam.
+    """
+    ordem = ["a", "b", "c", "d"]
+    correta_pos = pos_proibida
+    for _ in range(12):
+        random.shuffle(ordem)
+        correta_pos = "abcd"[ordem.index(row["correta"])]
+        if correta_pos != pos_proibida:
+            break
+    alts = {"abcd"[i]: row["alt_" + origem] for i, origem in enumerate(ordem)}
+    return alts, correta_pos
+
+
 @app.route("/api/quiz/iniciar", methods=["GET"])
 def api_quiz_iniciar():
     """Sorteia 5 perguntas ativas e devolve sem revelar a correta."""
@@ -345,21 +365,45 @@ def api_quiz_iniciar():
 
     selecionadas = _sortear_perguntas(rows, QTD_PERGUNTAS)
 
-    # Guarda gabarito só no servidor. As alternativas são embaralhadas a cada
-    # partida: no banco a correta tende a ficar em A/B (viés de quem redigiu),
-    # e sem embaralhar o jogador aprende a "chutar A" olhando a fila.
+    # Guarda gabarito só no servidor. As alternativas são reembaralhadas a
+    # cada partida e nunca caem na mesma posição da vez anterior: no banco a
+    # correta tende a ficar em A/B (viés de quem redigiu) e, sem isso, o
+    # jogador na fila aprende a "chutar A" olhando a tela do outro.
     gabarito = {}
     perguntas_cliente = []
-    for row in selecionadas:
-        ordem = ["a", "b", "c", "d"]
-        random.shuffle(ordem)
-        pergunta = {"id": row["id"], "texto": row["texto"]}
-        for i, origem in enumerate(ordem):
-            posicao = "abcd"[i]
-            pergunta["alt_" + posicao] = row["alt_" + origem]
-            if origem == row["correta"]:
-                gabarito[row["id"]] = posicao
-        perguntas_cliente.append(pergunta)
+    ids = [row["id"] for row in selecionadas]
+    novas_posicoes = {}
+
+    conn = get_connection()
+    try:
+        marcador = ",".join("?" * len(ids))
+        pos_anterior = {
+            r["pergunta_id"]: r["pos"] for r in conn.execute(
+                "SELECT pergunta_id, pos FROM quiz_ultima_pos "
+                "WHERE pergunta_id IN (%s)" % marcador,
+                ids,
+            )
+        }
+
+        for row in selecionadas:
+            alts, correta_pos = _embaralhar_alternativas(
+                row, pos_anterior.get(row["id"])
+            )
+            gabarito[row["id"]] = correta_pos
+            novas_posicoes[row["id"]] = correta_pos
+            pergunta = {"id": row["id"], "texto": row["texto"]}
+            for letra, texto in alts.items():
+                pergunta["alt_" + letra] = texto
+            perguntas_cliente.append(pergunta)
+
+        conn.executemany(
+            "INSERT INTO quiz_ultima_pos (pergunta_id, pos) VALUES (?, ?) "
+            "ON CONFLICT(pergunta_id) DO UPDATE SET pos = excluded.pos",
+            list(novas_posicoes.items()),
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
     with _sessao_lock:
         _descartar_sessoes_expiradas()

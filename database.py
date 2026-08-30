@@ -139,6 +139,15 @@ CREATE TABLE IF NOT EXISTS quiz_recentes (
     pergunta_id INTEGER NOT NULL,
     usado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Última posição (a/b/c/d) em que a resposta certa de cada pergunta foi
+-- exibida. As alternativas são reembaralhadas a cada partida e nunca
+-- repetem a posição anterior: numa feira de 3 dias, ninguém decora
+-- "a resposta do SDAI é a letra A".
+CREATE TABLE IF NOT EXISTS quiz_ultima_pos (
+    pergunta_id INTEGER PRIMARY KEY,
+    pos TEXT NOT NULL
+);
 """
 
 
