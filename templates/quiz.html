@@ -14,10 +14,10 @@
         <span class="brand-divider" aria-hidden="true"></span>
         <img class="brand-logo-fs" src="/static/img/logo-fireshow-branco.png" alt="Fire Show 2026">
       </div>
-      <!-- Cronômetro compacto: a base da tela agora é da barra de fogo -->
+      <!-- Placar de acertos: o cronômetro virou a barra da base -->
       <div class="timer-topo" aria-live="off">
-        <span class="rotulo">Tempo</span>
-        <span class="valor" id="quiz-timer">00:00</span>
+        <span class="rotulo">Acertos</span>
+        <span class="valor" id="quiz-acertos">0 / 5</span>
       </div>
     </div>
 
@@ -33,14 +33,17 @@
     </main>
   </div>
 
-  <!-- Barra de fogo: um bloco por pergunta. Acende no acerto, apaga no erro. -->
+  <!-- Cronômetro da pergunta: a barra drena com os segundos. Zerou, a
+       pergunta conta como errada. A chama cresce a cada acerto. -->
   <footer class="barra-fogo">
     <div class="barra-info">
       <div class="barra-rotulo">
-        <span>Nível de fogo</span>
-        <b id="barra-placar">0 / 10</b>
+        <span>Tempo da pergunta</span>
+        <b id="barra-prazo">0:20</b>
       </div>
-      <div class="barra-trilho" id="barra-trilho" role="img" aria-label="Progresso da partida"></div>
+      <div class="barra-trilho" role="img" aria-label="Tempo restante da pergunta">
+        <div class="barra-progresso" id="barra-progresso"></div>
+      </div>
     </div>
     <div class="chama-caixa">
       <div class="chama" id="chama" data-nivel="0" aria-hidden="true"></div>

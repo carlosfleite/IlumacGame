@@ -1000,33 +1000,37 @@ body {
 }
 
 .barra-trilho {
-  display: flex;
-  gap: var(--px);
   height: 32px;
   padding: var(--px);
   background: var(--vermelho-noite);
   border: var(--px) solid var(--contorno);
   box-shadow: inset 0 0 0 var(--px) rgba(0, 0, 0, 0.45);
+  overflow: hidden;
 }
 
-.barra-bloco {
-  flex: 1;
-  background: rgba(0, 0, 0, 0.34);
-  box-shadow: inset 0 var(--px) 0 0 rgba(255, 255, 255, 0.06);
-  transition: background 0.2s steps(3);
-}
-
-/* aceso: brasa com núcleo claro em cima e borda quente embaixo */
-.barra-bloco.aceso {
+/* Cronômetro: enche o trilho e some com os segundos. A largura é
+   escrita pelo quiz.js a cada tick; a cor vira alerta e depois crítico
+   quando o tempo aperta. */
+.barra-progresso {
+  width: 100%;
+  height: 100%;
   background: var(--fogo-medio);
   box-shadow: inset 0 var(--px) 0 0 var(--fogo-nucleo),
               inset 0 calc(var(--px) * -1) 0 0 var(--fogo-borda);
+  transition: width 0.12s linear, background 0.3s steps(3);
 }
 
-.barra-bloco.apagado {
-  background: var(--cinza-apagado);
-  box-shadow: inset 0 var(--px) 0 0 rgba(255, 255, 255, 0.10),
-              inset 0 calc(var(--px) * -1) 0 0 rgba(0, 0, 0, 0.35);
+.barra-progresso.is-alerta {
+  background: #f5a623;
+}
+
+.barra-progresso.is-critico {
+  background: var(--vermelho, #d0021b);
+  animation: barra-pulsa 0.6s steps(2) infinite;
+}
+
+@keyframes barra-pulsa {
+  50% { opacity: 0.6; }
 }
 
 /* Nicho da chama: mesma moldura dos demais componentes */
@@ -1274,12 +1278,10 @@ body {
   flex-shrink: 0;
   width: 138px;
   height: 168px;
-  background-image: url("/static/img/ilumaquinho/trofeu.png");
+  background-image: url("/static/img/IlumaquinhoTrofeu.png");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center bottom;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
   animation: mascote-respira 1.6s ease-in-out infinite;
 }
 

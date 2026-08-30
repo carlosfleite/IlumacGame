@@ -89,14 +89,13 @@
     return null;
   }
 
-  /** Aceita fixo (10) e celular (11). No celular, exige o 9 inicial. */
+  /** Aceita fixo (10) e celular (11). */
   function validarTelefone(valor) {
     var d = soDigitos(valor);
     if (!d) return "Informe seu telefone.";
     if (d.length < 10) return "Telefone incompleto — use DDD + número.";
     var ddd = parseInt(d.slice(0, 2), 10);
     if (ddd < 11 || ddd > 99) return "DDD inválido.";
-    if (d.length === 11 && d[2] !== "9") return "Celular deve começar com 9 após o DDD.";
     return null;
   }
 

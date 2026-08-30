@@ -16,18 +16,97 @@
  * Tempo de inatividade por tela: atributo data-kiosk-timeout no <body>,
  * em segundos. 0 ou ausente desliga o reset (usado na tela de abertura,
  * que já é o estado de repouso).
+ *
+ * QUEM TRAVA É O TOTEM, NÃO O NAVEGADOR. O run.py abre a janela do
+ * pywebview em ?kiosk=1; esse parâmetro liga o travamento e fica gravado
+ * no localStorage daquela instalação. Um navegador aberto na mão nunca
+ * recebe o parâmetro, então já nasce destravado — é assim que se testa
+ * responsividade no F12 sem precisar lembrar de nenhum truque.
+ *
+ * O localStorage do pywebview é separado do localStorage do Chrome (perfis
+ * diferentes, e o run.py ainda usa 127.0.0.1 enquanto no navegador se
+ * digita localhost, que é outra origem), então marcar o totem não
+ * contamina a máquina de desenvolvimento.
+ *
+ * Escotilhas manuais, para o caso de precisar mexer no proprio totem:
+ *   ?dev=1   destrava temporariamente (mostra um selo amarelo no canto)
+ *   ?dev=0   volta a travar
+ *   ?kiosk=0 desmarca a instalação como totem
  */
 (function () {
   "use strict";
 
   var AVISO_S = 10; // segundos de contagem regressiva antes de resetar
   var URL_REPOUSO = "/";
+  var CHAVE_TOTEM = "kiosk-totem";
+  var CHAVE_DEV = "kiosk-dev";
+
+  // ---------------------------------------------------------------------
+  // Travado ou não
+  // ---------------------------------------------------------------------
+
+  var params = new URLSearchParams(window.location.search);
+
+  /**
+   * Lê uma chave que pode ser ligada/desligada por parâmetro na URL e fica
+   * gravada depois disso. Precisa ficar gravada porque a navegação interna
+   * do app (e o reset para URL_REPOUSO) não carrega parâmetro nenhum.
+   */
+  function bandeira(chave, param) {
+    try {
+      if (params.has(param)) {
+        if (params.get(param) === "0") {
+          localStorage.removeItem(chave);
+        } else {
+          localStorage.setItem(chave, "1");
+        }
+      }
+      return localStorage.getItem(chave) === "1";
+    } catch (e) {
+      // storage indisponível: vale só o que veio na URL desta carga
+      return params.get(param) === "1";
+    }
+  }
+
+  var ehTotem = bandeira(CHAVE_TOTEM, "kiosk");
+  var modoDev = bandeira(CHAVE_DEV, "dev");
+  var travado = ehTotem && !modoDev;
+
+  // Selo visível só quando um totem de verdade foi destravado na mão: sem
+  // ele, quem ligou o modo dev e esqueceu deixaria o totem aberto na feira
+  // sem nenhum sinal na tela. No navegador comum não aparece — ali estar
+  // destravado é o normal, e um selo permanente seria só estorvo.
+  function marcarModoDev() {
+    var selo = document.createElement("button");
+    selo.type = "button";
+    selo.textContent = "MODO DEV — destravado (?dev=0 sai)";
+    selo.title = "Clique para ocultar o selo nesta tela";
+    selo.setAttribute("style", [
+      "position:fixed", "z-index:9999", "left:0", "bottom:0",
+      "margin:0", "padding:4px 10px", "border:0",
+      "font:600 11px/1.4 monospace", "letter-spacing:.08em",
+      "color:#1c1517", "background:#ffd21e", "cursor:pointer",
+      "border-top-right-radius:2px"
+    ].join(";"));
+    // O selo pousa em cima da barra de fogo no quiz. Some no clique para
+    // nao atrapalhar a inspecao, e volta no proximo carregamento — o aviso
+    // de que o totem esta destravado nao se perde.
+    selo.addEventListener("click", function () {
+      selo.remove();
+    });
+    document.body.appendChild(selo);
+  }
 
   // ---------------------------------------------------------------------
   // Bloqueio de saída acidental
   // ---------------------------------------------------------------------
 
+  if (ehTotem && modoDev) {
+    marcarModoDev();
+  }
+
   document.addEventListener("contextmenu", function (ev) {
+    if (!travado) return;
     ev.preventDefault();
   });
 
@@ -44,6 +123,7 @@
   document.addEventListener(
     "keydown",
     function (ev) {
+      if (!travado) return;
       var k = ev.key;
 
       // Backspace fora de campo de texto navega para trás em alguns motores
@@ -83,6 +163,11 @@
   // ---------------------------------------------------------------------
   // Reset por inatividade
   // ---------------------------------------------------------------------
+
+  // Fora do totem o reset por inatividade também sai: inspecionar elemento
+  // leva mais que o timeout, e a tela voltando para a abertura no meio da
+  // conferência é o mesmo estorvo que o bloqueio de tecla.
+  if (!travado) return;
 
   var timeoutS = parseInt(document.body.getAttribute("data-kiosk-timeout"), 10);
   if (!timeoutS || timeoutS <= 0) return;

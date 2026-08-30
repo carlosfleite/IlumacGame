@@ -9,7 +9,6 @@ import random
 import re
 import threading
 import time
-from collections import deque
 from flask import Flask, jsonify, render_template, request
 
 from database import (
@@ -57,11 +56,10 @@ _sessoes = {}
 # abandono.
 _SESSAO_TTL_S = 30 * 60
 
-# Perguntas servidas nas últimas partidas, da mais antiga para a mais nova.
-# Só memória de processo: reiniciar o totem recomeça o rodízio, o que é
-# aceitável — o que não pode é repetir dentro da mesma fila de visitantes.
+# Serializa o sorteio (leitura + gravação do histórico em quiz_recentes).
+# O histórico em si é persistido no banco: reiniciar o totem não recomeça
+# o rodízio, senão a mesma pergunta volta a cair logo após um restart.
 _recentes_lock = threading.Lock()
-_recentes = deque()
 
 
 def _descartar_sessoes_expiradas():
@@ -184,8 +182,6 @@ def _validar_cadastro(nome, telefone, email):
         return "Telefone inválido — use DDD + número.", None
     if not 11 <= int(digitos[:2]) <= 99:
         return "DDD inválido.", None
-    if len(digitos) == 11 and digitos[2] != "9":
-        return "Celular deve começar com 9 após o DDD.", None
 
     if not email:
         return "E-mail é obrigatório.", None
@@ -263,31 +259,77 @@ def _sortear_perguntas(rows, quantidade):
     """
     por_id = {row["id"]: row for row in rows}
 
-    # Quantas perguntas ficam de molho. Teto de 6 partidas para não zerar o
-    # sorteio, e piso que garante o dobro do necessário disponível — se
-    # alguém desativar meio banco pelo admin, isto continua tendo de onde
-    # sortear em vez de estourar.
-    janela = max(0, min(len(rows) - quantidade * 2, quantidade * 6))
+    # Quantas perguntas ficam de molho entre uma aparição e outra. Deixamos
+    # descansar TODAS menos um pool de reserva — quanto maior o banco ativo,
+    # maior o intervalo até uma pergunta poder repetir. O pool de reserva
+    # (~3 partidas, mínimo 12) mantém variedade no sorteio e evita estourar
+    # se metade do banco for desativada pelo admin.
+    reserva = max(quantidade * 3, 12)
+    janela = max(0, len(rows) - reserva)
 
     with _recentes_lock:
-        while len(_recentes) > janela:
-            _recentes.popleft()
+        conn = get_connection()
+        try:
+            # Mais recentes primeiro. IDs que não estão mais no banco ativo
+            # são ignorados naturalmente por não constarem em por_id.
+            recentes = [
+                r["pergunta_id"] for r in conn.execute(
+                    "SELECT pergunta_id FROM quiz_recentes ORDER BY id DESC LIMIT ?",
+                    (janela,),
+                )
+            ]
+            descansando = set(recentes)
+            disponiveis = [row for row in rows if row["id"] not in descansando]
+            ids_disponiveis = {row["id"] for row in disponiveis}
 
-        descansando = set(_recentes)
-        disponiveis = [row for row in rows if row["id"] not in descansando]
+            # Banco pequeno demais para a janela: libera as mais antigas.
+            if len(disponiveis) < quantidade:
+                faltam = quantidade - len(disponiveis)
+                for pid in reversed(recentes):  # da mais antiga para a mais nova
+                    if faltam <= 0:
+                        break
+                    if pid in por_id and pid not in ids_disponiveis:
+                        disponiveis.append(por_id[pid])
+                        ids_disponiveis.add(pid)
+                        faltam -= 1
 
-        # Banco pequeno demais para a janela: libera as mais antigas.
-        if len(disponiveis) < quantidade:
-            faltam = quantidade - len(disponiveis)
-            for pid in list(_recentes)[:faltam]:
-                if pid in por_id:
-                    disponiveis.append(por_id[pid])
+            selecionadas = random.sample(
+                disponiveis, min(quantidade, len(disponiveis))
+            )
 
-        selecionadas = random.sample(disponiveis, min(quantidade, len(disponiveis)))
-        for row in selecionadas:
-            _recentes.append(row["id"])
+            conn.executemany(
+                "INSERT INTO quiz_recentes (pergunta_id) VALUES (?)",
+                [(row["id"],) for row in selecionadas],
+            )
+            # Mantém a tabela enxuta — o suficiente para cobrir a janela máxima.
+            conn.execute(
+                "DELETE FROM quiz_recentes WHERE id NOT IN "
+                "(SELECT id FROM quiz_recentes ORDER BY id DESC LIMIT ?)",
+                (max(quantidade * 12, 120),),
+            )
+            conn.commit()
+        finally:
+            conn.close()
 
     return selecionadas
+
+
+def _embaralhar_alternativas(row, pos_proibida=None):
+    """
+    Reembaralha a/b/c/d desta pergunta e devolve (alts, posição_da_correta).
+
+    Evita deixar a resposta certa em `pos_proibida` (onde ela caiu da última
+    vez que a pergunta apareceu). Com 4 posições, poucas tentativas bastam.
+    """
+    ordem = ["a", "b", "c", "d"]
+    correta_pos = pos_proibida
+    for _ in range(12):
+        random.shuffle(ordem)
+        correta_pos = "abcd"[ordem.index(row["correta"])]
+        if correta_pos != pos_proibida:
+            break
+    alts = {"abcd"[i]: row["alt_" + origem] for i, origem in enumerate(ordem)}
+    return alts, correta_pos
 
 
 @app.route("/api/quiz/iniciar", methods=["GET"])
@@ -323,19 +365,45 @@ def api_quiz_iniciar():
 
     selecionadas = _sortear_perguntas(rows, QTD_PERGUNTAS)
 
-    # Guarda gabarito só no servidor
+    # Guarda gabarito só no servidor. As alternativas são reembaralhadas a
+    # cada partida e nunca caem na mesma posição da vez anterior: no banco a
+    # correta tende a ficar em A/B (viés de quem redigiu) e, sem isso, o
+    # jogador na fila aprende a "chutar A" olhando a tela do outro.
     gabarito = {}
     perguntas_cliente = []
-    for row in selecionadas:
-        gabarito[row["id"]] = row["correta"]
-        perguntas_cliente.append({
-            "id": row["id"],
-            "texto": row["texto"],
-            "alt_a": row["alt_a"],
-            "alt_b": row["alt_b"],
-            "alt_c": row["alt_c"],
-            "alt_d": row["alt_d"],
-        })
+    ids = [row["id"] for row in selecionadas]
+    novas_posicoes = {}
+
+    conn = get_connection()
+    try:
+        marcador = ",".join("?" * len(ids))
+        pos_anterior = {
+            r["pergunta_id"]: r["pos"] for r in conn.execute(
+                "SELECT pergunta_id, pos FROM quiz_ultima_pos "
+                "WHERE pergunta_id IN (%s)" % marcador,
+                ids,
+            )
+        }
+
+        for row in selecionadas:
+            alts, correta_pos = _embaralhar_alternativas(
+                row, pos_anterior.get(row["id"])
+            )
+            gabarito[row["id"]] = correta_pos
+            novas_posicoes[row["id"]] = correta_pos
+            pergunta = {"id": row["id"], "texto": row["texto"]}
+            for letra, texto in alts.items():
+                pergunta["alt_" + letra] = texto
+            perguntas_cliente.append(pergunta)
+
+        conn.executemany(
+            "INSERT INTO quiz_ultima_pos (pergunta_id, pos) VALUES (?, ?) "
+            "ON CONFLICT(pergunta_id) DO UPDATE SET pos = excluded.pos",
+            list(novas_posicoes.items()),
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
     with _sessao_lock:
         _descartar_sessoes_expiradas()
@@ -371,7 +439,8 @@ def api_quiz_responder():
         pergunta_id = int(data.get("pergunta_id"))
     except (TypeError, ValueError):
         return jsonify({"ok": False, "erro": "Dados incompletos."}), 400
-    if resposta_dada not in ("a", "b", "c", "d"):
+    # "" = o cronômetro da pergunta zerou antes do toque: conta como erro.
+    if resposta_dada not in ("a", "b", "c", "d", ""):
         return jsonify({"ok": False, "erro": "Resposta inválida."}), 400
     try:
         tempo_resposta_ms = int(tempo_resposta_ms)
@@ -394,7 +463,7 @@ def api_quiz_responder():
         sessao["respondidas"].add(pergunta_id)
         sessao["respostas"].append({
             "pergunta_id": pergunta_id,
-            "resposta_dada": resposta_dada,
+            "resposta_dada": resposta_dada or None,
             "acertou": acertou,
             "tempo_resposta_ms": tempo_resposta_ms,
         })

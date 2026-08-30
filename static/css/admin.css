@@ -103,6 +103,25 @@ body.page-admin {
   box-shadow: var(--px) var(--px) 0 0 var(--linha);
 }
 
+/* Formato escolhido: transiciona para o vermelho com um pulso ao clicar.
+   Seletor composto para vencer a especificidade do .admin-btn-secundario;
+   transition próprio porque o .admin-btn base usa steps(1) e trava a cor. */
+.admin-exportar .admin-btn.is-selecionado {
+  background: var(--vermelho);
+  color: #fff;
+  border-color: var(--tinta);
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
+  transition: background-color 0.22s ease, color 0.22s ease,
+              box-shadow 0.22s ease;
+  animation: admin-btn-selecao 0.36s ease;
+}
+
+@keyframes admin-btn-selecao {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+
 /* ---- Cabeçalho ---- */
 
 .admin-topo {

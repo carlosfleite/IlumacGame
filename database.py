@@ -129,6 +129,25 @@ CREATE INDEX IF NOT EXISTS idx_tentativas_participante
 
 CREATE INDEX IF NOT EXISTS idx_respostas_tentativa
     ON quiz_respostas (tentativa_id);
+
+-- Histórico das perguntas já servidas, da mais antiga para a mais nova.
+-- Persistido para o rodízio sobreviver a reinícios do totem (watchdog,
+-- reboot diário da feira): sem isso, a mesma pergunta volta a cair logo
+-- após um restart, entregando a resposta para quem está na fila.
+CREATE TABLE IF NOT EXISTS quiz_recentes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pergunta_id INTEGER NOT NULL,
+    usado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Última posição (a/b/c/d) em que a resposta certa de cada pergunta foi
+-- exibida. As alternativas são reembaralhadas a cada partida e nunca
+-- repetem a posição anterior: numa feira de 3 dias, ninguém decora
+-- "a resposta do SDAI é a letra A".
+CREATE TABLE IF NOT EXISTS quiz_ultima_pos (
+    pergunta_id INTEGER PRIMARY KEY,
+    pos TEXT NOT NULL
+);
 """
 
 

@@ -9,7 +9,7 @@ linkado em nenhuma tela do jogo.
 """
 import csv
 import io
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Blueprint, Response, render_template
 from openpyxl import Workbook
@@ -54,6 +54,31 @@ def _tempo_legivel(ms):
     return "%02d:%02d" % (s // 60, s % 60)
 
 
+# O SQLite grava CURRENT_TIMESTAMP em UTC. O Brasil (Brasília) está em
+# UTC-3 fixo desde o fim do horário de verão em 2019 — deslocamento
+# constante, sem depender do pacote de fusos (tzdata) no Windows.
+_FUSO_BR = timedelta(hours=-3)
+
+
+def _data_br(valor):
+    """
+    Timestamp do banco (UTC, 'AAAA-MM-DD HH:MM:SS') → horário de Brasília
+    no formato 'DD/MM/AAAA HH:MM:SS'. Devolve o texto original se não
+    reconhecer o formato.
+    """
+    if not valor:
+        return ""
+    texto = str(valor)
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S.%f"):
+        try:
+            return (datetime.strptime(texto, fmt) + _FUSO_BR).strftime(
+                "%d/%m/%Y %H:%M:%S"
+            )
+        except ValueError:
+            pass
+    return texto
+
+
 def _nome_arquivo(extensao):
     return "ilumac_participantes_%s.%s" % (datetime.now().strftime("%Y-%m-%d_%H%M"), extensao)
 
@@ -80,7 +105,7 @@ def painel():
             "telefone": r["telefone"] or "",
             "email": r["email"] or "",
             "consentimento": bool(r["consentimento_lgpd"]),
-            "data_cadastro": r["data_cadastro"] or "",
+            "data_cadastro": _data_br(r["data_cadastro"]),
             "pontuacao": r["pontuacao"],
             "tempo": _tempo_legivel(r["tempo_total_ms"]),
             "premio": r["premio_nome"] or "",
@@ -128,7 +153,7 @@ def exportar_csv():
             r["telefone"] or "",
             r["email"] or "",
             "sim" if r["consentimento_lgpd"] else "nao",
-            r["data_cadastro"] or "",
+            _data_br(r["data_cadastro"]),
             r["pontuacao"] if r["pontuacao"] is not None else "",
             _tempo_legivel(r["tempo_total_ms"]),
             r["premio_nome"] or "",
@@ -169,7 +194,7 @@ def exportar_xlsx():
             r["telefone"] or "",
             r["email"] or "",
             "Sim" if r["consentimento_lgpd"] else "Não",
-            r["data_cadastro"] or "",
+            _data_br(r["data_cadastro"]),
             r["pontuacao"] if r["pontuacao"] is not None else None,
             _tempo_legivel(r["tempo_total_ms"]),
             r["premio_nome"] or "",
@@ -210,7 +235,7 @@ _COLUNAS_PDF = [
     ("Telefone", 28),
     ("E-mail", 52),
     ("LGPD", 14),
-    ("Cadastro", 28),
+    ("Cadastro", 34),
     ("Pontos", 14),
     ("Prêmio", 40),
     ("Jogou", 14),
@@ -255,7 +280,7 @@ def exportar_pdf():
             _pdf_seguro(r["telefone"], 20),
             _pdf_seguro(r["email"], 42),
             "Sim" if r["consentimento_lgpd"] else "Não",
-            _pdf_seguro((r["data_cadastro"] or "")[:16], 22),
+            _pdf_seguro(_data_br(r["data_cadastro"]), 22),
             str(r["pontuacao"]) if r["pontuacao"] is not None else "",
             _pdf_seguro(r["premio_nome"], 32),
             "Sim" if r["pontuacao"] is not None else "Não",

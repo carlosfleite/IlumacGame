@@ -7,6 +7,25 @@
 (function () {
   "use strict";
 
+  // Marca o formato de exportação escolhido — fica vermelho com um pulso.
+  // O clique dispara um download, não recarrega a página, então a classe
+  // persiste como pista visual de qual botão foi acionado por último.
+  var exportar = document.querySelector(".admin-exportar");
+  if (exportar) {
+    var botoes = Array.prototype.slice.call(
+      exportar.querySelectorAll(".admin-btn")
+    );
+    botoes.forEach(function (botao) {
+      botao.addEventListener("click", function () {
+        botoes.forEach(function (outro) {
+          outro.classList.remove("is-selecionado");
+        });
+        void botao.offsetWidth; // reinicia a animação se reclicar o mesmo
+        botao.classList.add("is-selecionado");
+      });
+    });
+  }
+
   var busca = document.getElementById("busca");
   var corpo = document.getElementById("corpo-tabela");
   if (!busca || !corpo) return;
