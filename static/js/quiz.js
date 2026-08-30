@@ -36,10 +36,12 @@
   var overlay = document.getElementById("feedback-overlay");
   var reboque = document.getElementById("fb-reboque");
   var fbCard = document.getElementById("fb-card");
-  var fbFaixa = document.getElementById("fb-faixa");
+  var fbTopoTxt = document.getElementById("fb-topo-txt");
   var fbMascote = document.getElementById("fb-mascote");
   var fbMsg = document.getElementById("feedback-msg");
   var fbPontos = document.getElementById("feedback-pontos");
+  var fbRespRotulo = document.getElementById("fb-resposta-rotulo");
+  var fbRespTexto = document.getElementById("feedback-detalhe");
 
   var perguntas = [];
   var indice = 0;
@@ -220,13 +222,17 @@
     if (ev.animationName === "reboque-entra") aoChegar();
   });
 
-  function mostrarFeedback(acertou, mensagem, pontos) {
+  function mostrarFeedback(acertou, mensagem, pontos, respostaCerta) {
     var classe = acertou ? "is-bom" : "is-ruim";
 
-    fbCard.className = "fb-card " + classe;
-    fbFaixa.textContent = acertou ? "Resposta certa" : "Resposta errada";
-    fbMsg.textContent = mensagem;
+    fbCard.className = "fb-painel " + classe;
+    overlay.classList.toggle("is-bom", acertou);
+    overlay.classList.toggle("is-ruim", !acertou);
+    fbTopoTxt.textContent = acertou ? "Resposta certa" : "Resposta errada";
+    fbMsg.textContent = acertou ? "Ih, deu bom!" : "Ih, deu ruim!";
     fbPontos.textContent = acertou ? "+" + pontos + " pontos" : "0 pontos";
+    fbRespRotulo.textContent = acertou ? "Resposta" : "A certa era";
+    fbRespTexto.textContent = respostaCerta || mensagem;
 
     // volta o mascote para o ciclo de caminhada antes de entrar de novo
     fbMascote.className = "fb-mascote " + classe;
@@ -303,7 +309,12 @@
           elPontos.textContent = pontuacao + " pts";
         }
         registrarResultado();
-        mostrarFeedback(data.acertou, data.mensagem, pontos);
+
+        var respostaCerta = "";
+        if (data.correta && pergunta["alt_" + data.correta]) {
+          respostaCerta = pergunta["alt_" + data.correta];
+        }
+        mostrarFeedback(data.acertou, data.mensagem, pontos, respostaCerta);
 
         avancarFn = function () {
           indice += 1;
