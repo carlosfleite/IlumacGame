@@ -27,6 +27,13 @@ HOST = "127.0.0.1"
 PORT = 5000
 URL = f"http://{HOST}:{PORT}/"
 
+# A janela do totem abre com ?kiosk=1: e esse parametro que liga o
+# travamento de tecla (F5/F11/F12/Ctrl+R) e o reset por inatividade no
+# kiosk.js, que grava a marca no localStorage desta instalacao. Quem abre
+# o mesmo endereco num navegador comum nao passa por aqui e fica
+# destravado, que e o necessario para inspecionar e testar responsividade.
+URL_JANELA = URL + "?kiosk=1"
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_DIR = os.path.join(BASE_DIR, "logs")
 
@@ -90,7 +97,7 @@ def main():
     # arrastar a janela para fora da tela cheia.
     webview.create_window(
         title="Quiz SDAI — Ilumac Fire Show 2026",
-        url=URL,
+        url=URL_JANELA,
         fullscreen=True,
         frameless=True,
         easy_drag=False,

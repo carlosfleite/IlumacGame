@@ -17,44 +17,65 @@
  * em segundos. 0 ou ausente desliga o reset (usado na tela de abertura,
  * que já é o estado de repouso).
  *
- * MODO DEV — abra qualquer tela com ?dev=1 para destravar F11/F12 e
- * desligar o reset por inatividade enquanto você trabalha. A escolha fica
- * no localStorage (senão o primeiro reset de navegação já a perderia) e
- * um selo no canto avisa que o totem está destravado. ?dev=0 volta ao
- * normal. O totem abre "/" sem parâmetro nenhum, então nunca cai aqui.
+ * QUEM TRAVA É O TOTEM, NÃO O NAVEGADOR. O run.py abre a janela do
+ * pywebview em ?kiosk=1; esse parâmetro liga o travamento e fica gravado
+ * no localStorage daquela instalação. Um navegador aberto na mão nunca
+ * recebe o parâmetro, então já nasce destravado — é assim que se testa
+ * responsividade no F12 sem precisar lembrar de nenhum truque.
+ *
+ * O localStorage do pywebview é separado do localStorage do Chrome (perfis
+ * diferentes, e o run.py ainda usa 127.0.0.1 enquanto no navegador se
+ * digita localhost, que é outra origem), então marcar o totem não
+ * contamina a máquina de desenvolvimento.
+ *
+ * Escotilhas manuais, para o caso de precisar mexer no proprio totem:
+ *   ?dev=1   destrava temporariamente (mostra um selo amarelo no canto)
+ *   ?dev=0   volta a travar
+ *   ?kiosk=0 desmarca a instalação como totem
  */
 (function () {
   "use strict";
 
   var AVISO_S = 10; // segundos de contagem regressiva antes de resetar
   var URL_REPOUSO = "/";
+  var CHAVE_TOTEM = "kiosk-totem";
   var CHAVE_DEV = "kiosk-dev";
 
   // ---------------------------------------------------------------------
-  // Modo dev
+  // Travado ou não
   // ---------------------------------------------------------------------
 
-  function lerModoDev() {
+  var params = new URLSearchParams(window.location.search);
+
+  /**
+   * Lê uma chave que pode ser ligada/desligada por parâmetro na URL e fica
+   * gravada depois disso. Precisa ficar gravada porque a navegação interna
+   * do app (e o reset para URL_REPOUSO) não carrega parâmetro nenhum.
+   */
+  function bandeira(chave, param) {
     try {
-      var p = new URLSearchParams(window.location.search);
-      if (p.has("dev")) {
-        if (p.get("dev") === "0") {
-          localStorage.removeItem(CHAVE_DEV);
+      if (params.has(param)) {
+        if (params.get(param) === "0") {
+          localStorage.removeItem(chave);
         } else {
-          localStorage.setItem(CHAVE_DEV, "1");
+          localStorage.setItem(chave, "1");
         }
       }
-      return localStorage.getItem(CHAVE_DEV) === "1";
+      return localStorage.getItem(chave) === "1";
     } catch (e) {
-      // localStorage bloqueado: assume totem travado, que é o lado seguro
-      return false;
+      // storage indisponível: vale só o que veio na URL desta carga
+      return params.get(param) === "1";
     }
   }
 
-  var modoDev = lerModoDev();
+  var ehTotem = bandeira(CHAVE_TOTEM, "kiosk");
+  var modoDev = bandeira(CHAVE_DEV, "dev");
+  var travado = ehTotem && !modoDev;
 
-  // Selo visível: sem ele, alguém que ligou o modo dev e esqueceu deixaria
-  // o totem destravado na feira sem nenhum sinal na tela.
+  // Selo visível só quando um totem de verdade foi destravado na mão: sem
+  // ele, quem ligou o modo dev e esqueceu deixaria o totem aberto na feira
+  // sem nenhum sinal na tela. No navegador comum não aparece — ali estar
+  // destravado é o normal, e um selo permanente seria só estorvo.
   function marcarModoDev() {
     var selo = document.createElement("button");
     selo.type = "button";
@@ -80,12 +101,12 @@
   // Bloqueio de saída acidental
   // ---------------------------------------------------------------------
 
-  if (modoDev) {
+  if (ehTotem && modoDev) {
     marcarModoDev();
   }
 
   document.addEventListener("contextmenu", function (ev) {
-    if (modoDev) return;
+    if (!travado) return;
     ev.preventDefault();
   });
 
@@ -102,7 +123,7 @@
   document.addEventListener(
     "keydown",
     function (ev) {
-      if (modoDev) return;
+      if (!travado) return;
       var k = ev.key;
 
       // Backspace fora de campo de texto navega para trás em alguns motores
@@ -143,10 +164,10 @@
   // Reset por inatividade
   // ---------------------------------------------------------------------
 
-  // No modo dev o reset por inatividade também sai: inspecionar elemento
+  // Fora do totem o reset por inatividade também sai: inspecionar elemento
   // leva mais que o timeout, e a tela voltando para a abertura no meio da
   // conferência é o mesmo estorvo que o bloqueio de tecla.
-  if (modoDev) return;
+  if (!travado) return;
 
   var timeoutS = parseInt(document.body.getAttribute("data-kiosk-timeout"), 10);
   if (!timeoutS || timeoutS <= 0) return;
