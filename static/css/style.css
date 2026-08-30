@@ -1100,9 +1100,8 @@ body {
 /* A tela de feedback ocupa o totem inteiro.
    COREOGRAFIA (1s de entrada, depois o conteúdo aparece):
      1. o painel desliza da esquerda;
-     2. o Ilumaquinho entra andando à frente dele, com a corda saindo pela
-        esquerda — é ele que traz a tela;
-     3. ao encostar no centro ele para, assume a pose e a corda some;
+     2. o Ilumaquinho entra andando à frente dele — é ele que traz a tela;
+     3. ao encostar no centro ele para e assume a pose;
      4. só então título, selo e resposta entram, para o olho pousar neles.
    Todo o miolo é um bloco ÚNICO centrado na vertical: nada de vão morto
    entre a resposta e o mascote. */
@@ -1285,18 +1284,6 @@ body {
   align-items: flex-end;
 }
 
-/* Linha de chão, só no acerto: dá pé ao mascote e faz a caminhada da
-   entrada acontecer sobre algo, em vez de no vazio. */
-.feedback-overlay.is-bom .fb-mascote-area::before {
-  content: "";
-  position: absolute;
-  left: -50vw;
-  right: -50vw;
-  bottom: clamp(16px, 2.2vh, 40px);
-  height: var(--px);
-  background: #4ea83f;
-}
-
 /* Sprites nativos com 128px de altura (tools/gerar_pixel_assets.py).
    --masc-h manda em tudo: largura, folha e altura do passo saem dela por
    proporção, então a escala muda num lugar só.
@@ -1344,22 +1331,6 @@ body {
   50%      { background-position: var(--masc-quadro) 0; }                 /* no ar */
 }
 
-/* Corda presa ao próprio mascote (e não à área): assim ela acompanha a
-   caminhada em vez de ficar para trás, e some junto com ela. */
-.fb-mascote::before {
-  content: "";
-  position: absolute;
-  right: 50%;
-  left: -200vw;
-  bottom: 22%;
-  height: var(--px);
-  background: repeating-linear-gradient(
-    90deg,
-    var(--sobre-vermelho-fraco) 0, var(--sobre-vermelho-fraco) 8px,
-    transparent 8px, transparent 14px
-  );
-}
-
 /* Ele anda mais devagar que o painel (35vw contra 100vw), então começa
    colado na borda da frente — puxando — e vai ficando para trás até parar
    no centro. Passar de 35vw joga o mascote para fora do painel, onde o
@@ -1374,7 +1345,7 @@ body {
   to   { transform: translateX(0); }
 }
 
-/* Chegou: para de andar, assume a pose, larga a corda.
+/* Chegou: para de andar e assume a pose.
    background-size com altura explícita em vez de "contain": contain
    mediria a caixa COM a folga do salto e a pose sairia mais alta que o
    sprite da caminhada, dando um pulo de escala na troca. */
@@ -1385,8 +1356,6 @@ body {
   background-size: auto var(--masc-h);
   background-position: center bottom;
 }
-
-.fb-mascote.parado::before { display: none; }
 
 .fb-mascote.parado.is-bom {
   background-image: url("/static/img/ilumaquinho/deu-bom.png");
