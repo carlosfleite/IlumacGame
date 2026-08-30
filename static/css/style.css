@@ -1278,12 +1278,10 @@ body {
   flex-shrink: 0;
   width: 138px;
   height: 168px;
-  background-image: url("/static/img/ilumaquinho/trofeu.png");
+  background-image: url("/static/img/IlumaquinhoTrofeu.png");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center bottom;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
   animation: mascote-respira 1.6s ease-in-out infinite;
 }
 
