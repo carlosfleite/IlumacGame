@@ -669,20 +669,16 @@ body {
   gap: 22px;
 }
 
-/* O auto mora aqui, não na chamada: assim o botão continua ancorado na
-   base e a sobra da tela cai entre o mascote e ele. Com o auto na chamada,
-   a sobra virava um vão único ACIMA do mascote (263px medidos no totem),
-   que era o que incomodava. */
-.rodape-form { padding-top: 8px; margin-top: auto; }
+.rodape-form { padding-top: 8px; }
 
 /* No cadastro a chamada é opcional: some quando não há altura para ela,
    em vez de espremer o formulário.
 
-   Sem margin-top:auto aqui: com auto, toda a sobra da tela virava um vão
-   único acima do mascote (263px medidos no totem, contra 34px abaixo).
-   A sobra agora é absorvida pelos próprios campos — num totem, campo alto
-   é alvo de toque melhor — e o que resta vira uma margem contida. */
-.chamada-cadastro { margin-top: 0; }
+   A sobra da tela é dividida igualmente acima e abaixo da chamada
+   (margin-top/bottom:auto), então o mascote + balão ficam centralizados
+   nesse vão em vez de deixar um buraco só de um lado. O botão segue
+   ancorado na base porque a margem de baixo da chamada empurra por igual. */
+.chamada-cadastro { margin-top: auto; margin-bottom: auto; }
 
 .field {
   display: flex;
