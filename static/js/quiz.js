@@ -69,7 +69,7 @@
 
   function pintarAcertos() {
     var total = perguntas.length || 5;
-    elAcertos.textContent = acertos + " / " + total;
+    if (elAcertos) elAcertos.textContent = acertos + " / " + total;
   }
 
   // Cronômetro da pergunta: a barra da base drena com os segundos e, ao
@@ -78,10 +78,12 @@
     var restante = LIMITE_MS - (Date.now() - perguntaInicio);
     if (restante < 0) restante = 0;
     var frac = restante / LIMITE_MS;
-    elBarra.style.width = (frac * 100) + "%";
-    elBarra.classList.toggle("is-alerta", frac <= 0.4 && frac > 0.15);
-    elBarra.classList.toggle("is-critico", frac <= 0.15);
-    elPrazo.textContent = fmtRelogio(restante);
+    if (elBarra) {
+      elBarra.style.width = (frac * 100) + "%";
+      elBarra.classList.toggle("is-alerta", frac <= 0.4 && frac > 0.15);
+      elBarra.classList.toggle("is-critico", frac <= 0.15);
+    }
+    if (elPrazo) elPrazo.textContent = fmtRelogio(restante);
     if (restante <= 0) esgotouTempo();
   }
 
@@ -95,9 +97,11 @@
   function iniciarTimer() {
     pararTimer();
     perguntaInicio = Date.now();
-    elBarra.classList.remove("is-alerta", "is-critico");
-    elBarra.style.width = "100%";
-    elPrazo.textContent = fmtRelogio(LIMITE_MS);
+    if (elBarra) {
+      elBarra.classList.remove("is-alerta", "is-critico");
+      elBarra.style.width = "100%";
+    }
+    if (elPrazo) elPrazo.textContent = fmtRelogio(LIMITE_MS);
     timerId = setInterval(tickPergunta, 100);
   }
 
@@ -112,14 +116,14 @@
   // ---------------------------------------------------------------------
 
   function montarBarra() {
-    elChama.setAttribute("data-nivel", "0");
-    elBarra.style.width = "100%";
+    if (elChama) elChama.setAttribute("data-nivel", "0");
+    if (elBarra) elBarra.style.width = "100%";
     pintarAcertos();
   }
 
   function registrarResultado() {
     // a chama cresce com os acertos, não com o número de perguntas
-    elChama.setAttribute("data-nivel", String(acertos));
+    if (elChama) elChama.setAttribute("data-nivel", String(acertos));
     pintarAcertos();
   }
 
