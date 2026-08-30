@@ -2,7 +2,7 @@
  * Quiz — cronômetro, perguntas, barra de fogo e feedback do Llumaquinho.
  *
  * SPRITES: gerados por tools/gerar_pixel_assets.py em /static/img/
- *   ilumaquinho/andando.png  → folha de 2 quadros (entrada puxando o card)
+ *   ilumaquinho/andando.png  → 2 direcoes, nao 2 passos (ver style.css)
  *   ilumaquinho/deu-bom.png  → acertou
  *   ilumaquinho/deu-ruim.png → errou
  */
@@ -10,7 +10,7 @@
   "use strict";
 
   var FEEDBACK_MS = 2600; // contado só depois que a tela termina de entrar
-  var ENTRADA_MS = 900;   // deve casar com --fb-entrada / reboque-entra no CSS
+  var ENTRADA_MS = 1000;  // deve casar com --fb-entrada / reboque-entra no CSS
   var LIMITE_MS = 20000;  // tempo por pergunta; zerou, conta como erro
 
   var params = new URLSearchParams(window.location.search);

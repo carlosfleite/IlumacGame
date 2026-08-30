@@ -1098,7 +1098,7 @@ body {
    ========================================================================== */
 
 /* A tela de feedback ocupa o totem inteiro.
-   COREOGRAFIA (0,75s de entrada, depois o conteúdo aparece):
+   COREOGRAFIA (1s de entrada, depois o conteúdo aparece):
      1. o painel desliza da esquerda;
      2. o Ilumaquinho entra andando à frente dele, com a corda saindo pela
         esquerda — é ele que traz a tela;
@@ -1112,10 +1112,18 @@ body {
   z-index: 50;
   overflow: hidden;
 
-  /* Tudo que depende do tempo da entrada sai daqui. 0,9s dá ~4 ciclos de
-     caminhada: mais rápido que isso e o mascote parece deslizar. */
-  --fb-entrada: 0.9s;
-  --fb-easing: cubic-bezier(0.22, 0.72, 0.3, 1);
+  /* Tudo que depende do tempo da entrada sai daqui. */
+  --fb-entrada: 1s;
+
+  /* LINEAR de propósito, apesar de ease-out ser o reflexo em UI.
+     O mascote herda o transform do painel, então a curva do painel vira a
+     curva do passo dele: com ease-out ele disparava (67% do caminho no
+     primeiro quarto) e depois se arrastava, com o passo sempre no mesmo
+     ritmo — pé patinando. Compensar só no mascote é pior: ele passa do
+     centro e volta de ré. Velocidade constante nos dois é o que a cena
+     pede — a tela não desacelera sozinha, ela para porque ele plantou o
+     pé, e quem marca a chegada é o conteúdo entrando. */
+  --fb-easing: linear;
 }
 
 .feedback-overlay[hidden] { display: none; }
@@ -1290,27 +1298,50 @@ body {
 }
 
 /* Sprites nativos com 128px de altura (tools/gerar_pixel_assets.py).
-   --masc-h manda em tudo: largura, folha de quadros e passo da caminhada
-   saem dela por proporção, então a escala muda num lugar só. */
+   --masc-h manda em tudo: largura, folha e altura do passo saem dela por
+   proporção, então a escala muda num lugar só.
+
+   ATENÇÃO ao andando.png: apesar do nome, ele NÃO é um ciclo de
+   caminhada. Os dois quadros são a mesma pose espelhada — vêm de
+   ilumaquinho-andar-direita.png e -esquerda.png, que são duas DIREÇÕES,
+   não dois passos. Alternar entre eles não fazia o mascote andar, fazia
+   ele se virar do avesso ~5x por segundo (era o "andando errado").
+   Fixamos um quadro e o passo vem de um sobe-desce, mesmo recurso do
+   mascote da abertura.
+
+   E os nomes da arte de origem enganam: quem se chama "andar-direita"
+   está com os pés apontando para a ESQUERDA (o nome parece vir de qual
+   mão segura o extintor). Como o mascote atravessa a tela para a
+   direita, o quadro certo é a célula 1, não a 0 — com a 0 ele andava de
+   costas. Conferir na arte, não no nome do arquivo. */
 .fb-mascote {
-  --masc-h: 192px;                        /* 128 * 1.5 */
-  --masc-w: calc(var(--masc-h) * 0.898);  /* célula 115 / 128 */
+  --masc-h: 192px;                          /* 128 * 1.5 */
+  --masc-w: calc(var(--masc-h) * 0.898);    /* célula 115 / 128 */
+  --masc-salto: calc(var(--masc-h) * 0.023);
+  --masc-quadro: calc(var(--masc-w) * -1);  /* célula 1 = virado p/ direita */
   position: relative;
   flex-shrink: 0;
   width: var(--masc-w);
-  height: var(--masc-h);
+  /* A caixa tem a altura do sprite MAIS o salto, e o sprite pousa no
+     fundo dela. Sem essa folga o salto empurrava o desenho para fora da
+     caixa e as antenas eram decepadas em quadro sim, quadro não. */
+  height: calc(var(--masc-h) + var(--masc-salto));
   background-image: url("/static/img/ilumaquinho/andando.png");
   background-size: calc(var(--masc-w) * 2) var(--masc-h);
   background-repeat: no-repeat;
-  background-position: 0 0;
+  background-position: var(--masc-quadro) var(--masc-salto);
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  animation: mascote-anda 0.22s steps(1) infinite;
+  animation: mascote-passo 0.26s steps(1) infinite;
 }
 
-@keyframes mascote-anda {
-  0%  { background-position: 0 0; }
-  50% { background-position: calc(var(--masc-w) * -1) 0; }
+/* O passo mexe em background-position-y, não em transform: transform é do
+   deslocamento pela tela (mascote-puxa), e duas animações na MESMA
+   propriedade não somam — a última simplesmente ganha. O x fica parado:
+   é ele que escolhe a célula, mexer nele vira o boneco. */
+@keyframes mascote-passo {
+  0%, 100% { background-position: var(--masc-quadro) var(--masc-salto); } /* pé no chão */
+  50%      { background-position: var(--masc-quadro) 0; }                 /* no ar */
 }
 
 /* Corda presa ao próprio mascote (e não à área): assim ela acompanha a
@@ -1334,7 +1365,7 @@ body {
    no centro. Passar de 35vw joga o mascote para fora do painel, onde o
    overflow do miolo o corta pela metade. */
 .feedback-overlay.is-visible .fb-mascote {
-  animation: mascote-anda 0.22s steps(1) infinite,
+  animation: mascote-passo 0.26s steps(1) infinite,
              mascote-puxa var(--fb-entrada) var(--fb-easing) forwards;
 }
 
@@ -1343,12 +1374,15 @@ body {
   to   { transform: translateX(0); }
 }
 
-/* Chegou: para de andar, assume a pose, larga a corda. */
+/* Chegou: para de andar, assume a pose, larga a corda.
+   background-size com altura explícita em vez de "contain": contain
+   mediria a caixa COM a folga do salto e a pose sairia mais alta que o
+   sprite da caminhada, dando um pulo de escala na troca. */
 .feedback-overlay.is-visible .fb-mascote.parado,
 .fb-mascote.parado {
   animation: none;
   transform: none;
-  background-size: contain;
+  background-size: auto var(--masc-h);
   background-position: center bottom;
 }
 
