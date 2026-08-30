@@ -395,7 +395,8 @@ def api_quiz_responder():
         pergunta_id = int(data.get("pergunta_id"))
     except (TypeError, ValueError):
         return jsonify({"ok": False, "erro": "Dados incompletos."}), 400
-    if resposta_dada not in ("a", "b", "c", "d"):
+    # "" = o cronômetro da pergunta zerou antes do toque: conta como erro.
+    if resposta_dada not in ("a", "b", "c", "d", ""):
         return jsonify({"ok": False, "erro": "Resposta inválida."}), 400
     try:
         tempo_resposta_ms = int(tempo_resposta_ms)
@@ -418,7 +419,7 @@ def api_quiz_responder():
         sessao["respondidas"].add(pergunta_id)
         sessao["respostas"].append({
             "pergunta_id": pergunta_id,
-            "resposta_dada": resposta_dada,
+            "resposta_dada": resposta_dada or None,
             "acertou": acertou,
             "tempo_resposta_ms": tempo_resposta_ms,
         })

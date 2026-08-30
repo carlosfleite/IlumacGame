@@ -11,6 +11,7 @@
 
   var FEEDBACK_MS = 2200; // contado só depois que o card termina de entrar
   var ENTRADA_MS = 800;   // deve casar com a duração de reboque-entra no CSS
+  var LIMITE_MS = 20000;  // tempo por pergunta; zerou, conta como erro
 
   var params = new URLSearchParams(window.location.search);
   var participanteId = parseInt(
@@ -26,11 +27,11 @@
   var elPontos = document.getElementById("quiz-pontos");
   var elPergunta = document.getElementById("quiz-pergunta");
   var elAlts = document.getElementById("quiz-alternativas");
-  var elTimer = document.getElementById("quiz-timer");
-  var elTrilho = document.getElementById("barra-trilho");
+  var elAcertos = document.getElementById("quiz-acertos");
   var elChama = document.getElementById("chama");
 
-  var elPlacar = document.getElementById("barra-placar");
+  var elBarra = document.getElementById("barra-progresso");
+  var elPrazo = document.getElementById("barra-prazo");
 
   var overlay = document.getElementById("feedback-overlay");
   var reboque = document.getElementById("fb-reboque");
@@ -59,15 +60,29 @@
   var chegou = false;
   var avancarFn = null;
 
-  function fmtMs(ms) {
-    var s = Math.floor(ms / 1000);
+  function fmtRelogio(ms) {
+    var s = Math.ceil(ms / 1000);
     var m = Math.floor(s / 60);
     s = s % 60;
-    return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+    return m + ":" + (s < 10 ? "0" : "") + s;
   }
 
-  function pintarTimer() {
-    elTimer.textContent = fmtMs(tempoAcumuladoMs + (Date.now() - perguntaInicio));
+  function pintarAcertos() {
+    var total = perguntas.length || 5;
+    elAcertos.textContent = acertos + " / " + total;
+  }
+
+  // Cronômetro da pergunta: a barra da base drena com os segundos e, ao
+  // zerar, a pergunta é enviada sem resposta (conta como erro).
+  function tickPergunta() {
+    var restante = LIMITE_MS - (Date.now() - perguntaInicio);
+    if (restante < 0) restante = 0;
+    var frac = restante / LIMITE_MS;
+    elBarra.style.width = (frac * 100) + "%";
+    elBarra.classList.toggle("is-alerta", frac <= 0.4 && frac > 0.15);
+    elBarra.classList.toggle("is-critico", frac <= 0.15);
+    elPrazo.textContent = fmtRelogio(restante);
+    if (restante <= 0) esgotouTempo();
   }
 
   function pararTimer() {
@@ -80,39 +95,32 @@
   function iniciarTimer() {
     pararTimer();
     perguntaInicio = Date.now();
-    pintarTimer();
-    timerId = setInterval(pintarTimer, 250);
+    elBarra.classList.remove("is-alerta", "is-critico");
+    elBarra.style.width = "100%";
+    elPrazo.textContent = fmtRelogio(LIMITE_MS);
+    timerId = setInterval(tickPergunta, 100);
+  }
+
+  function esgotouTempo() {
+    if (respondendo) return;
+    pararTimer();
+    responder(""); // sem resposta — o servidor marca como erro
   }
 
   // ---------------------------------------------------------------------
   // Barra de fogo
   // ---------------------------------------------------------------------
 
-  function montarBarra(total) {
-    elTrilho.innerHTML = "";
-    for (var i = 0; i < total; i++) {
-      var b = document.createElement("span");
-      b.className = "barra-bloco";
-      elTrilho.appendChild(b);
-    }
+  function montarBarra() {
     elChama.setAttribute("data-nivel", "0");
-    atualizarPlacar(total);
+    elBarra.style.width = "100%";
+    pintarAcertos();
   }
 
-  function atualizarPlacar(total) {
-    if (elPlacar) {
-      elPlacar.textContent = pontuacao + " / " + (total * pontosPorAcerto);
-    }
-  }
-
-  function marcarBloco(i, acertou) {
-    var blocos = elTrilho.querySelectorAll(".barra-bloco");
-    if (blocos[i]) {
-      blocos[i].classList.add(acertou ? "aceso" : "apagado");
-    }
+  function registrarResultado() {
     // a chama cresce com os acertos, não com o número de perguntas
     elChama.setAttribute("data-nivel", String(acertos));
-    atualizarPlacar(perguntas.length);
+    pintarAcertos();
   }
 
   // ---------------------------------------------------------------------
@@ -262,9 +270,8 @@
     desabilitarAlts();
     pararTimer();
 
-    var tempoMs = Date.now() - perguntaInicio;
+    var tempoMs = Math.min(Date.now() - perguntaInicio, LIMITE_MS);
     var pergunta = perguntas[indice];
-    var indiceAtual = indice;
 
     fetch("/api/quiz/responder", {
       method: "POST",
@@ -282,10 +289,8 @@
           throw new Error(data.erro || "Erro ao registrar resposta.");
         }
 
-        // o tempo desta pergunta entra no acumulado; o relógio fica parado
-        // enquanto o feedback está na tela
+        // o tempo desta pergunta entra no acumulado usado no desempate
         tempoAcumuladoMs += tempoMs;
-        elTimer.textContent = fmtMs(tempoAcumuladoMs);
 
         var pontos = data.pontos || pontosPorAcerto;
         if (data.acertou) {
@@ -293,7 +298,7 @@
           pontuacao += pontos;
           elPontos.textContent = pontuacao + " pts";
         }
-        marcarBloco(indiceAtual, data.acertou);
+        registrarResultado();
         mostrarFeedback(data.acertou, data.mensagem, pontos);
 
         avancarFn = function () {
@@ -347,7 +352,7 @@
       if (perguntas.length === 0) {
         throw new Error("Nenhuma pergunta retornada.");
       }
-      montarBarra(perguntas.length);
+      montarBarra();
       renderPergunta();
     })
     .catch(function (err) {
