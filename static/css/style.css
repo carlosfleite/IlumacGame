@@ -1097,14 +1097,25 @@ body {
    Feedback: o Llumaquinho puxa o card para dentro da tela
    ========================================================================== */
 
-/* A tela de feedback ocupa o totem inteiro. Ela entra deslizando da
-   esquerda enquanto o Ilumaquinho caminha puxando a corda — a mesma
-   transição de sempre, agora arrastando a tela cheia em vez de um card. */
+/* A tela de feedback ocupa o totem inteiro.
+   COREOGRAFIA (0,75s de entrada, depois o conteúdo aparece):
+     1. o painel desliza da esquerda;
+     2. o Ilumaquinho entra andando à frente dele, com a corda saindo pela
+        esquerda — é ele que traz a tela;
+     3. ao encostar no centro ele para, assume a pose e a corda some;
+     4. só então título, selo e resposta entram, para o olho pousar neles.
+   Todo o miolo é um bloco ÚNICO centrado na vertical: nada de vão morto
+   entre a resposta e o mascote. */
 .feedback-overlay {
   position: fixed;
   inset: 0;
   z-index: 50;
   overflow: hidden;
+
+  /* Tudo que depende do tempo da entrada sai daqui. 0,9s dá ~4 ciclos de
+     caminhada: mais rápido que isso e o mascote parece deslizar. */
+  --fb-entrada: 0.9s;
+  --fb-easing: cubic-bezier(0.22, 0.72, 0.3, 1);
 }
 
 .feedback-overlay[hidden] { display: none; }
@@ -1115,8 +1126,10 @@ body {
   transform: translateX(-100%);
 }
 
+/* Deslize contínuo, não em steps(): o painel é uma superfície de interface
+   inteira, não um sprite. Em steps() a tela entrava aos trancos. */
 .feedback-overlay.is-visible .fb-reboque {
-  animation: reboque-entra 0.8s steps(12) forwards;
+  animation: reboque-entra var(--fb-entrada) var(--fb-easing) forwards;
 }
 
 @keyframes reboque-entra {
@@ -1133,18 +1146,30 @@ body {
   background: var(--vermelho-noite);
 }
 
-.feedback-overlay.is-bom  .fb-painel { background: #17362a; }
-.feedback-overlay.is-ruim .fb-painel { background: #45100f; }
+.feedback-overlay.is-bom  .fb-painel { background: #16352a; }
+.feedback-overlay.is-ruim .fb-painel { background: #430f0f; }
 
-/* Faixa superior: diz o resultado antes mesmo de ler a mensagem */
+/* Tranco da tela no erro: é o sinal mais rápido de "não foi dessa vez",
+   antes mesmo de ler qualquer palavra. */
+.feedback-overlay.is-ruim.is-visible .fb-painel {
+  animation: fb-tremor 0.36s steps(2) var(--fb-entrada) 2;
+}
+
+@keyframes fb-tremor {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(calc(var(--px) * -2)); }
+  75%      { transform: translateX(calc(var(--px) * 2)); }
+}
+
+/* ---- faixa superior: diz o resultado antes de qualquer leitura ---- */
 .fb-topo {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  padding: 20px 16px;
+  gap: clamp(10px, 1.6vw, 20px);
+  padding: clamp(16px, 2.2vh, 30px) var(--safe-side);
   font-family: var(--font-display);
-  font-size: 0.9rem;
+  font-size: clamp(0.72rem, 2vw, 1.15rem);
   line-height: 1.4;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -1153,52 +1178,50 @@ body {
   border-bottom: var(--px) solid var(--contorno);
 }
 
-.feedback-overlay.is-bom  .fb-topo { background: #2f7d4f; }
+.feedback-overlay.is-bom  .fb-topo { background: #2f8a55; }
 .feedback-overlay.is-ruim .fb-topo { background: var(--vermelho-claro); }
 
-/* Ícone do resultado: ✓ para acerto, ✗ para erro. */
 .fb-topo-icone {
-  width: calc(var(--px) * 6);
-  height: calc(var(--px) * 6);
+  width: clamp(20px, 3vw, 34px);
+  height: clamp(20px, 3vw, 34px);
   flex-shrink: 0;
 }
 
-.fb-topo-icone--ok { color: #f5b301; }
-.fb-topo-icone--erro { color: var(--contorno); }
+.fb-topo-icone--ok   { color: #f5b301; }
+.fb-topo-icone--erro { color: var(--contorno); display: none; }
 
-.fb-topo-icone--erro { display: none; }
-.feedback-overlay.is-ruim .fb-topo-icone--ok { display: none; }
+.feedback-overlay.is-ruim .fb-topo-icone--ok   { display: none; }
 .feedback-overlay.is-ruim .fb-topo-icone--erro { display: block; }
 
-/* Miolo: recebe toda a sobra vertical e distribui o conteúdo nela, com o
-   mascote empurrado para a base. */
+/* ---- miolo: um bloco só, centrado na vertical ---- */
 .fb-miolo {
   position: relative;
   min-height: 0;
-  padding: 40px 32px 24px;
+  padding: clamp(20px, 3vh, 48px) var(--safe-side);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 26px;
+  justify-content: center;
+  gap: clamp(18px, 3.4vh, 52px);
   overflow: hidden;
 }
 
 .feedback-msg {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 2rem;
-  line-height: 1.35;
+  font-size: clamp(1.4rem, 6vw, 3rem);
+  line-height: 1.3;
   text-transform: uppercase;
   color: var(--sobre-vermelho);
-  text-shadow: var(--px) var(--px) 0 rgba(0, 0, 0, 0.5);
+  text-shadow: var(--px) var(--px) 0 rgba(0, 0, 0, 0.45);
 }
 
 /* Pontos ganhos como selo, não como texto solto */
 .feedback-pontos {
   margin: 0;
-  padding: 14px 26px;
+  padding: clamp(12px, 1.6vh, 20px) clamp(20px, 3.4vw, 38px);
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: clamp(0.85rem, 2.6vw, 1.45rem);
   color: var(--sobre-vermelho);
   background: var(--contorno);
   border: var(--px) solid var(--contorno);
@@ -1206,28 +1229,27 @@ body {
 }
 
 .feedback-overlay.is-bom .feedback-pontos {
-  color: #17362a;
-  background: #f0e6c8;
-  border-color: var(--contorno);
+  color: #16352a;
+  background: #f2e8c9;
 }
 
 .feedback-overlay.is-ruim .feedback-pontos {
   color: var(--sobre-vermelho);
-  background: #140f10;
+  background: #130e0f;
 }
 
 /* Card da resposta certa */
 .fb-resposta {
-  width: min(100%, 720px);
+  width: min(100%, 860px);
   border: var(--px) solid var(--contorno);
   box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 rgba(0, 0, 0, 0.45);
   text-align: left;
 }
 
 .fb-resposta-rotulo {
-  padding: 12px 18px;
+  padding: clamp(10px, 1.3vh, 18px) clamp(14px, 2vw, 26px);
   font-family: var(--font-display);
-  font-size: 0.62rem;
+  font-size: clamp(0.55rem, 1.5vw, 0.82rem);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--sobre-vermelho);
@@ -1237,45 +1259,68 @@ body {
 
 .fb-resposta-texto {
   margin: 0;
-  padding: 20px 18px;
+  padding: clamp(16px, 2.2vh, 30px) clamp(14px, 2vw, 26px);
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: clamp(0.95rem, 2.6vw, 1.4rem);
   line-height: 1.4;
+  text-wrap: pretty;
   color: var(--tinta);
   background: var(--cartao);
 }
 
-/* Área do mascote: empurrada para baixo, mas sem abrir um vão enorme
-   entre o card da resposta e a pose. */
+/* ---- mascote ---- */
 .fb-mascote-area {
   position: relative;
-  margin-top: auto;
-  margin-bottom: clamp(20px, 6vh, 80px);
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  min-height: 200px;
 }
 
-/* Linha de "chão" atrás do mascote, só na tela de acerto */
+/* Linha de chão, só no acerto: dá pé ao mascote e faz a caminhada da
+   entrada acontecer sobre algo, em vez de no vazio. */
 .feedback-overlay.is-bom .fb-mascote-area::before {
   content: "";
   position: absolute;
-  left: -32px;
-  right: -32px;
-  bottom: 40px;
+  left: -50vw;
+  right: -50vw;
+  bottom: clamp(16px, 2.2vh, 40px);
   height: var(--px);
-  background: #5bbf4b;
+  background: #4ea83f;
 }
 
-/* Corda: sai do mascote e cruza a tela para a esquerda, como se estivesse
-   presa a algo fora do quadro puxando a tela para dentro. Some ao chegar. */
-.fb-corda {
+/* Sprites nativos com 128px de altura (tools/gerar_pixel_assets.py).
+   --masc-h manda em tudo: largura, folha de quadros e passo da caminhada
+   saem dela por proporção, então a escala muda num lugar só. */
+.fb-mascote {
+  --masc-h: 192px;                        /* 128 * 1.5 */
+  --masc-w: calc(var(--masc-h) * 0.898);  /* célula 115 / 128 */
+  position: relative;
+  flex-shrink: 0;
+  width: var(--masc-w);
+  height: var(--masc-h);
+  background-image: url("/static/img/ilumaquinho/andando.png");
+  background-size: calc(var(--masc-w) * 2) var(--masc-h);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  animation: mascote-anda 0.22s steps(1) infinite;
+}
+
+@keyframes mascote-anda {
+  0%  { background-position: 0 0; }
+  50% { background-position: calc(var(--masc-w) * -1) 0; }
+}
+
+/* Corda presa ao próprio mascote (e não à área): assim ela acompanha a
+   caminhada em vez de ficar para trás, e some junto com ela. */
+.fb-mascote::before {
+  content: "";
   position: absolute;
-  left: -32px;
   right: 50%;
-  bottom: 46px;
+  left: -200vw;
+  bottom: 22%;
   height: var(--px);
   background: repeating-linear-gradient(
     90deg,
@@ -1284,64 +1329,94 @@ body {
   );
 }
 
-.fb-mascote.parado ~ .fb-corda { display: none; }
-
-/* Mascote: caminha durante a entrada, assume a expressão ao encostar.
-   Sprites nativos em 128px de altura (tools/gerar_pixel_assets.py), aqui
-   escalados 1.5x. */
-.fb-mascote {
-  flex-shrink: 0;
-  width: 173px;   /* 115px (célula da folha) * 1.5 */
-  height: 192px;  /* 128px * 1.5 */
-  background-image: url("/static/img/ilumaquinho/andando.png");
-  background-size: 345px 192px;
-  background-repeat: no-repeat;
-  background-position: 0 0;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  animation: mascote-anda 0.24s steps(1) infinite;
+/* Ele anda mais devagar que o painel (35vw contra 100vw), então começa
+   colado na borda da frente — puxando — e vai ficando para trás até parar
+   no centro. Passar de 35vw joga o mascote para fora do painel, onde o
+   overflow do miolo o corta pela metade. */
+.feedback-overlay.is-visible .fb-mascote {
+  animation: mascote-anda 0.22s steps(1) infinite,
+             mascote-puxa var(--fb-entrada) var(--fb-easing) forwards;
 }
 
-@keyframes mascote-anda {
-  0%  { background-position: 0 0; }
-  50% { background-position: -173px 0; }
+@keyframes mascote-puxa {
+  from { transform: translateX(35vw); }
+  to   { transform: translateX(0); }
 }
 
+/* Chegou: para de andar, assume a pose, larga a corda. */
+.feedback-overlay.is-visible .fb-mascote.parado,
 .fb-mascote.parado {
   animation: none;
+  transform: none;
   background-size: contain;
   background-position: center bottom;
 }
 
-.fb-mascote.parado.is-bom  { background-image: url("/static/img/ilumaquinho/deu-bom.png"); }
+.fb-mascote.parado::before { display: none; }
 
-/* deu-ruim.png é uma cena inteira (mascote + Central Lyax), bem mais larga
-   que um sprite de personagem — 242x168 nativo. Alarga só este estado,
+.fb-mascote.parado.is-bom {
+  background-image: url("/static/img/ilumaquinho/deu-bom.png");
+}
+
+/* deu-ruim.png é uma cena inteira (mascote + Central Lyax), 242x168 nativo
+   — bem mais larga que o sprite de personagem. Alarga só este estado,
    mantendo a mesma altura das outras poses. */
 .fb-mascote.parado.is-ruim {
-  width: 277px;   /* 192px de altura * (242/168) de proporção da cena */
+  width: calc(var(--masc-h) * 1.4405);
   background-image: url("/static/img/ilumaquinho/deu-ruim.png");
 }
 
+/* ---- rodapé ---- */
 .feedback-tap {
   margin: 0;
-  padding: 22px 16px;
+  padding: clamp(18px, 2.4vh, 34px) var(--safe-side);
   font-family: var(--font-display);
-  font-size: 0.78rem;
+  font-size: clamp(0.7rem, 1.9vw, 1.05rem);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #f5b301;
-  background: rgba(0, 0, 0, 0.28);
-  border-top: var(--px) solid rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.26);
+  border-top: var(--px) solid rgba(0, 0, 0, 0.3);
   animation: pisca 1.2s steps(1) infinite;
 }
 
 @keyframes pisca {
-  0%, 50% { opacity: 1; }
+  0%, 50%   { opacity: 1; }
   51%, 100% { opacity: 0.35; }
 }
 
-/* Estrelas: só na tela de acerto, decoração atrás do conteúdo. */
+/* ---- entrada do conteúdo, depois que o painel encosta ----
+   backwards segura o estado inicial durante o atraso, senão o texto
+   apareceria pronto e só depois animaria. */
+.feedback-overlay.is-visible .feedback-msg {
+  animation: fb-titulo 0.34s steps(4) var(--fb-entrada) backwards;
+}
+
+@keyframes fb-titulo {
+  from { opacity: 0; transform: scale(0.55); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.feedback-overlay.is-visible .feedback-pontos {
+  animation: fb-selo 0.42s steps(5) calc(var(--fb-entrada) + 0.12s) backwards;
+}
+
+@keyframes fb-selo {
+  0%   { opacity: 0; transform: scale(0.3); }
+  70%  { opacity: 1; transform: scale(1.16); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.feedback-overlay.is-visible .fb-resposta {
+  animation: fb-sobe 0.3s steps(4) calc(var(--fb-entrada) + 0.24s) backwards;
+}
+
+@keyframes fb-sobe {
+  from { opacity: 0; transform: translateY(calc(var(--px) * 5)); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- estrelas: só no acerto, decoração atrás do conteúdo ---- */
 .fb-estrelas { display: none; }
 
 .feedback-overlay.is-bom .fb-estrelas {
@@ -1353,12 +1428,19 @@ body {
 
 .fb-estrela {
   position: absolute;
+  width: clamp(26px, 5.4vw, 74px);
   animation: estrela-brilha 2.4s ease-in-out infinite;
 }
 
-.fb-estrela.x1 { top: 8%;  left: 8%;  width: 40px; }
-.fb-estrela.x2 { top: 18%; right: 9%; width: 26px; animation-delay: .6s; }
-.fb-estrela.x3 { top: 4%;  right: 22%; width: 20px; animation-delay: 1.1s; opacity: .55; }
+.feedback-overlay.is-visible .fb-estrela {
+  animation: fb-selo 0.4s steps(4) calc(var(--fb-entrada) + 0.2s) backwards,
+             estrela-brilha 2.4s ease-in-out calc(var(--fb-entrada) + 0.6s) infinite;
+}
+
+/* Nos cantos da faixa vazia, longe do título e das bordas da tela. */
+.fb-estrela.x1 { top: 12%; left: 9%; }
+.fb-estrela.x2 { top: 20%; right: 11%; width: clamp(18px, 3.6vw, 50px); animation-delay: 0.7s; }
+.fb-estrela.x3 { bottom: 16%; right: 15%; width: clamp(14px, 2.8vw, 38px); opacity: 0.7; }
 
 /* ---- Resultado ---- */
 
@@ -1819,26 +1901,11 @@ body {
   .chama { --chama-h: 90px; }                      /* 3x de 30px */
   .chama[data-nivel="5"] { --chama-h: 120px; }     /* 4x */
 
-  /* ---- feedback ---- */
-  .fb-topo { font-size: 1.15rem; padding: 28px 24px; }
-  .fb-topo-icone { width: calc(var(--px) * 5); height: calc(var(--px) * 5); }
-  .fb-miolo { padding: 60px 48px 32px; gap: 38px; }
-  .feedback-msg { font-size: 2.8rem; }
-  .feedback-pontos { font-size: 1.4rem; padding: 18px 34px; }
-  .fb-resposta-rotulo { font-size: 0.78rem; padding: 16px 24px; }
-  .fb-resposta-texto { font-size: 1.35rem; padding: 26px 24px; }
-  .fb-mascote-area { min-height: 280px; }
-  .fb-mascote { width: 288px; height: 320px; background-size: 576px 320px; }
-  .fb-mascote.parado.is-ruim { width: 461px; }
-  .fb-corda { bottom: 60px; }
-  .feedback-tap { font-size: 1rem; padding: 30px 16px; }
-  .fb-estrela.x1 { width: 62px; }
-  .fb-estrela.x2 { width: 40px; }
-  .fb-estrela.x3 { width: 30px; }
-  @keyframes mascote-anda {
-    0%  { background-position: 0 0; }
-    50% { background-position: -288px 0; }
-  }
+  /* ---- feedback ----
+     Tipografia, espaços e estrelas já escalam sozinhos (clamp + o rem
+     dobrado acima). Aqui só o sprite, que é discreto por natureza: uma
+     escala intermediária embaçaria o pixel. 3x o nativo de 128px. */
+  .fb-mascote { --masc-h: 384px; }
 
   /* ---- resultado ---- */
   .resultado-score { padding: 44px 48px; gap: 40px; }
@@ -1890,6 +1957,16 @@ body {
    são o que não pode faltar. */
 @media (max-height: 1000px) {
   .chamada { display: none; }
+}
+
+/* Janela baixa (o notebook da equipe, não o totem): o bloco do feedback
+   passava do miolo por poucos px e o overflow cortava os pés do mascote.
+   Cai para 1x o sprite nativo — múltiplo inteiro, então continua nítido. */
+@media (max-height: 760px) {
+  .fb-mascote { --masc-h: 128px; }
+  /* Sem altura sobrando, as estrelas caem em cima do título em vez de
+     ocuparem canto vazio — decoração é a primeira coisa a sair. */
+  .feedback-overlay.is-bom .fb-estrelas { display: none; }
 }
 
 @media (max-height: 820px) {

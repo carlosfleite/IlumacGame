@@ -9,8 +9,8 @@
 (function () {
   "use strict";
 
-  var FEEDBACK_MS = 2200; // contado só depois que o card termina de entrar
-  var ENTRADA_MS = 800;   // deve casar com a duração de reboque-entra no CSS
+  var FEEDBACK_MS = 2600; // contado só depois que a tela termina de entrar
+  var ENTRADA_MS = 900;   // deve casar com --fb-entrada / reboque-entra no CSS
   var LIMITE_MS = 20000;  // tempo por pergunta; zerou, conta como erro
 
   var params = new URLSearchParams(window.location.search);
