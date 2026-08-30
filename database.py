@@ -129,6 +129,16 @@ CREATE INDEX IF NOT EXISTS idx_tentativas_participante
 
 CREATE INDEX IF NOT EXISTS idx_respostas_tentativa
     ON quiz_respostas (tentativa_id);
+
+-- Histórico das perguntas já servidas, da mais antiga para a mais nova.
+-- Persistido para o rodízio sobreviver a reinícios do totem (watchdog,
+-- reboot diário da feira): sem isso, a mesma pergunta volta a cair logo
+-- após um restart, entregando a resposta para quem está na fila.
+CREATE TABLE IF NOT EXISTS quiz_recentes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pergunta_id INTEGER NOT NULL,
+    usado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 """
 
 

@@ -9,7 +9,6 @@ import random
 import re
 import threading
 import time
-from collections import deque
 from flask import Flask, jsonify, render_template, request
 
 from database import (
@@ -57,11 +56,10 @@ _sessoes = {}
 # abandono.
 _SESSAO_TTL_S = 30 * 60
 
-# Perguntas servidas nas últimas partidas, da mais antiga para a mais nova.
-# Só memória de processo: reiniciar o totem recomeça o rodízio, o que é
-# aceitável — o que não pode é repetir dentro da mesma fila de visitantes.
+# Serializa o sorteio (leitura + gravação do histórico em quiz_recentes).
+# O histórico em si é persistido no banco: reiniciar o totem não recomeça
+# o rodízio, senão a mesma pergunta volta a cair logo após um restart.
 _recentes_lock = threading.Lock()
-_recentes = deque()
 
 
 def _descartar_sessoes_expiradas():
@@ -184,8 +182,6 @@ def _validar_cadastro(nome, telefone, email):
         return "Telefone inválido — use DDD + número.", None
     if not 11 <= int(digitos[:2]) <= 99:
         return "DDD inválido.", None
-    if len(digitos) == 11 and digitos[2] != "9":
-        return "Celular deve começar com 9 após o DDD.", None
 
     if not email:
         return "E-mail é obrigatório.", None
@@ -270,22 +266,48 @@ def _sortear_perguntas(rows, quantidade):
     janela = max(0, min(len(rows) - quantidade * 2, quantidade * 6))
 
     with _recentes_lock:
-        while len(_recentes) > janela:
-            _recentes.popleft()
+        conn = get_connection()
+        try:
+            # Mais recentes primeiro. IDs que não estão mais no banco ativo
+            # são ignorados naturalmente por não constarem em por_id.
+            recentes = [
+                r["pergunta_id"] for r in conn.execute(
+                    "SELECT pergunta_id FROM quiz_recentes ORDER BY id DESC LIMIT ?",
+                    (janela,),
+                )
+            ]
+            descansando = set(recentes)
+            disponiveis = [row for row in rows if row["id"] not in descansando]
+            ids_disponiveis = {row["id"] for row in disponiveis}
 
-        descansando = set(_recentes)
-        disponiveis = [row for row in rows if row["id"] not in descansando]
+            # Banco pequeno demais para a janela: libera as mais antigas.
+            if len(disponiveis) < quantidade:
+                faltam = quantidade - len(disponiveis)
+                for pid in reversed(recentes):  # da mais antiga para a mais nova
+                    if faltam <= 0:
+                        break
+                    if pid in por_id and pid not in ids_disponiveis:
+                        disponiveis.append(por_id[pid])
+                        ids_disponiveis.add(pid)
+                        faltam -= 1
 
-        # Banco pequeno demais para a janela: libera as mais antigas.
-        if len(disponiveis) < quantidade:
-            faltam = quantidade - len(disponiveis)
-            for pid in list(_recentes)[:faltam]:
-                if pid in por_id:
-                    disponiveis.append(por_id[pid])
+            selecionadas = random.sample(
+                disponiveis, min(quantidade, len(disponiveis))
+            )
 
-        selecionadas = random.sample(disponiveis, min(quantidade, len(disponiveis)))
-        for row in selecionadas:
-            _recentes.append(row["id"])
+            conn.executemany(
+                "INSERT INTO quiz_recentes (pergunta_id) VALUES (?)",
+                [(row["id"],) for row in selecionadas],
+            )
+            # Mantém a tabela enxuta — o suficiente para cobrir a janela máxima.
+            conn.execute(
+                "DELETE FROM quiz_recentes WHERE id NOT IN "
+                "(SELECT id FROM quiz_recentes ORDER BY id DESC LIMIT ?)",
+                (max(quantidade * 12, 120),),
+            )
+            conn.commit()
+        finally:
+            conn.close()
 
     return selecionadas
 
@@ -323,19 +345,21 @@ def api_quiz_iniciar():
 
     selecionadas = _sortear_perguntas(rows, QTD_PERGUNTAS)
 
-    # Guarda gabarito só no servidor
+    # Guarda gabarito só no servidor. As alternativas são embaralhadas a cada
+    # partida: no banco a correta tende a ficar em A/B (viés de quem redigiu),
+    # e sem embaralhar o jogador aprende a "chutar A" olhando a fila.
     gabarito = {}
     perguntas_cliente = []
     for row in selecionadas:
-        gabarito[row["id"]] = row["correta"]
-        perguntas_cliente.append({
-            "id": row["id"],
-            "texto": row["texto"],
-            "alt_a": row["alt_a"],
-            "alt_b": row["alt_b"],
-            "alt_c": row["alt_c"],
-            "alt_d": row["alt_d"],
-        })
+        ordem = ["a", "b", "c", "d"]
+        random.shuffle(ordem)
+        pergunta = {"id": row["id"], "texto": row["texto"]}
+        for i, origem in enumerate(ordem):
+            posicao = "abcd"[i]
+            pergunta["alt_" + posicao] = row["alt_" + origem]
+            if origem == row["correta"]:
+                gabarito[row["id"]] = posicao
+        perguntas_cliente.append(pergunta)
 
     with _sessao_lock:
         _descartar_sessoes_expiradas()
