@@ -13,12 +13,15 @@ travar esperando input.
 """
 
 import logging
+import logging.handlers
 import os
+import re
 import sys
 import threading
 import time
 import urllib.request
 
+import flask.cli
 import webview
 
 from app import create_app
@@ -38,17 +41,69 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_DIR = os.path.join(BASE_DIR, "logs")
 
 
+class _SoOQueImporta(logging.Filter):
+    """
+    Filtro do CONSOLE. O arquivo de log continua recebendo tudo.
+
+    A janela preta é o que a equipe do estande olha quando desconfia de
+    algum problema. Duas fontes de ruído enterravam qualquer coisa útil
+    nela:
+
+    1. O log de acesso do Werkzeug é uma linha POR ARQUIVO servido — uma
+       única tela do quiz gera ~15 linhas de 200/304. Em três dias de
+       feira isso rola a tela sem parar. Aqui passam só 4xx e 5xx, que
+       são os que interessam quando algo quebra.
+    2. O aviso de "development server". É verdadeiro, mas este servidor
+       atende 127.0.0.1 e um único usuário; na janela do estande ele só
+       parece defeito e faz alguém ligar achando que quebrou.
+    3. "Press CTRL+C to quit", que ensina a coisa errada: quem encerra o
+       totem é o PARAR.flag, e um Ctrl+C só faria o watchdog reabrir.
+    """
+
+    # '"GET /static/x.png HTTP/1.1" 304 -' — o código vem depois da aspa
+    # de fechamento. O 304 chega colorido com ANSI, que fica DENTRO das
+    # aspas e por isso não atrapalha. 4xx e 5xx passam de propósito.
+    _ACESSO_NORMAL = re.compile(r'" [23]\d\d ')
+    _RUIDO = ("This is a development server", "Press CTRL+C to quit")
+
+    def filter(self, record):
+        msg = record.getMessage()
+        if self._ACESSO_NORMAL.search(msg):
+            return False
+        return not any(r in msg for r in self._RUIDO)
+
+
 def _configurar_log():
-    """Log em arquivo: no totem não há console para ler o traceback."""
+    """
+    Console enxuto, arquivo completo.
+
+    O arquivo rotaciona: com o log de acesso ligado, três dias de feira
+    escrevem sem parar, e disco cheio no meio do evento é justamente um
+    dos modos de falha que o app trata (ver app.py).
+    """
     os.makedirs(LOG_DIR, exist_ok=True)
+
+    arquivo = logging.handlers.RotatingFileHandler(
+        os.path.join(LOG_DIR, "totem.log"),
+        maxBytes=2 * 1024 * 1024,
+        backupCount=3,
+        encoding="utf-8",
+    )
+
+    console = logging.StreamHandler(sys.stdout)
+    console.addFilter(_SoOQueImporta())
+
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(message)s",
-        handlers=[
-            logging.FileHandler(os.path.join(LOG_DIR, "totem.log"), encoding="utf-8"),
-            logging.StreamHandler(sys.stdout),
-        ],
+        handlers=[arquivo, console],
     )
+
+    # O banner do Flask fala em "Press CTRL+C to quit", que contradiz a
+    # instrução do INICIAR_QUIZ.bat (criar PARAR.flag) — e o watchdog
+    # reabriria o totem de qualquer jeito. Melhor não dar a instrução
+    # errada para quem está no estande.
+    flask.cli.show_server_banner = lambda *a, **kw: None
 
 
 def _run_flask():
