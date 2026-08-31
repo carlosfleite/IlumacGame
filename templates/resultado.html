@@ -19,8 +19,11 @@
 
     <main class="palco palco-resultado">
       <header class="brand-header">
-        <p class="brand-eyebrow">Quiz concluído</p>
-        <h1 class="brand-title" id="resultado-nome">—</h1>
+        <!-- "Finalizado" e não "Concluído": a Press Start 2P desenha Í e Ú
+             na altura de minúscula para o acento caber na célula, e
+             "CONCLUÍDO" saía "CONCLUíDO". -->
+        <p class="brand-eyebrow">Quiz finalizado</p>
+        <h1 class="brand-title brand-title--nome" id="resultado-nome">—</h1>
       </header>
 
       <!-- Placar + mascote lado a lado: o número sozinho deixava metade da

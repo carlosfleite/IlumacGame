@@ -303,6 +303,24 @@ body {
   text-shadow: var(--px) var(--px) 0 var(--vermelho-noite);
 }
 
+/* Título que carrega o NOME do participante, e não um rótulo fixo.
+   Nome é texto de terceiro: vem com qualquer acento e qualquer
+   comprimento. A Press Start 2P desenha Í e Ú na altura de minúscula
+   para o acento caber na célula de 8px, então "PATRÍCIA" saía
+   "PATRíCIA" — e num evento brasileiro isso é questão de tempo.
+
+   A regra tipográfica no topo deste arquivo já mandava nome em
+   Montserrat; o ranking e o pódio faziam certo, só o resultado escapava.
+   De quebra Montserrat é mais estreita, então nome comprido cabe melhor. */
+.brand-title--nome {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(1.7rem, 6vw, 3.1rem);
+  letter-spacing: 0.01em;
+  text-shadow: calc(var(--px) / 2) calc(var(--px) / 2) 0 var(--vermelho-noite);
+  text-wrap: balance;
+}
+
 .brand-sub {
   margin: 16px 0 0;
   font-size: 1.05rem;
