@@ -1585,17 +1585,16 @@ body {
   animation: mascote-respira 1.6s ease-in-out infinite;
 }
 
-/* A arte triste é uma CENA (mascote encolhido + Central Lyax), e não um
-   personagem recortado como as outras duas: no mesmo enquadramento o
-   rosto — que é a mensagem — saía pequeno e a central virava o assunto.
-   Aproxima no mascote e deixa a central sangrar para fora da moldura.
-   Em % de propósito: as duas escalas da moldura têm a mesma proporção,
-   então o enquadramento vale nas duas. */
+/* ilumaquinho-chorando.png, e NÃO ilumaquinho-triste.png: aquele é a cena
+   com a Central Lyax e continua sendo a arte de origem do deu-ruim.png do
+   quiz (tools/gerar_pixel_assets.py) — trocar lá mudaria o feedback das
+   perguntas junto. Este aqui é o personagem sozinho, então dispensa o
+   enquadramento forçado que a cena exigia.
+
+   Parado de propósito: as outras duas faixas respiram, esta não. A
+   quietude é o que diferencia quem não teve o que comemorar. */
 .resultado-mascote[data-faixa="baixa"] {
-  background-image: url("/static/img/ilumaquinho-triste.png");
-  background-size: auto 150%;
-  background-position: -25% bottom;
-  /* Quem foi mal não precisa de um boneco saltitando na cara. */
+  background-image: url("/static/img/ilumaquinho-chorando.png");
   animation: none;
 }
 
