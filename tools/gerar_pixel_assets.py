@@ -33,7 +33,10 @@ from collections import deque
 from PIL import Image, ImageDraw
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ORIGEM = os.path.join(RAIZ, "img")
+# As artes de origem moram em static/img/, junto das que o site usa
+# direto. Isto apontava para <raiz>/img, pasta que nao existe no
+# repositorio: o gerador nao rodava mais.
+ORIGEM = os.path.join(RAIZ, "static", "img")
 DESTINO_SPRITE = os.path.join(RAIZ, "static", "img", "ilumaquinho")
 DESTINO_IMG = os.path.join(RAIZ, "static", "img")
 
@@ -391,44 +394,74 @@ def preparar_decorativo(origem, destino):
 ALTURA_MASCOTE = 128
 
 
+def _origem(nome):
+    """
+    Caminho de uma arte de origem, ou None se ela nao estiver aqui.
+
+    Uma origem se perdeu na mudanca das artes para static/img/:
+    Ilumaquinho-Idle.png, que gerava o idle.png do painel admin. O sprite
+    continua versionado e funcionando; so nao da mais para reproduzi-lo.
+    Antes uma origem faltando derrubava o gerador inteiro na primeira que
+    aparecesse, levando junto os sprites do quiz, que sao os que importam.
+    Agora avisa, pula e segue.
+    """
+    caminho = os.path.join(ORIGEM, nome)
+    if os.path.isfile(caminho):
+        return caminho
+    print("    [PULADO] arte de origem ausente: %s" % nome)
+    return None
+
+
+def _sprite(nome_origem, nome_saida, altura):
+    """pixelar_sprite tolerante a origem ausente."""
+    src = _origem(nome_origem)
+    if src is None:
+        return None
+    return pixelar_sprite(src, os.path.join(DESTINO_SPRITE, nome_saida),
+                          altura=altura)
+
+
+def _decorativo(nome_origem, nome_saida):
+    src = _origem(nome_origem)
+    if src is not None:
+        preparar_decorativo(src, os.path.join(DESTINO_IMG, nome_saida))
+
+
 def main():
     os.makedirs(DESTINO_SPRITE, exist_ok=True)
     os.makedirs(DESTINO_IMG, exist_ok=True)
 
     print("Sprites do Llumaquinho (%dpx, sem quantizacao):" % ALTURA_MASCOTE)
-    pixelar_sprite(os.path.join(ORIGEM, "ilumaquinho-comemoracao.png"),
-                   os.path.join(DESTINO_SPRITE, "deu-bom.png"),
-                   altura=ALTURA_MASCOTE)
-    pixelar_sprite(os.path.join(ORIGEM, "Ilumaquinho-Idle.png"),
-                   os.path.join(DESTINO_SPRITE, "idle.png"),
-                   altura=ALTURA_MASCOTE)
-
-    print("Llumaquinho com o trofeu (painel admin):")
-    pixelar_sprite(os.path.join(ORIGEM, "ilumaquinho-trofeu.png"),
-                   os.path.join(DESTINO_SPRITE, "trofeu.png"),
-                   altura=ALTURA_MASCOTE + 40)
+    # ilumaquinho-feliz.png, e nao "ilumaquinho-comemoracao.png": a arte
+    # foi renomeada na mudanca para static/img/ e o gerador ficou apontando
+    # para o nome antigo. Conferido regerando e comparando com o deu-bom.png
+    # versionado -- bate pixel a pixel.
+    _sprite("ilumaquinho-feliz.png", "deu-bom.png", ALTURA_MASCOTE)
+    _sprite("Ilumaquinho-Idle.png", "idle.png", ALTURA_MASCOTE)
+    # parado.png e usado pela chamada do cadastro e da abertura, mas nao
+    # era gerado aqui. Origem conferida do mesmo jeito: bate pixel a pixel.
+    _sprite("ilumaquinho-parado.png", "parado.png", ALTURA_MASCOTE)
 
     print("Llumaquinho triste encostado na Central Lyax:")
-    compor_triste_na_lyax(
-        os.path.join(ORIGEM, "ilumaquinho-triste.png"),
-        os.path.join(ORIGEM, "Central Lyax.png"),
-        os.path.join(DESTINO_SPRITE, "deu-ruim.png"),
-        altura=ALTURA_MASCOTE + 40,  # a cena e mais larga; um pouco mais alta ajuda a leitura
-    )
+    triste = _origem("ilumaquinho-triste.png")
+    lyax = _origem("Central Lyax.png")
+    if triste and lyax:
+        compor_triste_na_lyax(
+            triste, lyax,
+            os.path.join(DESTINO_SPRITE, "deu-ruim.png"),
+            altura=ALTURA_MASCOTE + 40,  # a cena e mais larga; um pouco mais alta ajuda a leitura
+        )
 
     print("Folha de direcoes (celula 0 = direita, 1 = esquerda; nao e ciclo de passo):")
     andar = [
-        pixelar_sprite(os.path.join(ORIGEM, "ilumaquinho-andar-direita.png"),
-                       os.path.join(DESTINO_SPRITE, "_andar-1.png"),
-                       altura=ALTURA_MASCOTE),
-        pixelar_sprite(os.path.join(ORIGEM, "ilumaquinho-andar-esquerda.png"),
-                       os.path.join(DESTINO_SPRITE, "_andar-2.png"),
-                       altura=ALTURA_MASCOTE),
+        _sprite("ilumaquinho-andar-direita.png", "_andar-1.png", ALTURA_MASCOTE),
+        _sprite("ilumaquinho-andar-esquerda.png", "_andar-2.png", ALTURA_MASCOTE),
     ]
-    larg, alt = folha_de_direcoes(andar, os.path.join(DESTINO_SPRITE, "andando.png"))
-    for tmp in ("_andar-1.png", "_andar-2.png"):
-        os.remove(os.path.join(DESTINO_SPRITE, tmp))
-    print("    -> celula da folha: %dx%d" % (larg, alt))
+    if all(q is not None for q in andar):
+        larg, alt = folha_de_direcoes(andar, os.path.join(DESTINO_SPRITE, "andando.png"))
+        for tmp in ("_andar-1.png", "_andar-2.png"):
+            os.remove(os.path.join(DESTINO_SPRITE, tmp))
+        print("    -> celula da folha: %dx%d" % (larg, alt))
 
     print("Chama da barra de progresso (16 quadros da folha do designer):")
     clarg, calt = gerar_chama(os.path.join(DESTINO_IMG, "sprite-fogo.webp"),
@@ -436,14 +469,10 @@ def main():
     print("    -> celula da folha: %dx%d" % (clarg, calt))
 
     print("Elementos decorativos (tela de abertura):")
-    preparar_decorativo(os.path.join(ORIGEM, "Ativo 2.png"),
-                        os.path.join(DESTINO_IMG, "ilumagame.png"))
-    preparar_decorativo(os.path.join(ORIGEM, "ESTRELA.png"),
-                        os.path.join(DESTINO_IMG, "estrela.png"))
-    preparar_decorativo(os.path.join(ORIGEM, "BALÃO_FOGOS.png"),
-                        os.path.join(DESTINO_IMG, "balao-fogos.png"))
-    preparar_decorativo(os.path.join(ORIGEM, "SETA.png"),
-                        os.path.join(DESTINO_IMG, "seta.png"))
+    _decorativo("Ativo 2.png", "ilumagame.png")
+    _decorativo("ESTRELA.png", "estrela.png")
+    _decorativo("BALÃO_FOGOS.png", "balao-fogos.png")
+    _decorativo("SETA.png", "seta.png")
 
 
 if __name__ == "__main__":
