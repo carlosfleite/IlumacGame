@@ -19,8 +19,11 @@
 
     <main class="palco palco-resultado">
       <header class="brand-header">
-        <p class="brand-eyebrow">Quiz concluído</p>
-        <h1 class="brand-title" id="resultado-nome">—</h1>
+        <!-- "Finalizado" e não "Concluído": a Press Start 2P desenha Í e Ú
+             na altura de minúscula para o acento caber na célula, e
+             "CONCLUÍDO" saía "CONCLUíDO". -->
+        <p class="brand-eyebrow">Quiz finalizado</p>
+        <h1 class="brand-title brand-title--nome" id="resultado-nome">—</h1>
       </header>
 
       <!-- Placar + mascote lado a lado: o número sozinho deixava metade da
@@ -31,7 +34,7 @@
           <p class="resultado-pontos" id="resultado-pontos">0</p>
           <p class="resultado-max">de 10 pontos</p>
         </div>
-        <div class="resultado-mascote" role="img" aria-label="Ilumaquinho com troféu"></div>
+        <div class="resultado-mascote" id="resultado-mascote" role="img" aria-label="Ilumaquinho"></div>
       </div>
 
       <div class="resultado-grid">
@@ -73,6 +76,23 @@
         s = s % 60;
         return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
       }
+
+      /**
+       * O mascote reage ao placar. São 5 perguntas de 2 pontos, então na
+       * prática só caem 0, 2, 4, 6, 8 e 10 — mas as faixas são por
+       * intervalo, e não por valor, para continuarem valendo se a
+       * pontuação por acerto mudar.
+       */
+      function faixaDoPlacar(p) {
+        if (p <= 2) return { faixa: "baixa", alt: "Ilumaquinho triste" };
+        if (p <= 6) return { faixa: "media", alt: "Ilumaquinho comemorando" };
+        return { faixa: "alta", alt: "Ilumaquinho com troféu" };
+      }
+
+      var mascote = document.getElementById("resultado-mascote");
+      var reacao = faixaDoPlacar(Number(r.pontuacao) || 0);
+      mascote.setAttribute("data-faixa", reacao.faixa);
+      mascote.setAttribute("aria-label", reacao.alt);
 
       document.getElementById("resultado-nome").textContent = r.nome || "Participante";
       document.getElementById("resultado-pontos").textContent = String(r.pontuacao);

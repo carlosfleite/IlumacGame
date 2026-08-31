@@ -28,6 +28,9 @@ echo.
 echo Para encerrar o totem, crie um arquivo chamado PARAR.flag
 echo nesta pasta (ou feche esta janela preta).
 echo.
+echo Esta janela mostra so o que exige atencao. O detalhe de tudo que
+echo acontece fica em logs\totem.log
+echo.
 
 rem -----------------------------------------------------------
 rem Setup: executado apenas quando falta alguma coisa.

@@ -303,6 +303,24 @@ body {
   text-shadow: var(--px) var(--px) 0 var(--vermelho-noite);
 }
 
+/* Título que carrega o NOME do participante, e não um rótulo fixo.
+   Nome é texto de terceiro: vem com qualquer acento e qualquer
+   comprimento. A Press Start 2P desenha Í e Ú na altura de minúscula
+   para o acento caber na célula de 8px, então "PATRÍCIA" saía
+   "PATRíCIA" — e num evento brasileiro isso é questão de tempo.
+
+   A regra tipográfica no topo deste arquivo já mandava nome em
+   Montserrat; o ranking e o pódio faziam certo, só o resultado escapava.
+   De quebra Montserrat é mais estreita, então nome comprido cabe melhor. */
+.brand-title--nome {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(1.7rem, 6vw, 3.1rem);
+  letter-spacing: 0.01em;
+  text-shadow: calc(var(--px) / 2) calc(var(--px) / 2) 0 var(--vermelho-noite);
+  text-wrap: balance;
+}
+
 .brand-sub {
   margin: 16px 0 0;
   font-size: 1.05rem;
@@ -679,6 +697,94 @@ body {
    nesse vão em vez de deixar um buraco só de um lado. O botão segue
    ancorado na base porque a margem de baixo da chamada empurra por igual. */
 .chamada-cadastro { margin-top: auto; margin-bottom: auto; }
+
+/* ---- Teclado virtual (static/js/teclado.js) ----
+   A tela encolhe pela altura EXATA do teclado, medida em JS e devolvida em
+   --teclado-h. É a diferença para o teclado do Windows, que é uma janela
+   por cima: ali nada reflui e o Continuar fica atrás dele. */
+.com-teclado .screen {
+  height: calc(100% - var(--teclado-h, 0px));
+}
+
+/* Com pouca altura sobrando, o mascote é a primeira coisa a sair — o
+   formulário e o botão não podem ser espremidos por decoração. */
+.com-teclado .chamada-cadastro { display: none; }
+
+.teclado {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  padding: clamp(8px, 1.2vh, 18px) clamp(8px, 1.4vw, 20px)
+           calc(clamp(8px, 1.2vh, 18px) + env(safe-area-inset-bottom, 0px));
+  background: var(--vermelho-noite);
+  border-top: var(--px) solid var(--contorno);
+}
+
+.teclado[hidden] { display: none; }
+
+.teclado-grade {
+  display: grid;
+  grid-template-columns: repeat(var(--teclado-colunas, 20), minmax(0, 1fr));
+  gap: clamp(5px, 0.7vh, 12px);
+}
+
+/* Teclado de telefone: 3 colunas largas ficariam absurdas na largura
+   inteira do totem, então este layout mora numa coluna central. */
+.teclado-grade.estreita {
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+/* Rótulos em Montserrat, não na Press Start 2P.
+
+   A Press Start 2P TEM os acentuados (conferido glifo a glifo: nenhum cai
+   na fonte de reserva). O problema é outro: para o acento caber na célula
+   de 8px, ela desenha Í e Ú na altura de minúscula — "MAIÚSC" sai como
+   "MAIúSC". Á, Ã e Ç saem certos.
+
+   Como as teclas se leem em movimento e uma delas é justamente ÁÉÍ, vale
+   mais a legibilidade: pixel só para texto curto de display, Montserrat
+   para o que se lê com atenção. O ar de pixel vem da caixa — canto reto,
+   contorno grosso e sombra sólida deslocada. */
+.tecla {
+  min-height: clamp(52px, 6.6vh, 116px);
+  padding: 4px 2px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(1rem, 2.6vw, 1.7rem);
+  line-height: 1;
+  color: var(--vermelho);
+  background: var(--cartao);
+  border: var(--px) solid var(--contorno);
+  box-shadow: var(--px) var(--px) 0 0 rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.06s steps(2), background 0.06s steps(1);
+}
+
+.tecla:active {
+  background: var(--cartao-2);
+  transform: translate(var(--px), var(--px));
+  box-shadow: none;
+}
+
+/* Teclas de comando: mais escuras, para a vista separar letra de função
+   sem precisar ler. */
+.tecla-acao {
+  font-size: clamp(0.62rem, 1.5vw, 0.95rem);
+  letter-spacing: 0.06em;
+  color: var(--sobre-vermelho);
+  background: var(--tinta-media);
+}
+
+.tecla-acao:active { background: var(--tinta); }
+
+.tecla-acao.ativa {
+  color: var(--tinta);
+  background: var(--fogo-medio);
+}
 
 .field {
   display: flex;
@@ -1098,11 +1204,10 @@ body {
    ========================================================================== */
 
 /* A tela de feedback ocupa o totem inteiro.
-   COREOGRAFIA (0,75s de entrada, depois o conteúdo aparece):
+   COREOGRAFIA (1s de entrada, depois o conteúdo aparece):
      1. o painel desliza da esquerda;
-     2. o Ilumaquinho entra andando à frente dele, com a corda saindo pela
-        esquerda — é ele que traz a tela;
-     3. ao encostar no centro ele para, assume a pose e a corda some;
+     2. o Ilumaquinho entra andando à frente dele — é ele que traz a tela;
+     3. ao encostar no centro ele para e assume a pose;
      4. só então título, selo e resposta entram, para o olho pousar neles.
    Todo o miolo é um bloco ÚNICO centrado na vertical: nada de vão morto
    entre a resposta e o mascote. */
@@ -1112,10 +1217,18 @@ body {
   z-index: 50;
   overflow: hidden;
 
-  /* Tudo que depende do tempo da entrada sai daqui. 0,9s dá ~4 ciclos de
-     caminhada: mais rápido que isso e o mascote parece deslizar. */
-  --fb-entrada: 0.9s;
-  --fb-easing: cubic-bezier(0.22, 0.72, 0.3, 1);
+  /* Tudo que depende do tempo da entrada sai daqui. */
+  --fb-entrada: 1s;
+
+  /* LINEAR de propósito, apesar de ease-out ser o reflexo em UI.
+     O mascote herda o transform do painel, então a curva do painel vira a
+     curva do passo dele: com ease-out ele disparava (67% do caminho no
+     primeiro quarto) e depois se arrastava, com o passo sempre no mesmo
+     ritmo — pé patinando. Compensar só no mascote é pior: ele passa do
+     centro e volta de ré. Velocidade constante nos dois é o que a cena
+     pede — a tela não desacelera sozinha, ela para porque ele plantou o
+     pé, e quem marca a chegada é o conteúdo entrando. */
+  --fb-easing: linear;
 }
 
 .feedback-overlay[hidden] { display: none; }
@@ -1277,56 +1390,51 @@ body {
   align-items: flex-end;
 }
 
-/* Linha de chão, só no acerto: dá pé ao mascote e faz a caminhada da
-   entrada acontecer sobre algo, em vez de no vazio. */
-.feedback-overlay.is-bom .fb-mascote-area::before {
-  content: "";
-  position: absolute;
-  left: -50vw;
-  right: -50vw;
-  bottom: clamp(16px, 2.2vh, 40px);
-  height: var(--px);
-  background: #4ea83f;
-}
-
 /* Sprites nativos com 128px de altura (tools/gerar_pixel_assets.py).
-   --masc-h manda em tudo: largura, folha de quadros e passo da caminhada
-   saem dela por proporção, então a escala muda num lugar só. */
+   --masc-h manda em tudo: largura, folha e altura do passo saem dela por
+   proporção, então a escala muda num lugar só.
+
+   ATENÇÃO ao andando.png: apesar do nome, ele NÃO é um ciclo de
+   caminhada. Os dois quadros são a mesma pose espelhada — vêm de
+   ilumaquinho-andar-direita.png e -esquerda.png, que são duas DIREÇÕES,
+   não dois passos. Alternar entre eles não fazia o mascote andar, fazia
+   ele se virar do avesso ~5x por segundo (era o "andando errado").
+   Fixamos um quadro e o passo vem de um sobe-desce, mesmo recurso do
+   mascote da abertura.
+
+   E os nomes da arte de origem enganam: quem se chama "andar-direita"
+   está com os pés apontando para a ESQUERDA (o nome parece vir de qual
+   mão segura o extintor). Como o mascote atravessa a tela para a
+   direita, o quadro certo é a célula 1, não a 0 — com a 0 ele andava de
+   costas. Conferir na arte, não no nome do arquivo. */
 .fb-mascote {
-  --masc-h: 192px;                        /* 128 * 1.5 */
-  --masc-w: calc(var(--masc-h) * 0.898);  /* célula 115 / 128 */
+  --masc-h: 192px;                          /* 128 * 1.5 */
+  --masc-w: calc(var(--masc-h) * 0.898);    /* célula 115 / 128 */
+  --masc-salto: calc(var(--masc-h) * 0.023);
+  --masc-quadro: calc(var(--masc-w) * -1);  /* célula 1 = virado p/ direita */
   position: relative;
   flex-shrink: 0;
   width: var(--masc-w);
-  height: var(--masc-h);
+  /* A caixa tem a altura do sprite MAIS o salto, e o sprite pousa no
+     fundo dela. Sem essa folga o salto empurrava o desenho para fora da
+     caixa e as antenas eram decepadas em quadro sim, quadro não. */
+  height: calc(var(--masc-h) + var(--masc-salto));
   background-image: url("/static/img/ilumaquinho/andando.png");
   background-size: calc(var(--masc-w) * 2) var(--masc-h);
   background-repeat: no-repeat;
-  background-position: 0 0;
+  background-position: var(--masc-quadro) var(--masc-salto);
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  animation: mascote-anda 0.22s steps(1) infinite;
+  animation: mascote-passo 0.26s steps(1) infinite;
 }
 
-@keyframes mascote-anda {
-  0%  { background-position: 0 0; }
-  50% { background-position: calc(var(--masc-w) * -1) 0; }
-}
-
-/* Corda presa ao próprio mascote (e não à área): assim ela acompanha a
-   caminhada em vez de ficar para trás, e some junto com ela. */
-.fb-mascote::before {
-  content: "";
-  position: absolute;
-  right: 50%;
-  left: -200vw;
-  bottom: 22%;
-  height: var(--px);
-  background: repeating-linear-gradient(
-    90deg,
-    var(--sobre-vermelho-fraco) 0, var(--sobre-vermelho-fraco) 8px,
-    transparent 8px, transparent 14px
-  );
+/* O passo mexe em background-position-y, não em transform: transform é do
+   deslocamento pela tela (mascote-puxa), e duas animações na MESMA
+   propriedade não somam — a última simplesmente ganha. O x fica parado:
+   é ele que escolhe a célula, mexer nele vira o boneco. */
+@keyframes mascote-passo {
+  0%, 100% { background-position: var(--masc-quadro) var(--masc-salto); } /* pé no chão */
+  50%      { background-position: var(--masc-quadro) 0; }                 /* no ar */
 }
 
 /* Ele anda mais devagar que o painel (35vw contra 100vw), então começa
@@ -1334,7 +1442,7 @@ body {
    no centro. Passar de 35vw joga o mascote para fora do painel, onde o
    overflow do miolo o corta pela metade. */
 .feedback-overlay.is-visible .fb-mascote {
-  animation: mascote-anda 0.22s steps(1) infinite,
+  animation: mascote-passo 0.26s steps(1) infinite,
              mascote-puxa var(--fb-entrada) var(--fb-easing) forwards;
 }
 
@@ -1343,16 +1451,17 @@ body {
   to   { transform: translateX(0); }
 }
 
-/* Chegou: para de andar, assume a pose, larga a corda. */
+/* Chegou: para de andar e assume a pose.
+   background-size com altura explícita em vez de "contain": contain
+   mediria a caixa COM a folga do salto e a pose sairia mais alta que o
+   sprite da caminhada, dando um pulo de escala na troca. */
 .feedback-overlay.is-visible .fb-mascote.parado,
 .fb-mascote.parado {
   animation: none;
   transform: none;
-  background-size: contain;
+  background-size: auto var(--masc-h);
   background-position: center bottom;
 }
-
-.fb-mascote.parado::before { display: none; }
 
 .fb-mascote.parado.is-bom {
   background-image: url("/static/img/ilumaquinho/deu-bom.png");
@@ -1462,6 +1571,9 @@ body {
   text-align: left;
 }
 
+/* O mascote reage ao placar (faixa definida no resultado.html). O troféu
+   fica como padrão só para o caso de o atributo não chegar: é melhor cair
+   na pose que já estava aqui do que num quadro vazio. */
 .resultado-mascote {
   flex-shrink: 0;
   width: 138px;
@@ -1471,6 +1583,27 @@ body {
   background-repeat: no-repeat;
   background-position: center bottom;
   animation: mascote-respira 1.6s ease-in-out infinite;
+}
+
+/* ilumaquinho-chorando.png, e NÃO ilumaquinho-triste.png: aquele é a cena
+   com a Central Lyax e continua sendo a arte de origem do deu-ruim.png do
+   quiz (tools/gerar_pixel_assets.py) — trocar lá mudaria o feedback das
+   perguntas junto. Este aqui é o personagem sozinho, então dispensa o
+   enquadramento forçado que a cena exigia.
+
+   Parado de propósito: as outras duas faixas respiram, esta não. A
+   quietude é o que diferencia quem não teve o que comemorar. */
+.resultado-mascote[data-faixa="baixa"] {
+  background-image: url("/static/img/ilumaquinho-chorando.png");
+  animation: none;
+}
+
+.resultado-mascote[data-faixa="media"] {
+  background-image: url("/static/img/ilumaquinho-feliz.png");
+}
+
+.resultado-mascote[data-faixa="alta"] {
+  background-image: url("/static/img/IlumaquinhoTrofeu.png");
 }
 
 .resultado-label {
@@ -1741,35 +1874,71 @@ body {
 .kiosk-inatividade-card {
   width: 100%;
   max-width: 620px;
-  padding: 40px 32px;
+  padding: clamp(32px, 4vh, 56px) clamp(24px, 3vw, 44px);
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
   border-top-width: calc(var(--px) * 4);
   border-top-color: var(--vermelho);
   box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 rgba(0, 0, 0, 0.5);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(20px, 2.6vh, 34px);
 }
 
 .kiosk-inatividade-titulo {
-  margin: 0 0 18px;
+  margin: 0;
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 2.4vw, 1.45rem);
   line-height: 1.45;
   text-transform: uppercase;
   color: var(--tinta);
 }
 
-.kiosk-inatividade-texto {
-  margin: 0 0 28px;
-  color: var(--tinta-media);
-  font-size: 1.05rem;
-  line-height: 1.5;
+/* A contagem era um número no meio da frase — justamente o dado que faz
+   a pessoa agir, escondido no texto. Agora é o elemento dominante:
+   quem passa de longe entende só de olhar que tem um relógio correndo. */
+.kiosk-inatividade-relogio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
 
+/* Sem piscar: o número TROCA a cada segundo, que já é movimento de
+   sobra, e uma piscada levaria a 0,35 de opacidade justamente o dado
+   que a pessoa precisa ler. A urgência vem do tamanho e do vermelho. */
 .kiosk-inatividade-contador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: clamp(96px, 13vw, 176px);
+  padding: clamp(14px, 1.8vh, 26px) clamp(18px, 2vw, 30px);
   font-family: var(--font-display);
-  font-size: 1rem;
-  color: var(--vermelho);
+  font-size: clamp(2.2rem, 7vw, 4rem);
+  line-height: 1;
+  color: var(--sobre-vermelho);
+  background: var(--vermelho);
+  border: var(--px) solid var(--contorno);
+  box-shadow: var(--px) var(--px) 0 0 var(--vermelho-noite);
+}
+
+.kiosk-inatividade-unidade {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(0.68rem, 1.5vw, 0.9rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--tinta-fraca);
+}
+
+.kiosk-inatividade-texto {
+  margin: 0;
+  color: var(--tinta-media);
+  font-size: clamp(0.95rem, 2vw, 1.2rem);
+  line-height: 1.5;
+  text-wrap: pretty;
 }
 
 .kiosk-inatividade-btn {

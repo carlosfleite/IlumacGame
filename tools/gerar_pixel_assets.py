@@ -248,13 +248,21 @@ def compor_triste_na_lyax(origem_mascote, origem_lyax, destino, altura=200):
     return saida
 
 
-def folha_de_caminhada(quadros, destino):
+def folha_de_direcoes(quadros, destino):
     """
-    Junta os quadros de caminhada numa folha horizontal.
+    Junta as poses numa folha horizontal (celula 0 = direita, 1 = esquerda).
 
-    Uma folha unica evita trocar o src da <img> a cada quadro: o CSS anima
-    background-position com steps(), que nao dispara requisicao nem
-    recalculo de layout. Num i3 de 2011 isso importa.
+    Uma folha unica evita trocar o src da <img>: o CSS escolhe a celula por
+    background-position, que nao dispara requisicao nem recalculo de
+    layout. Num i3 de 2011 isso importa.
+
+    NAO e um ciclo de caminhada. As duas celulas sao a MESMA pose
+    espelhada, porque a arte de origem tem duas direcoes e nao dois
+    passos. Animar de uma para a outra nao faz o mascote andar: vira ele
+    do avesso varias vezes por segundo (foi um bug real na tela de
+    feedback do quiz). O CSS fixa uma celula e tira o passo de um
+    sobe-desce; se um dia entrar arte com passos de verdade, ai sim da
+    para animar entre celulas.
     """
     larg = max(q.width for q in quadros)
     alt = max(q.height for q in quadros)
@@ -408,7 +416,7 @@ def main():
         altura=ALTURA_MASCOTE + 40,  # a cena e mais larga; um pouco mais alta ajuda a leitura
     )
 
-    print("Folha de caminhada (2 quadros, para a animacao de puxar o card):")
+    print("Folha de direcoes (celula 0 = direita, 1 = esquerda; nao e ciclo de passo):")
     andar = [
         pixelar_sprite(os.path.join(ORIGEM, "ilumaquinho-andar-direita.png"),
                        os.path.join(DESTINO_SPRITE, "_andar-1.png"),
@@ -417,7 +425,7 @@ def main():
                        os.path.join(DESTINO_SPRITE, "_andar-2.png"),
                        altura=ALTURA_MASCOTE),
     ]
-    larg, alt = folha_de_caminhada(andar, os.path.join(DESTINO_SPRITE, "andando.png"))
+    larg, alt = folha_de_direcoes(andar, os.path.join(DESTINO_SPRITE, "andando.png"))
     for tmp in ("_andar-1.png", "_andar-2.png"):
         os.remove(os.path.join(DESTINO_SPRITE, tmp))
     print("    -> celula da folha: %dx%d" % (larg, alt))
