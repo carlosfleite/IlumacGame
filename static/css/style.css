@@ -680,6 +680,89 @@ body {
    ancorado na base porque a margem de baixo da chamada empurra por igual. */
 .chamada-cadastro { margin-top: auto; margin-bottom: auto; }
 
+/* ---- Teclado virtual (static/js/teclado.js) ----
+   A tela encolhe pela altura EXATA do teclado, medida em JS e devolvida em
+   --teclado-h. É a diferença para o teclado do Windows, que é uma janela
+   por cima: ali nada reflui e o Continuar fica atrás dele. */
+.com-teclado .screen {
+  height: calc(100% - var(--teclado-h, 0px));
+}
+
+/* Com pouca altura sobrando, o mascote é a primeira coisa a sair — o
+   formulário e o botão não podem ser espremidos por decoração. */
+.com-teclado .chamada-cadastro { display: none; }
+
+.teclado {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  padding: clamp(8px, 1.2vh, 18px) clamp(8px, 1.4vw, 20px)
+           calc(clamp(8px, 1.2vh, 18px) + env(safe-area-inset-bottom, 0px));
+  background: var(--vermelho-noite);
+  border-top: var(--px) solid var(--contorno);
+}
+
+.teclado[hidden] { display: none; }
+
+.teclado-grade {
+  display: grid;
+  grid-template-columns: repeat(var(--teclado-colunas, 20), minmax(0, 1fr));
+  gap: clamp(5px, 0.7vh, 12px);
+}
+
+/* Teclado de telefone: 3 colunas largas ficariam absurdas na largura
+   inteira do totem, então este layout mora numa coluna central. */
+.teclado-grade.estreita {
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+/* Rótulos em Montserrat, não na Press Start 2P: ela não tem os
+   acentuados (Á, Ú, Ç caíam na Courier e destoavam do resto do teclado),
+   e nome brasileiro sem acento não é opção. Segue a regra tipográfica do
+   projeto — pixel só para texto curto de display, Montserrat para o que
+   se lê com atenção. O ar de pixel vem da caixa: canto reto, contorno
+   grosso e sombra sólida deslocada. */
+.tecla {
+  min-height: clamp(52px, 6.6vh, 116px);
+  padding: 4px 2px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(1rem, 2.6vw, 1.7rem);
+  line-height: 1;
+  color: var(--vermelho);
+  background: var(--cartao);
+  border: var(--px) solid var(--contorno);
+  box-shadow: var(--px) var(--px) 0 0 rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.06s steps(2), background 0.06s steps(1);
+}
+
+.tecla:active {
+  background: var(--cartao-2);
+  transform: translate(var(--px), var(--px));
+  box-shadow: none;
+}
+
+/* Teclas de comando: mais escuras, para a vista separar letra de função
+   sem precisar ler. */
+.tecla-acao {
+  font-size: clamp(0.62rem, 1.5vw, 0.95rem);
+  letter-spacing: 0.06em;
+  color: var(--sobre-vermelho);
+  background: var(--tinta-media);
+}
+
+.tecla-acao:active { background: var(--tinta); }
+
+.tecla-acao.ativa {
+  color: var(--tinta);
+  background: var(--fogo-medio);
+}
+
 .field {
   display: flex;
   flex-direction: column;
