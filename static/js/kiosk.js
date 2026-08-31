@@ -181,14 +181,18 @@
     overlay = document.createElement("div");
     overlay.className = "kiosk-inatividade";
     overlay.setAttribute("hidden", "");
+    // "AQUI" e não "AÍ": a Press Start 2P desenha Í e Ú na altura de
+    // minúscula para o acento caber na célula, e "AÍ?" saía "Aí?".
+    // Á, Ã e Ç não têm esse problema.
     overlay.innerHTML =
       '<div class="kiosk-inatividade-card">' +
-      "<p class=\"kiosk-inatividade-titulo\">Ainda está aí?</p>" +
+      '<p class="kiosk-inatividade-titulo">Ainda está aqui?</p>' +
+      '<div class="kiosk-inatividade-relogio">' +
+      '<span class="kiosk-inatividade-contador">' + AVISO_S + "</span>" +
+      '<span class="kiosk-inatividade-unidade">segundos</span>' +
+      "</div>" +
       '<p class="kiosk-inatividade-texto">' +
-      "Sem resposta, o quiz volta para o início em " +
-      '<strong class="kiosk-inatividade-contador">' +
-      AVISO_S +
-      "</strong>s." +
+      "Sem toque, o quiz volta para o início." +
       "</p>" +
       '<button type="button" class="btn btn-primary kiosk-inatividade-btn">' +
       "Continuar jogando" +

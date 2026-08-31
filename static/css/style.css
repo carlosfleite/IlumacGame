@@ -719,12 +719,17 @@ body {
   margin: 0 auto;
 }
 
-/* Rótulos em Montserrat, não na Press Start 2P: ela não tem os
-   acentuados (Á, Ú, Ç caíam na Courier e destoavam do resto do teclado),
-   e nome brasileiro sem acento não é opção. Segue a regra tipográfica do
-   projeto — pixel só para texto curto de display, Montserrat para o que
-   se lê com atenção. O ar de pixel vem da caixa: canto reto, contorno
-   grosso e sombra sólida deslocada. */
+/* Rótulos em Montserrat, não na Press Start 2P.
+
+   A Press Start 2P TEM os acentuados (conferido glifo a glifo: nenhum cai
+   na fonte de reserva). O problema é outro: para o acento caber na célula
+   de 8px, ela desenha Í e Ú na altura de minúscula — "MAIÚSC" sai como
+   "MAIúSC". Á, Ã e Ç saem certos.
+
+   Como as teclas se leem em movimento e uma delas é justamente ÁÉÍ, vale
+   mais a legibilidade: pixel só para texto curto de display, Montserrat
+   para o que se lê com atenção. O ar de pixel vem da caixa — canto reto,
+   contorno grosso e sombra sólida deslocada. */
 .tecla {
   min-height: clamp(52px, 6.6vh, 116px);
   padding: 4px 2px;
@@ -1548,6 +1553,9 @@ body {
   text-align: left;
 }
 
+/* O mascote reage ao placar (faixa definida no resultado.html). O troféu
+   fica como padrão só para o caso de o atributo não chegar: é melhor cair
+   na pose que já estava aqui do que num quadro vazio. */
 .resultado-mascote {
   flex-shrink: 0;
   width: 138px;
@@ -1557,6 +1565,28 @@ body {
   background-repeat: no-repeat;
   background-position: center bottom;
   animation: mascote-respira 1.6s ease-in-out infinite;
+}
+
+/* A arte triste é uma CENA (mascote encolhido + Central Lyax), e não um
+   personagem recortado como as outras duas: no mesmo enquadramento o
+   rosto — que é a mensagem — saía pequeno e a central virava o assunto.
+   Aproxima no mascote e deixa a central sangrar para fora da moldura.
+   Em % de propósito: as duas escalas da moldura têm a mesma proporção,
+   então o enquadramento vale nas duas. */
+.resultado-mascote[data-faixa="baixa"] {
+  background-image: url("/static/img/ilumaquinho-triste.png");
+  background-size: auto 150%;
+  background-position: -25% bottom;
+  /* Quem foi mal não precisa de um boneco saltitando na cara. */
+  animation: none;
+}
+
+.resultado-mascote[data-faixa="media"] {
+  background-image: url("/static/img/ilumaquinho-feliz.png");
+}
+
+.resultado-mascote[data-faixa="alta"] {
+  background-image: url("/static/img/IlumaquinhoTrofeu.png");
 }
 
 .resultado-label {
@@ -1827,35 +1857,71 @@ body {
 .kiosk-inatividade-card {
   width: 100%;
   max-width: 620px;
-  padding: 40px 32px;
+  padding: clamp(32px, 4vh, 56px) clamp(24px, 3vw, 44px);
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
   border-top-width: calc(var(--px) * 4);
   border-top-color: var(--vermelho);
   box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 rgba(0, 0, 0, 0.5);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(20px, 2.6vh, 34px);
 }
 
 .kiosk-inatividade-titulo {
-  margin: 0 0 18px;
+  margin: 0;
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 2.4vw, 1.45rem);
   line-height: 1.45;
   text-transform: uppercase;
   color: var(--tinta);
 }
 
-.kiosk-inatividade-texto {
-  margin: 0 0 28px;
-  color: var(--tinta-media);
-  font-size: 1.05rem;
-  line-height: 1.5;
+/* A contagem era um número no meio da frase — justamente o dado que faz
+   a pessoa agir, escondido no texto. Agora é o elemento dominante:
+   quem passa de longe entende só de olhar que tem um relógio correndo. */
+.kiosk-inatividade-relogio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
 
+/* Sem piscar: o número TROCA a cada segundo, que já é movimento de
+   sobra, e uma piscada levaria a 0,35 de opacidade justamente o dado
+   que a pessoa precisa ler. A urgência vem do tamanho e do vermelho. */
 .kiosk-inatividade-contador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: clamp(96px, 13vw, 176px);
+  padding: clamp(14px, 1.8vh, 26px) clamp(18px, 2vw, 30px);
   font-family: var(--font-display);
-  font-size: 1rem;
-  color: var(--vermelho);
+  font-size: clamp(2.2rem, 7vw, 4rem);
+  line-height: 1;
+  color: var(--sobre-vermelho);
+  background: var(--vermelho);
+  border: var(--px) solid var(--contorno);
+  box-shadow: var(--px) var(--px) 0 0 var(--vermelho-noite);
+}
+
+.kiosk-inatividade-unidade {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(0.68rem, 1.5vw, 0.9rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--tinta-fraca);
+}
+
+.kiosk-inatividade-texto {
+  margin: 0;
+  color: var(--tinta-media);
+  font-size: clamp(0.95rem, 2vw, 1.2rem);
+  line-height: 1.5;
+  text-wrap: pretty;
 }
 
 .kiosk-inatividade-btn {
