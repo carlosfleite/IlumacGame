@@ -1591,6 +1591,13 @@ body {
    perguntas junto. Este aqui é o personagem sozinho, então dispensa o
    enquadramento forçado que a cena exigia.
 
+   A arte como veio está em ilumaquinho-chorando-origem.png. Ela é RGB com
+   fundo PRETO, que viraria um quadrado preto no card branco; o que está
+   em uso passou por flood fill a partir das bordas (limiar 24 — o
+   contorno é cinza e sobrevive), recorte da moldura transparente e
+   redução para 620px de altura. Mesmo tratamento que o IlumaquinhoTrofeu
+   já tinha recebido.
+
    Parado de propósito: as outras duas faixas respiram, esta não. A
    quietude é o que diferencia quem não teve o que comemorar. */
 .resultado-mascote[data-faixa="baixa"] {
