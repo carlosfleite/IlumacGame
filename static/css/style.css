@@ -355,14 +355,64 @@ body {
 
 .screen-abertura { text-align: center; }
 
+/* A moldura de produtos e posicionada (z-index 0); a topbar, o palco e o
+   rodape precisam de contexto proprio para ficarem por cima dela. */
+.screen-abertura > .topbar,
+.screen-abertura > .palco,
+.screen-abertura > .rodape {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- moldura de produtos (abertura) ----
+   Camada do tamanho da tela, atras de tudo. Cada produto mora numa faixa
+   SEM conteudo: cantos junto a topbar, as goteiras estreitas ao lado do
+   logo, a faixa livre entre os numeros e o botao, e ao lado dos botoes.
+   Nenhum encosta na coluna central do heroi nem nos numeros. Opacidade e
+   rotacao leve: e textura de marca, nao conteudo. */
+.produtos {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.prod {
+  position: absolute;
+  height: auto;
+  opacity: 0.62;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(var(--px) var(--px) 0 rgba(0, 0, 0, 0.4));
+}
+
+/* os claros contrastam menos no vermelho: baixam mais a opacidade */
+.prod.p2, .prod.p6, .prod.p8, .prod.p10 { opacity: 0.4; }
+
+/* cantos, na faixa entre a topbar e o heroi */
+.prod.p1 { top: 8.5%; left: -1%;  width: clamp(120px, 15vw, 205px); transform: rotate(-9deg); }
+.prod.p5 { top: 9%;   right: -2%; width: clamp(120px, 15vw, 205px); transform: rotate(9deg); }
+
+/* goteiras ao lado do logo */
+.prod.p2 { top: 24%;  left: -3%;  width: clamp(120px, 15vw, 200px); transform: rotate(7deg); }
+.prod.p6 { top: 23%;  right: -4%; width: clamp(120px, 15vw, 200px); transform: rotate(-6deg); }
+
+/* faixa livre entre os numeros e o botao JOGAR */
+.prod.p3 { top: 67%;  left: 1%;   width: clamp(120px, 15vw, 205px); transform: rotate(-7deg); }
+.prod.p4 { top: 67.5%; right: 0%; width: clamp(115px, 14vw, 195px); transform: rotate(8deg); }
+
+/* ao lado dos botoes */
+.prod.p8  { bottom: 2%;  left: 2%;  width: clamp(120px, 15vw, 195px); transform: rotate(-6deg); }
+.prod.p10 { bottom: 4%;  right: -2%; width: clamp(120px, 15vw, 195px); transform: rotate(7deg); }
+.prod.p9  { top: 45%;   left: -4%; width: clamp(96px, 12vw, 160px);  transform: rotate(8deg); opacity: 0.32; }
+
 .palco-abertura {
-  /* flex-start: o herói encosta logo abaixo da topbar (é aí que a
-     "Fire Show 2026" tem que estar) e os números o seguem de perto. A
-     sobra vertical cai entre os números e os botões, dando ar à CTA em
-     vez de um vazio no meio da composição. */
+  /* center: herói + números centralizados como bloco. flex-start empurrava
+     tudo para cima e abria um vão grande antes dos botões. */
   align-items: center;
-  justify-content: flex-start;
-  gap: clamp(28px, 5vh, 72px);
+  justify-content: center;
+  gap: clamp(26px, 4.5vh, 64px);
 }
 
 /* ---- herói ---- */
