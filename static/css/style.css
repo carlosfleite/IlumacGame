@@ -365,11 +365,10 @@ body {
 }
 
 /* ---- moldura de produtos (abertura) ----
-   Camada do tamanho da tela, atras de tudo. Cada produto mora numa faixa
-   SEM conteudo: cantos junto a topbar, as goteiras estreitas ao lado do
-   logo, a faixa livre entre os numeros e o botao, e ao lado dos botoes.
-   Nenhum encosta na coluna central do heroi nem nos numeros. Opacidade e
-   rotacao leve: e textura de marca, nao conteudo. */
+   Camada do tamanho da tela, atras de tudo. Produtos pequenos e
+   espalhados pelas bordas -- as faixas que sobram vermelhas. Nenhum na
+   coluna central do heroi, nos numeros nem nos botoes. E textura de
+   marca, entao alguns quase nao aparecem, de proposito. */
 .produtos {
   position: absolute;
   inset: 0;
@@ -381,31 +380,37 @@ body {
 .prod {
   position: absolute;
   height: auto;
-  opacity: 0.62;
+  width: clamp(58px, 7vw, 104px);
+  opacity: 0.34;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  filter: drop-shadow(var(--px) var(--px) 0 rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(var(--px) var(--px) 0 rgba(0, 0, 0, 0.35));
 }
 
-/* os claros contrastam menos no vermelho: baixam mais a opacidade */
-.prod.p2, .prod.p6, .prod.p8, .prod.p10 { opacity: 0.4; }
+/* vermelhos: as ancoras da moldura, maiores e mais visiveis */
+.prod-eixo { width: clamp(92px, 11vw, 156px); opacity: 0.55; }
+/* dark centrals: presenca media */
+.prod-esc  { opacity: 0.46; }
+/* claros: contrastam pouco no vermelho, ficam so como sombra */
+.prod-clara { opacity: 0.3; }
 
-/* cantos, na faixa entre a topbar e o heroi */
-.prod.p1 { top: 8.5%; left: -1%;  width: clamp(120px, 15vw, 205px); transform: rotate(-9deg); }
-.prod.p5 { top: 9%;   right: -2%; width: clamp(120px, 15vw, 205px); transform: rotate(9deg); }
+/* --- cantos (faixa entre a topbar e o heroi) --- */
+.prod-tl { top: 8%;   left: -1%;  transform: rotate(-8deg); }
+.prod-tr { top: 8.5%; right: -1%; transform: rotate(9deg); }
 
-/* goteiras ao lado do logo */
-.prod.p2 { top: 24%;  left: -3%;  width: clamp(120px, 15vw, 200px); transform: rotate(7deg); }
-.prod.p6 { top: 23%;  right: -4%; width: clamp(120px, 15vw, 200px); transform: rotate(-6deg); }
+/* --- topo, nos vaos ao lado da eyebrow (pequenos, discretos) --- */
+.prod-t1 { top: 15%; left: 12%;  transform: rotate(6deg); }
+.prod-t2 { top: 14%; right: 13%; transform: rotate(-7deg); }
 
-/* faixa livre entre os numeros e o botao JOGAR */
-.prod.p3 { top: 67%;  left: 1%;   width: clamp(120px, 15vw, 205px); transform: rotate(-7deg); }
-.prod.p4 { top: 67.5%; right: 0%; width: clamp(115px, 14vw, 195px); transform: rotate(8deg); }
+/* --- goteiras laterais (altura do logo; largura util so ate ~12%) --- */
+.prod-l1 { top: 30%; left: -3%;  transform: rotate(7deg); }
+.prod-l2 { top: 46%; left: 0%;   transform: rotate(-6deg); }
+.prod-r1 { top: 29%; right: -3%; transform: rotate(-8deg); }
+.prod-r2 { top: 47%; right: 1%;  transform: rotate(6deg); }
 
-/* ao lado dos botoes */
-.prod.p8  { bottom: 2%;  left: 2%;  width: clamp(120px, 15vw, 195px); transform: rotate(-6deg); }
-.prod.p10 { bottom: 4%;  right: -2%; width: clamp(120px, 15vw, 195px); transform: rotate(7deg); }
-.prod.p9  { top: 45%;   left: -4%; width: clamp(96px, 12vw, 160px);  transform: rotate(8deg); opacity: 0.32; }
+/* --- base: faixa livre entre os numeros e o JOGAR, e canto inferior --- */
+.prod-bl { top: 68%;   left: 0%;   transform: rotate(-7deg); }
+.prod-br { bottom: 3%;  right: -2%; transform: rotate(7deg); }
 
 .palco-abertura {
   /* center: herói + números centralizados como bloco. flex-start empurrava
