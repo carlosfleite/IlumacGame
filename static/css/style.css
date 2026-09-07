@@ -341,10 +341,9 @@ body {
    entre um participante e outro, então precisa chamar atenção de longe
    sem pesar na CPU: só animações em steps(), sem blur.
 
-   Composição em quatro alturas, do topo à base — herói, números, mascote,
-   botões — para que o olho percorra a tela inteira. Nada é centralizado
-   verticalmente: o palco usa space-between e cada bloco ancora na sua
-   faixa.
+   Composição de cima para baixo — herói, números, botões — para que o
+   olho percorra a tela inteira. O herói ancora logo abaixo da topbar, sem
+   respiro morto no topo: é aí que a "Fire Show 2026" precisa estar.
    ========================================================================== */
 
 .selo-ilumagame {
@@ -354,24 +353,16 @@ body {
   flex-shrink: 0;
 }
 
-/* O céu é posicionado, então os irmãos precisam de contexto próprio para
-   não ficarem por baixo dele. */
-.screen-abertura > .topbar,
-.screen-abertura > .palco,
-.screen-abertura > .rodape {
-  position: relative;
-  z-index: 1;
-}
-
 .screen-abertura { text-align: center; }
 
 .palco-abertura {
-  /* A dupla herói + números é centralizada como bloco em vez de o herói
-     ficar colado embaixo da topbar: um respiro acima equilibra a
-     composição em telas altas. */
+  /* flex-start: o herói encosta logo abaixo da topbar (é aí que a
+     "Fire Show 2026" tem que estar) e os números o seguem de perto. A
+     sobra vertical cai entre os números e os botões, dando ar à CTA em
+     vez de um vazio no meio da composição. */
   align-items: center;
-  justify-content: center;
-  gap: clamp(32px, 6vh, 96px);
+  justify-content: flex-start;
+  gap: clamp(28px, 5vh, 72px);
 }
 
 /* ---- herói ---- */
@@ -570,50 +561,6 @@ body {
 @keyframes cta-respira {
   0%, 100% { transform: scale(1); }
   50%      { transform: scale(1.025); }
-}
-
-/* ---- céu de estrelas ----
-   Camada do tamanho da tela inteira, atrás do conteúdo. As estrelas ficam
-   nas bordas e nos cantos justamente onde antes sobrava vermelho liso. */
-.ceu {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.ceu-estrela {
-  position: absolute;
-  display: block;
-  animation: estrela-flutua 3s ease-in-out infinite;
-}
-
-.ceu-estrela img {
-  display: block;
-  width: 100%;
-  height: auto;
-  animation: estrela-brilha 2.4s ease-in-out infinite;
-}
-
-.ceu-estrela.e1 { top:  7%; left:  8%; width: 30px; animation-duration: 3.2s; }
-.ceu-estrela.e2 { top: 13%; right: 10%; width: 22px; animation-duration: 2.6s; animation-direction: reverse; }
-.ceu-estrela.e3 { top: 30%; left:  4%; width: 18px; animation-duration: 3.6s; animation-delay: .6s; }
-.ceu-estrela.e4 { top: 26%; right:  6%; width: 34px; animation-duration: 3s;   animation-delay: .3s; animation-direction: reverse; }
-.ceu-estrela.e5 { top: 48%; left:  9%; width: 24px; animation-duration: 2.8s; animation-delay: .9s; }
-.ceu-estrela.e6 { top: 55%; right:  5%; width: 20px; animation-duration: 3.4s; animation-delay: .2s; animation-direction: reverse; }
-.ceu-estrela.e7 { bottom: 22%; left:  5%; width: 28px; animation-duration: 3.1s; animation-delay: .5s; }
-.ceu-estrela.e8 { bottom: 14%; right:  8%; width: 24px; animation-duration: 2.9s; animation-delay: .8s; animation-direction: reverse; }
-.ceu-estrela.e9 { bottom:  5%; left: 14%; width: 18px; animation-duration: 3.5s; animation-delay: .1s; }
-
-.ceu-estrela.e1 img,
-.ceu-estrela.e3 img,
-.ceu-estrela.e5 img,
-.ceu-estrela.e7 img { animation-delay: .3s; }
-
-@keyframes estrela-flutua {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  50%      { transform: translate(4px, -10px) rotate(15deg); }
 }
 
 @keyframes estrela-brilha {
@@ -1558,31 +1505,46 @@ body {
 
 /* ---- Resultado ---- */
 
-/* Placar e mascote dividem a largura: o número sozinho num card centrado
-   deixava metade da tela vazia. */
+/* Sem o space-between herdado do .palco: os blocos (nome, placar, prêmio,
+   tempo) se agrupam no centro vertical. Antes ficavam espalhados pelos
+   ~1500px da tela, com dois vãos de ~370px entre eles — os "muitos
+   espaços". */
+.palco-resultado {
+  /* center + gap curto: os quatro blocos (nome, placar, premio, tempo)
+     ficam colados como um bloco unico e a sobra vertical vira margem em
+     cima e embaixo, emoldurando o conteudo. O problema antigo eram VAOS
+     ENTRE os blocos (dois de ~370px); margem simetrica nas pontas nao
+     incomoda do mesmo jeito. */
+  justify-content: center;
+  gap: clamp(14px, 2vh, 26px);
+}
+
+/* Card do placar é o momento: a reação do mascote e a nota, os dois
+   grandes, centrados no card — sem a tira de espaço morto que sobrava
+   entre um número encostado à esquerda e o mascote encostado à direita. */
 .resultado-score {
   display: flex;
   align-items: center;
-  gap: 24px;
-  padding: 28px 32px;
+  justify-content: space-evenly;
+  gap: clamp(12px, 2.5vw, 40px);
+  padding: clamp(24px, 3.5vh, 56px) clamp(20px, 2.5vw, 40px);
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
   box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
 }
 
-.resultado-score-num {
-  flex: 1;
-  min-width: 0;
-  text-align: left;
+.resultado-placar {
+  flex: 0 1 auto;
+  text-align: center;
 }
 
 /* O mascote reage ao placar (faixa definida no resultado.html). O troféu
    fica como padrão só para o caso de o atributo não chegar: é melhor cair
    na pose que já estava aqui do que num quadro vazio. */
 .resultado-mascote {
-  flex-shrink: 0;
-  width: 138px;
-  height: 168px;
+  flex: 0 1 auto;
+  width: clamp(190px, 38vw, 420px);
+  height: clamp(220px, 42vw, 480px);
   background-image: url("/static/img/IlumaquinhoTrofeu.png");
   background-size: contain;
   background-repeat: no-repeat;
@@ -1622,58 +1584,91 @@ body {
   margin: 0;
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: 0.74rem;
+  font-size: clamp(0.7rem, 1.5vw, 0.9rem);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--tinta-fraca);
 }
 
 .resultado-pontos {
-  margin: 14px 0 0;
-  font-family: var(--font-display);
-  font-size: 3.4rem;
+  margin: clamp(10px, 1.4vh, 18px) 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(6px, 1vh, 12px);
   line-height: 1;
+}
+
+.resultado-pontos b {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 18vw, 9.5rem);
   color: var(--vermelho);
   text-shadow: var(--px) var(--px) 0 var(--contorno);
 }
 
-.resultado-max {
-  margin: 14px 0 0;
+.resultado-pontos span {
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 2vw, 1.15rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--tinta-media);
 }
 
-/* Duas colunas: usa a largura toda em vez de duas tiras empilhadas. */
-.resultado-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  align-items: stretch;
-  gap: 18px;
-}
-
-.resultado-grid > div {
-  padding: 24px;
+/* O prêmio é o motivo de ter jogado: card inteiro, mais peso que o tempo. */
+.resultado-premio {
+  padding: clamp(24px, 3vh, 44px) clamp(24px, 4vw, 48px);
   background: var(--cartao);
   border: var(--px) solid var(--contorno);
   box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
+  text-align: center;
 }
 
-.resultado-grid .resultado-label { color: var(--vermelho); }
+.resultado-premio .resultado-label { color: var(--vermelho); }
 
-.resultado-dado {
-  margin: 12px 0 0;
-  font-family: var(--font-display);
-  font-size: 0.95rem;
+.resultado-premio-nome {
+  margin: clamp(8px, 1.2vh, 16px) 0 0;
+  /* Montserrat, não Press Start 2P: o nome do prêmio ainda será definido
+     pela Ilumac (premios.json diz "A DEFINIR"), pode vir longo e pode ter
+     Í/Ú — que a fonte pixel desenha na altura de minúscula. "Brinde
+     intermediário" já encostava nas bordas do card em pixel. */
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(1.2rem, 4vw, 2.1rem);
+  line-height: 1.25;
   color: var(--tinta);
+  text-wrap: balance;
 }
 
 .resultado-desc {
-  margin: 10px 0 0;
+  margin: clamp(8px, 1.2vh, 14px) auto 0;
+  max-width: 46ch;
   color: var(--tinta-media);
-  font-size: 1rem;
+  font-size: clamp(0.95rem, 2vw, 1.2rem);
   line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.resultado-desc:empty { display: none; }
+
+/* Tempo é critério de desempate, não o resultado: uma linha discreta,
+   direto no fundo vermelho — sem card competindo com o do prêmio. */
+.resultado-tempo {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 12px;
+}
+
+.resultado-tempo .resultado-label { color: var(--sobre-vermelho-fraco); }
+
+.resultado-tempo b {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(1.05rem, 2.6vw, 1.5rem);
+  letter-spacing: 0.02em;
+  color: var(--sobre-vermelho);
 }
 
 /* ---- Ranking ---- */
@@ -2021,15 +2016,6 @@ body {
   .abertura-btn--jogar { max-width: 760px; }
   .abertura-btn--ranking { max-width: 600px; }
 
-  .ceu-estrela.e1 { width: 62px; }
-  .ceu-estrela.e2 { width: 44px; }
-  .ceu-estrela.e3 { width: 36px; }
-  .ceu-estrela.e4 { width: 70px; }
-  .ceu-estrela.e5 { width: 50px; }
-  .ceu-estrela.e6 { width: 40px; }
-  .ceu-estrela.e7 { width: 58px; }
-  .ceu-estrela.e8 { width: 48px; }
-  .ceu-estrela.e9 { width: 36px; }
 
   /* ---- cadastro ---- */
   .field input { min-height: 116px; font-size: 1.5rem; padding: 16px 22px; }
@@ -2087,17 +2073,6 @@ body {
      dobrado acima). Aqui só o sprite, que é discreto por natureza: uma
      escala intermediária embaçaria o pixel. 3x o nativo de 128px. */
   .fb-mascote { --masc-h: 384px; }
-
-  /* ---- resultado ---- */
-  .resultado-score { padding: 44px 48px; gap: 40px; }
-  .resultado-label { font-size: 0.86rem; }
-  .resultado-pontos { font-size: 6rem; }
-  .resultado-max { font-size: 1.15rem; }
-  .resultado-mascote { width: 246px; height: 300px; }
-  .resultado-grid { gap: 26px; }
-  .resultado-grid > div { padding: 32px; }
-  .resultado-dado { font-size: 1.25rem; }
-  .resultado-desc { font-size: 1.1rem; }
 
   /* ---- ranking ---- */
   .ranking-tab { min-height: 76px; font-size: 0.86rem; padding: 14px 34px; }
@@ -2179,9 +2154,7 @@ body {
   .brand-logo { height: 30px; }
   .brand-logo-fs { height: 24px; }
   .regras-grade { grid-template-columns: 1fr; grid-auto-rows: auto; overflow-y: auto; }
-  .resultado-grid { grid-template-columns: 1fr; }
-  .resultado-score { flex-direction: column; text-align: center; }
-  .resultado-score-num { text-align: center; }
+  .resultado-score { flex-direction: column; }
   .rodape-duplo { flex-direction: column; }
   .brand-header--linha { align-items: flex-start; }
   .tag-stand { display: none; }
