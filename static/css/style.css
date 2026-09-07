@@ -355,62 +355,6 @@ body {
 
 .screen-abertura { text-align: center; }
 
-/* A moldura de produtos e posicionada (z-index 0); a topbar, o palco e o
-   rodape precisam de contexto proprio para ficarem por cima dela. */
-.screen-abertura > .topbar,
-.screen-abertura > .palco,
-.screen-abertura > .rodape {
-  position: relative;
-  z-index: 1;
-}
-
-/* ---- moldura de produtos (abertura) ----
-   Camada do tamanho da tela, atras de tudo. Produtos pequenos e
-   espalhados pelas bordas -- as faixas que sobram vermelhas. Nenhum na
-   coluna central do heroi, nos numeros nem nos botoes. E textura de
-   marca, entao alguns quase nao aparecem, de proposito. */
-.produtos {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.prod {
-  position: absolute;
-  height: auto;
-  width: clamp(58px, 7vw, 104px);
-  opacity: 0.34;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  filter: drop-shadow(var(--px) var(--px) 0 rgba(0, 0, 0, 0.35));
-}
-
-/* vermelhos: as ancoras da moldura, maiores e mais visiveis */
-.prod-eixo { width: clamp(92px, 11vw, 156px); opacity: 0.55; }
-/* dark centrals: presenca media */
-.prod-esc  { opacity: 0.46; }
-/* claros: contrastam pouco no vermelho, ficam so como sombra */
-.prod-clara { opacity: 0.3; }
-
-/* --- cantos (faixa entre a topbar e o heroi) --- */
-.prod-tl { top: 8%;   left: -1%;  transform: rotate(-8deg); }
-.prod-tr { top: 8.5%; right: -1%; transform: rotate(9deg); }
-
-/* --- topo, nos vaos ao lado da eyebrow (pequenos, discretos) --- */
-.prod-t1 { top: 15%; left: 12%;  transform: rotate(6deg); }
-.prod-t2 { top: 14%; right: 13%; transform: rotate(-7deg); }
-
-/* --- goteiras laterais (altura do logo; largura util so ate ~12%) --- */
-.prod-l1 { top: 30%; left: -3%;  transform: rotate(7deg); }
-.prod-l2 { top: 46%; left: 0%;   transform: rotate(-6deg); }
-.prod-r1 { top: 29%; right: -3%; transform: rotate(-8deg); }
-.prod-r2 { top: 47%; right: 1%;  transform: rotate(6deg); }
-
-/* --- base: faixa livre entre os numeros e o JOGAR, e canto inferior --- */
-.prod-bl { top: 68%;   left: 0%;   transform: rotate(-7deg); }
-.prod-br { bottom: 3%;  right: -2%; transform: rotate(7deg); }
 
 .palco-abertura {
   /* center: herói + números centralizados como bloco. flex-start empurrava
