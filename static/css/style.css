@@ -121,15 +121,20 @@ html, body {
   overflow: hidden;
 }
 
-/* Campo vermelho + brasão. O SVG é vetorial de propósito: em blocos a
-   curva do brasão vira ruído diagonal. A pixel art fica nos sprites e nos
-   componentes; o fundo continua sendo peça de marca. */
+/* Fundo de marca do Fire Show 2026 (fundo-jogo.png). Substituiu o
+   padrão do brasão: agora é um degradê vertical, vinho no topo e vermelho
+   mais vivo na base — dá profundidade sem competir com a pixel art dos
+   componentes. A arte como veio está em fundo-jogo-origem.png (3292x4109);
+   o que está em uso foi reduzido para 1123x1400 e teve 2px de artefato
+   de exportação aparados de cima e de baixo. Como é um degradê liso,
+   comprime para ~9 KB. O painel admin segue com o brasão (padrão-brasão
+   .svg) — é superfície interna, não "o jogo". */
 body {
   display: flex;
   justify-content: center;
   position: relative;
   background-color: var(--vermelho);
-  background-image: url("/static/img/padrao-brasao.svg");
+  background-image: url("/static/img/fundo-jogo.png");
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
