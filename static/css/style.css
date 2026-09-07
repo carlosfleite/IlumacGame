@@ -1776,15 +1776,19 @@ body {
 .podio-posto.posto-2 { order: 1; }
 .podio-posto.posto-3 { order: 3; }
 
+/* Altura fixa, largura automatica: a arte da prata tem a fita mais longa
+   que a do bronze/trofeu. Se dimensionasse pela largura, ela ficava ~2x
+   mais alta, estourava a altura fixa do card (overflow:hidden) e comia o
+   nome do jogador. */
 .podio-medalha {
   display: block;
-  width: 56px;
-  height: auto;
+  height: 56px;
+  width: auto;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
 
-.podio-posto.posto-1 .podio-medalha { width: 76px; }
+.podio-posto.posto-1 .podio-medalha { height: 76px; }
 
 .podio-nome {
   margin: 0;
@@ -2085,8 +2089,8 @@ body {
   .ranking-podio { gap: 24px; margin-bottom: 28px; }
   .podio-posto { height: 268px; padding: 26px 20px 22px; gap: 14px; }
   .podio-posto.posto-1 { height: 324px; padding-top: 36px; padding-bottom: 30px; }
-  .podio-medalha { width: 82px; }
-  .podio-posto.posto-1 .podio-medalha { width: 110px; }
+  .podio-medalha { height: 82px; }
+  .podio-posto.posto-1 .podio-medalha { height: 110px; }
   .podio-nome { font-size: 1.2rem; }
   .podio-posto.posto-1 .podio-nome { font-size: 1.35rem; }
   .podio-pts { font-size: 1rem; }
@@ -2144,8 +2148,8 @@ body {
   .ranking-podio { gap: 8px; }
   .podio-posto { height: 156px; padding: 12px 8px 10px; gap: 6px; }
   .podio-posto.posto-1 { height: 188px; padding-top: 18px; padding-bottom: 14px; }
-  .podio-medalha { width: 40px; }
-  .podio-posto.posto-1 .podio-medalha { width: 54px; }
+  .podio-medalha { height: 40px; }
+  .podio-posto.posto-1 .podio-medalha { height: 54px; }
   .podio-nome { font-size: 0.76rem; }
   .podio-posto.posto-1 .podio-nome { font-size: 0.86rem; }
   .podio-pts { font-size: 0.68rem; }
