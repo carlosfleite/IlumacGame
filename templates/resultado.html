@@ -26,28 +26,29 @@
         <h1 class="brand-title brand-title--nome" id="resultado-nome">—</h1>
       </header>
 
-      <!-- Placar + mascote lado a lado: o número sozinho deixava metade da
-           largura vazia numa tela de 1080. -->
+      <!-- O card do placar é o momento: a reação do mascote à esquerda,
+           a nota à direita, os dois grandes e no centro do card — sem a
+           tira de espaço morto que sobrava entre eles. -->
       <div class="resultado-score">
-        <div class="resultado-score-num">
-          <p class="resultado-label">Pontuação</p>
-          <p class="resultado-pontos" id="resultado-pontos">0</p>
-          <p class="resultado-max">de 10 pontos</p>
-        </div>
         <div class="resultado-mascote" id="resultado-mascote" role="img" aria-label="Ilumaquinho"></div>
+        <div class="resultado-placar">
+          <p class="resultado-label">Pontuação</p>
+          <p class="resultado-pontos"><b id="resultado-pontos">0</b><span>de 10</span></p>
+        </div>
       </div>
 
-      <div class="resultado-grid">
-        <div>
-          <p class="resultado-label">Tempo total</p>
-          <p class="resultado-dado" id="resultado-tempo">00:00</p>
-        </div>
-        <div>
-          <p class="resultado-label">Seu prêmio</p>
-          <p class="resultado-dado" id="resultado-premio">—</p>
-          <p class="resultado-desc" id="resultado-premio-desc"></p>
-        </div>
+      <!-- O prêmio é o motivo de ter jogado: card inteiro, em destaque. -->
+      <div class="resultado-premio">
+        <p class="resultado-label">Seu prêmio</p>
+        <p class="resultado-premio-nome" id="resultado-premio">—</p>
+        <p class="resultado-desc" id="resultado-premio-desc"></p>
       </div>
+
+      <!-- Tempo é critério de desempate, não o resultado: uma linha discreta. -->
+      <p class="resultado-tempo">
+        <span class="resultado-label">Tempo total</span>
+        <b id="resultado-tempo">00:00</b>
+      </p>
     </main>
 
     <footer class="rodape rodape-duplo">
