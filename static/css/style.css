@@ -80,7 +80,7 @@
   --fogo-borda: #ff341f;
   --cinza-apagado: #393939;
 
-  --ok: #393939;
+  --ok: #1c8a5a;
   --erro: #c31922;
 
   /* Zonas da tela. O totem é 1080x1920: o layout é full-bleed e dividido
@@ -1210,7 +1210,7 @@ body {
   background: var(--vermelho-noite);
 }
 
-.feedback-overlay.is-bom  .fb-painel { background: #1d1d1b; }
+.feedback-overlay.is-bom  .fb-painel { background: #16352a; }
 .feedback-overlay.is-ruim .fb-painel { background: #70000e; }
 
 /* Tranco da tela no erro: é o sinal mais rápido de "não foi dessa vez",
@@ -1242,7 +1242,7 @@ body {
   border-bottom: var(--px) solid var(--contorno);
 }
 
-.feedback-overlay.is-bom  .fb-topo { background: #393939; }
+.feedback-overlay.is-bom  .fb-topo { background: #2f8a55; }
 .feedback-overlay.is-ruim .fb-topo { background: var(--vermelho-claro); }
 
 .fb-topo-icone {
@@ -1251,7 +1251,7 @@ body {
   flex-shrink: 0;
 }
 
-.fb-topo-icone--ok   { color: #ffffff; }
+.fb-topo-icone--ok   { color: #f5b301; }
 .fb-topo-icone--erro { color: var(--contorno); display: none; }
 
 .feedback-overlay.is-ruim .fb-topo-icone--ok   { display: none; }
@@ -1293,8 +1293,8 @@ body {
 }
 
 .feedback-overlay.is-bom .feedback-pontos {
-  color: #1d1d1b;
-  background: #ffffff;
+  color: #16352a;
+  background: #f2e8c9;
 }
 
 .feedback-overlay.is-ruim .feedback-pontos {
