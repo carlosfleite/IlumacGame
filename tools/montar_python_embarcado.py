@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-Gera python-embed/: um Python completo (interpretador + todas as
-dependencias) dentro da propria pasta do jogo, para copiar no pendrive
-e rodar em qualquer Windows sem Python instalado e sem internet.
+Gera o instalador local do Python do jogo: python-embed/ (interpretador +
+todas as dependencias, pronto pra usar) e instalador/python-embed.zip (a
+mesma coisa compactada).
 
 Uso (uma vez, nesta maquina, com internet e a .venv ja criada):
 
     .venv\\Scripts\\python tools\\montar_python_embarcado.py
 
-Depois disso, o pendrive so precisa ter a pasta do jogo inteira,
-incluindo python-embed\\ e python-embed\\Lib\\site-packages\\.
-O INICIAR_QUIZ.bat detecta e usa esse Python sozinho.
-
-So funciona para Windows 64 bits porque o embeddable oficial e assim.
+Depois disso, o INICIAR_QUIZ.bat cuida do resto sozinho em qualquer
+computador: se python-embed\\ ja existe (mesma maquina do dia anterior),
+usa direto; se nao existe (maquina nova, ou pasta so com o essencial),
+extrai instalador\\python-embed.zip na hora, sem internet, e so depois
+disso roda o jogo. So funciona para Windows 64 bits porque o embeddable
+oficial e assim.
 """
 
 import shutil
@@ -24,6 +25,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 VENV_SITE_PACKAGES = BASE_DIR / ".venv" / "Lib" / "site-packages"
 DEST = BASE_DIR / "python-embed"
+ZIP_INSTALADOR = BASE_DIR / "instalador" / "python-embed.zip"
 
 PY_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
 PY_TAG = f"{sys.version_info.major}{sys.version_info.minor}"
@@ -83,10 +85,21 @@ def main():
     if resultado.returncode != 0:
         sys.exit("[ERRO] Python embarcado nao conseguiu importar as dependencias.")
 
+    print("[COMPACTANDO] Gerando instalador\\python-embed.zip...")
+    ZIP_INSTALADOR.parent.mkdir(parents=True, exist_ok=True)
+    if ZIP_INSTALADOR.exists():
+        ZIP_INSTALADOR.unlink()
+    caminho_gerado = shutil.make_archive(
+        str(ZIP_INSTALADOR.with_suffix("")), "zip", root_dir=DEST
+    )
+    Path(caminho_gerado).replace(ZIP_INSTALADOR)
+
     print()
-    print("[OK] python-embed/ pronto. Copie a pasta do jogo inteira (com")
-    print("python-embed\\) para o pendrive. INICIAR_QUIZ.bat usa ela sozinho,")
-    print("sem precisar de Python instalado nem de internet no totem.")
+    print("[OK] Prontos: python-embed\\ (pronto pra rodar nesta maquina) e")
+    print("instalador\\python-embed.zip (o INICIAR_QUIZ.bat extrai ele sozinho,")
+    print("sem internet, em qualquer outra maquina onde python-embed\\ nao")
+    print("existir ainda). Copie a pasta do jogo inteira, com os dois, para")
+    print("o pendrive.")
 
 
 if __name__ == "__main__":

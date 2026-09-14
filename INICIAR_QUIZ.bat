@@ -7,16 +7,45 @@ rem ===========================================================
 rem  Quiz SDAI - Ilumac Fire Show 2026
 rem  Inicializador + watchdog do totem.
 rem
-rem  O totem roda 3 dias sem supervisao tecnica. Este script:
-rem   1. verifica dependencias locais sem acessar a internet;
-rem   2. reinicia o quiz sozinho se ele fechar ou travar.
+rem  O totem roda 3 dias sem supervisao tecnica, possivelmente em um
+rem  mini PC diferente a cada dia. Este script, sozinho, do primeiro ao
+rem  ultimo clique:
+rem   1. instala o Python do jogo nesta maquina se ainda nao instalou
+rem      (extrai instalador\python-embed.zip, que ja vem no pendrive -
+rem      isso NUNCA acessa a internet, so descompacta arquivo local);
+rem   2. confere se as dependencias estao mesmo la;
+rem   3. reinicia o quiz sozinho se ele fechar ou travar.
 rem
-rem  Python: usa o embarcado em python-embed\ quando ele existe (pendrive
-rem  pronto, sem Python instalado na maquina). Sem essa pasta, cai no
-rem  modo antigo (.venv + Python do sistema), usado so em desenvolvimento.
+rem  Na segunda vez que rodar NESTA MESMA maquina (mesmo dia ou dia
+rem  seguinte), o passo 1 nao faz nada: python-embed\ ja existe e o jogo
+rem  abre direto. So volta a instalar se for uma maquina nova (ou se
+rem  python-embed\ tiver sido apagado/corrompido nela).
 rem ===========================================================
 
 set "PY=python-embed\python.exe"
+set "ZIP_INSTALADOR=instalador\python-embed.zip"
+
+if not exist "%PY%" if exist "%ZIP_INSTALADOR%" (
+    echo ========================================
+    echo  Primeira vez do jogo NESTA maquina.
+    echo  Instalando o Python do totem agora...
+    echo  ^(100%% local, sem internet - pode levar alguns minutos^)
+    echo ========================================
+    echo.
+    powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+        "Expand-Archive -LiteralPath '%ZIP_INSTALADOR%' -DestinationPath 'python-embed' -Force"
+    if not exist "%PY%" (
+        echo [ERRO] Nao consegui instalar a partir de %ZIP_INSTALADOR%.
+        echo O arquivo pode estar corrompido ou faltando no pendrive.
+        pause
+        exit /b 1
+    )
+    echo [OK] Python do totem instalado nesta maquina.
+    echo.
+)
+
+rem Sem python-embed\ nem o instalador\python-embed.zip: so sobra o modo
+rem de desenvolvimento (.venv + Python do sistema instalado na maquina).
 if not exist "%PY%" set "PY=.venv\Scripts\python.exe"
 set "LOGDIR=logs"
 set "LOG=%LOGDIR%\watchdog.log"
@@ -62,9 +91,12 @@ if not exist "%PY%" (
 
 "%PY%" -c "import flask, webview, openpyxl, fpdf" >nul 2>&1
 if errorlevel 1 (
-    echo [ERRO] Dependencias locais ausentes. O jogo nao foi iniciado.
-    echo Prepare este computador conforme o README antes da feira.
-    echo Este inicializador nao baixa arquivos nem acessa a internet.
+    echo [ERRO] Dependencias ausentes em "%PY%". O jogo nao foi iniciado.
+    echo Confira se a pasta "instalador\python-embed.zip" veio junto no
+    echo pendrive e se "python-embed\" nao ficou corrompida ^(copie a
+    echo pasta do jogo de novo do pendrive, se precisar^). Prepare este
+    echo computador conforme o README antes da feira. Este inicializador
+    echo nao baixa arquivos nem acessa a internet.
     pause
     exit /b 1
 )

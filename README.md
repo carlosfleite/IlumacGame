@@ -6,13 +6,31 @@ Jogo de quiz interativo para totem touch (retrato), 100% offline.
 
 - Windows 10/11, 64 bits
 - Microsoft Edge WebView2 (já incluso no Windows 10/11 atualizado) — é o único requisito que precisa estar no totem antes da feira; o resto vai no pendrive
-- Python **não precisa estar instalado no totem** — veja "Pendrive (sem Python, sem internet)" abaixo
+- Python **não precisa estar instalado no totem** — o `INICIAR_QUIZ.bat` se instala sozinho na máquina, veja abaixo
 
-## Pendrive (sem Python, sem internet)
+## Guia rápido para quem for operar o totem na feira
 
-O jogo carrega um Python completo dentro da própria pasta, em `python-embed\`. O `INICIAR_QUIZ.bat` usa esse Python automaticamente quando a pasta existe — nada é baixado nem instalado no totem no dia da feira.
+Isso aqui é pra explicar pra qualquer pessoa (técnica ou não) o que acontece quando o `INICIAR_QUIZ.bat` é executado, em qualquer um dos 3 dias, em qualquer mini PC:
 
-**Preparar o pendrive (uma vez, nesta máquina de desenvolvimento, com internet):**
+1. **Dá dois cliques em `INICIAR_QUIZ.bat`.**
+2. **Se for a primeira vez do jogo NAQUELE computador**, uma janela preta aparece escrito "Instalando o Python do totem agora... (100% local, sem internet)". Isso é o `.bat` copiando o Python e tudo que o jogo precisa de dentro do próprio pendrive pra dentro da pasta `python-embed\`, que fica do lado do jogo. **Não usa internet em nenhum momento** — só descompacta um arquivo que já veio no pendrive (`instalador\python-embed.zip`). Pode levar alguns minutos (varia com a velocidade do pendrive/HD e do antivírus da máquina); não precisa fazer nada, só esperar.
+3. **Terminada a instalação** (ou direto, se já tinha instalado antes nessa máquina), o jogo abre sozinho em tela cheia.
+4. **No segundo e terceiro dia, na MESMA máquina:** passo 2 não acontece de novo — `python-embed\` já está lá, o jogo abre na hora.
+5. **Se o segundo ou terceiro dia usar um mini PC diferente** (ou a pasta `python-embed\` sumir/corromper por qualquer motivo): o passo 2 acontece de novo, automaticamente, sem ninguém precisar fazer nada além de esperar — sempre sem internet, sempre a partir do que já está no pendrive.
+6. **No fim de cada dia da feira, antes de desligar aquele computador**, copie a pasta `backups\` (está dentro da própria pasta do jogo) para o pendrive ou outro lugar seguro. Esse é o único passo manual que existe — nenhum programa consegue mover arquivo de uma máquina pra outra sozinho sem internet. Veja a seção "Backups" abaixo para os detalhes.
+
+Resumindo pra quem só vai operar: **plugou o pendrive, copiou/rodou o jogo, deu dois cliques no `.bat`, esperou o que precisar esperar, e no fim do dia salvou a pasta `backups\`.** Todo o resto é automático.
+
+## Como o pendrive é preparado (sem Python, sem internet no dia da feira)
+
+O `INICIAR_QUIZ.bat` é o único lugar onde a instalação acontece — ele conhece só dois arquivos, além do próprio jogo:
+
+- `python-embed\` — o Python já instalado e pronto, se existir nesta máquina (fica pronto depois da primeira instalação).
+- `instalador\python-embed.zip` — a cópia compactada do mesmo Python, que viaja com o jogo pra poder instalar em qualquer máquina nova.
+
+Se `python-embed\` já existe, o `.bat` usa direto. Se não existe mas o `.zip` existe, o `.bat` extrai ele ali mesmo (`Expand-Archive` do Windows, sem internet) e só depois abre o jogo. Sem nenhum dos dois, ele cai num modo de desenvolvimento (exige Python instalado na máquina) — não deve acontecer no pendrive da feira.
+
+**Gerar o instalador (uma vez, nesta máquina de desenvolvimento, com internet):**
 
 ```bash
 python -m venv .venv
@@ -21,9 +39,9 @@ pip install -r requirements.txt
 python tools\montar_python_embarcado.py
 ```
 
-Isso cria `python-embed\` com o interpretador e todas as dependências já instaladas e testadas. Depois é só copiar a pasta do projeto **inteira** (incluindo `python-embed\`, que não vai pro Git por ser só binário) para o pendrive.
+Isso cria `python-embed\` (pronto pra rodar aqui mesmo) e `instalador\python-embed.zip` (o que viaja pro pendrive e alimenta a instalação automática em qualquer outra máquina). Nenhum dos dois vai pro Git — são só binários; copie a pasta do projeto **inteira**, com os dois, para o pendrive.
 
-**No totem:** dê dois cliques em `INICIAR_QUIZ.bat`. Ele detecta `python-embed\`, confere as dependências e abre o quiz em tela cheia — sem precisar de Python instalado, sem internet, sem passos manuais. Ainda assim, teste esse fluxo completo (pendrive → totem limpo) antes da feira.
+Se trocar alguma dependência (`requirements.txt`), rode `tools\montar_python_embarcado.py` de novo antes de gravar o pendrive — ele reconstrói os dois arquivos do zero.
 
 ## Desenvolvimento (com Python instalado nesta máquina)
 
@@ -45,8 +63,6 @@ python app.py
 
 Abra `http://127.0.0.1:5000/`.
 
-Se a `.venv` já existir com uma dependência nova instalada, rode `tools\montar_python_embarcado.py` de novo para atualizar `python-embed\` antes de gravar o pendrive.
-
 ## Cadastro offline
 
 O servidor e o formulário usam a mesma lista de domínios em `DOMINIOS_EMAIL`, no `app.py`. E-mails corporativos, subdomínios e domínios fora dessa lista são rejeitados. A validação confere formato e domínio permitido; não confirma existência da caixa ou propriedade do endereço. Cadastros anteriores são preservados.
@@ -63,7 +79,7 @@ O banco (`quiz.db`) nunca deve ser apagado durante o evento — ele guarda os ca
 
 ## Backups (importante se o totem trocar de mini PC entre os dias)
 
-O jogo salva sozinho uma cópia completa do banco (cadastros, tentativas, respostas) em `backups\`, nomeada com data/hora e o motivo:
+`backups\` fica **sempre dentro da própria pasta do jogo** (do lado de `app.py`, `quiz.db`, `python-embed\` etc.) — nunca em outro lugar do disco, nunca fora dessa pasta. Copiar/gravar o backup é sempre copiar essa única pasta. O jogo salva sozinho uma cópia completa do banco (cadastros, tentativas, respostas) ali dentro, nomeada com data/hora e o motivo:
 
 - **No boot** (`_boot.db`) — toda vez que o `INICIAR_QUIZ.bat`/`run.py` sobe, antes de sincronizar `config/*.json`. Cobre reinícios do watchdog e o começo de cada dia.
 - **No fim do dia** (`_fim_do_dia.db`) — automático, a partir das 21h locais (ajustável em `HORA_BACKUP_FIM_DIA`, no topo do `run.py`), sem precisar reiniciar o totem. Cobre o totem que fica ligado o dia inteiro.
