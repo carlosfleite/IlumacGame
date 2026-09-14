@@ -24,6 +24,9 @@ from admin import admin_bp
 
 app = Flask(__name__)
 app.register_blueprint(admin_bp)
+
+# Lista local compartilhada com o formulario. Nao consulta DNS nem servicos externos.
+DOMINIOS_EMAIL = ('gmail.com', 'outlook.com', 'outlook.com.br', 'hotmail.com', 'hotmail.com.br', 'live.com', 'yahoo.com', 'yahoo.com.br', 'icloud.com', 'me.com', 'aol.com', 'proton.me', 'protonmail.com', 'uol.com.br', 'bol.com.br', 'terra.com.br')
 log = logging.getLogger(__name__)
 
 
@@ -120,7 +123,7 @@ def pagina_abertura():
 
 @app.route("/cadastro")
 def pagina_cadastro():
-    return render_template("cadastro.html")
+    return render_template("cadastro.html", dominios_email=DOMINIOS_EMAIL)
 
 
 @app.route("/regras")
@@ -185,8 +188,14 @@ def _validar_cadastro(nome, telefone, email):
 
     if not email:
         return "E-mail é obrigatório.", None
-    if len(email) > 120 or not _RE_EMAIL.match(email):
+    if len(email) > 120 or not _RE_EMAIL.fullmatch(email):
         return "E-mail inválido.", None
+
+    local, dominio = email.rsplit("@", 1)
+    if len(local) > 64 or local.startswith(".") or local.endswith(".") or ".." in local:
+        return "E-mail inválido.", None
+    if dominio.lower() not in DOMINIOS_EMAIL:
+        return "Use um e-mail pessoal de um provedor permitido, como Gmail, Outlook ou Yahoo.", None
 
     # grava sempre no mesmo formato, independente do que o cliente mandou
     if len(digitos) == 11:

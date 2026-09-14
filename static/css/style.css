@@ -54,18 +54,18 @@
   --px: 4px;
 
   --vermelho: #c31922;
-  --vermelho-claro: #d92330;
-  --vermelho-escuro: #a5141c;
-  --vermelho-profundo: #7a0e15;
-  --vermelho-noite: #560a0f;
+  --vermelho-claro: #e50000;
+  --vermelho-escuro: #800000;
+  --vermelho-profundo: #70000e;
+  --vermelho-noite: #70000e;
 
   --cartao: #ffffff;
-  --cartao-2: #ece7e4;
-  --contorno: #1c1517;
+  --cartao-2: #cfcfcf;
+  --contorno: #1d1d1b;
 
-  --tinta: #1c1517;
-  --tinta-media: #5d5052;
-  --tinta-fraca: #857779;
+  --tinta: #1d1d1b;
+  --tinta-media: #393939;
+  --tinta-fraca: #393939;
 
   /* Contraste medido com composição de alpha sobre #c31922:
      branco 6.03 · 0.92 → 5.28 · 0.82 → 4.43 (reprova AA) · 0.62 → 3.04. */
@@ -75,13 +75,13 @@
   --linha-vermelho: rgba(255, 255, 255, 0.28);
   --veu-branco: rgba(255, 255, 255, 0.12);
 
-  --fogo-nucleo: #fff0ba;
-  --fogo-medio: #ffa628;
-  --fogo-borda: #e23320;
-  --cinza-apagado: #6d5a5c;
+  --fogo-nucleo: #ffffff;
+  --fogo-medio: #cfcfcf;
+  --fogo-borda: #ff341f;
+  --cinza-apagado: #393939;
 
-  --ok: #1c8a5a;
-  --erro: #b01521;
+  --ok: #393939;
+  --erro: #c31922;
 
   /* Zonas da tela. O totem é 1080x1920: o layout é full-bleed e dividido
      em topo / palco / rodapé, nunca uma coluna estreita no meio. */
@@ -1074,11 +1074,11 @@ body {
 }
 
 .barra-progresso.is-alerta {
-  background: #f5a623;
+  background: #ff341f;
 }
 
 .barra-progresso.is-critico {
-  background: var(--vermelho, #d0021b);
+  background: var(--vermelho, #c31922);
   animation: barra-pulsa 0.6s steps(2) infinite;
 }
 
@@ -1210,8 +1210,8 @@ body {
   background: var(--vermelho-noite);
 }
 
-.feedback-overlay.is-bom  .fb-painel { background: #16352a; }
-.feedback-overlay.is-ruim .fb-painel { background: #430f0f; }
+.feedback-overlay.is-bom  .fb-painel { background: #1d1d1b; }
+.feedback-overlay.is-ruim .fb-painel { background: #70000e; }
 
 /* Tranco da tela no erro: é o sinal mais rápido de "não foi dessa vez",
    antes mesmo de ler qualquer palavra. */
@@ -1242,7 +1242,7 @@ body {
   border-bottom: var(--px) solid var(--contorno);
 }
 
-.feedback-overlay.is-bom  .fb-topo { background: #2f8a55; }
+.feedback-overlay.is-bom  .fb-topo { background: #393939; }
 .feedback-overlay.is-ruim .fb-topo { background: var(--vermelho-claro); }
 
 .fb-topo-icone {
@@ -1251,7 +1251,7 @@ body {
   flex-shrink: 0;
 }
 
-.fb-topo-icone--ok   { color: #f5b301; }
+.fb-topo-icone--ok   { color: #ffffff; }
 .fb-topo-icone--erro { color: var(--contorno); display: none; }
 
 .feedback-overlay.is-ruim .fb-topo-icone--ok   { display: none; }
@@ -1293,13 +1293,13 @@ body {
 }
 
 .feedback-overlay.is-bom .feedback-pontos {
-  color: #16352a;
-  background: #f2e8c9;
+  color: #1d1d1b;
+  background: #ffffff;
 }
 
 .feedback-overlay.is-ruim .feedback-pontos {
   color: var(--sobre-vermelho);
-  background: #130e0f;
+  background: #1d1d1b;
 }
 
 /* Card da resposta certa */
@@ -1434,7 +1434,7 @@ body {
   font-size: clamp(0.7rem, 1.9vw, 1.05rem);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #f5b301;
+  color: #ffffff;
   background: rgba(0, 0, 0, 0.26);
   border-top: var(--px) solid rgba(0, 0, 0, 0.3);
   animation: pisca 1.2s steps(1) infinite;
@@ -1876,7 +1876,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: var(--safe-side);
-  background: rgba(86, 10, 15, 0.96);
+  background: rgba(112, 0, 14, 0.96);
 }
 
 .kiosk-inatividade[hidden] { display: none; }
@@ -2163,4 +2163,41 @@ body {
   .tag-stand { display: none; }
   .abertura-numeros b { font-size: 1.1rem; }
   .abertura-numeros span { font-size: 0.6rem; letter-spacing: 0.1em; }
+}
+
+
+/* Ranking diario em lista: medalhas na mesma coluna das posicoes. */
+.ranking-podio[hidden] { display: none; }
+.ranking-wrap { padding-bottom: calc(var(--px) * 2); }
+.ranking-item > div { min-width: 0; }
+.ranking-nome { overflow-wrap: anywhere; }
+.ranking-lista-dia .ranking-pos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.ranking-medalha {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.ranking-lista-dia .ranking-destaque { min-height: 132px; }
+.ranking-lista-dia .ranking-lugar-1 {
+  border-left-color: var(--vermelho);
+  background: var(--cartao);
+}
+.ranking-lista-dia .ranking-lugar-1 .ranking-nome { color: var(--vermelho); }
+.ranking-lista-dia .ranking-lugar-2 { border-left-color: #b0b0b0; }
+.ranking-lista-dia .ranking-lugar-3 { border-left-color: #800000; }
+@media (min-width: 900px) and (orientation: portrait) {
+  .ranking-lista-dia .ranking-destaque { min-height: 160px; }
+  .ranking-medalha { width: 80px; height: 80px; }
+}
+@media (max-width: 480px) {
+  .ranking-medalha { width: 40px; height: 48px; }
+  .ranking-lista-dia .ranking-destaque { min-height: 108px; }
+  .ranking-lista-dia .ranking-item { gap: 10px; }
 }

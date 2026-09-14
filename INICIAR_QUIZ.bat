@@ -8,8 +8,7 @@ rem  Quiz SDAI - Ilumac Fire Show 2026
 rem  Inicializador + watchdog do totem.
 rem
 rem  O totem roda 3 dias sem supervisao tecnica. Este script:
-rem   1. so instala dependencias quando faltam (nao exige internet
-rem      para ligar o totem no dia do evento);
+rem   1. verifica dependencias locais sem acessar a internet;
 rem   2. reinicia o quiz sozinho se ele fechar ou travar.
 rem ===========================================================
 
@@ -58,17 +57,11 @@ if not exist "%PY%" (
 
 "%PY%" -c "import flask, webview, openpyxl, fpdf" >nul 2>&1
 if errorlevel 1 (
-    echo [SETUP] Dependencias ausentes. Instalando ... ^(requer internet^)
-    "%PY%" -m pip install -r requirements.txt -q
-    if errorlevel 1 (
-        echo.
-        echo [ERRO] Nao foi possivel instalar as dependencias.
-        echo Conecte a internet e rode este arquivo novamente.
-        echo IMPORTANTE: faca isso ANTES do evento.
-        pause
-        exit /b 1
-    )
-    echo [SETUP] Dependencias instaladas.
+    echo [ERRO] Dependencias locais ausentes. O jogo nao foi iniciado.
+    echo Prepare este computador conforme o README antes da feira.
+    echo Este inicializador nao baixa arquivos nem acessa a internet.
+    pause
+    exit /b 1
 )
 
 echo [OK] Ambiente pronto. Iniciando o quiz em tela cheia...

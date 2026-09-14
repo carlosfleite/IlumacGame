@@ -38,15 +38,15 @@
 :root {
   --px: 4px;
   --vermelho: #c31922;
-  --vermelho-escuro: #a5141c;
-  --vermelho-noite: #560a0f;
-  --tinta: #1c1517;
-  --tinta-media: #5d5052;
-  --tinta-fraca: #857779;
-  --papel: #f7f4f3;
+  --vermelho-escuro: #800000;
+  --vermelho-noite: #70000e;
+  --tinta: #1d1d1b;
+  --tinta-media: #393939;
+  --tinta-fraca: #393939;
+  --papel: #cfcfcf;
   --cartao: #ffffff;
-  --linha: #e7e0de;
-  --verde: #1f8a4c;
+  --linha: #b0b0b0;
+  --verde: #393939;
   --font: "Montserrat", "Segoe UI", Tahoma, sans-serif;
   --font-pixel: "Press Start 2P", "Courier New", monospace;
 }
@@ -295,8 +295,8 @@ body.page-admin {
   font-weight: 600;
 }
 
-.admin-pill-sim { background: #e7f6ed; color: var(--verde); border-color: #bfe6cf; }
-.admin-pill-nao { background: #f3ecec; color: var(--tinta-fraca); border-color: var(--linha); }
+.admin-pill-sim { background: #ffffff; color: var(--verde); border-color: #b0b0b0; }
+.admin-pill-nao { background: #cfcfcf; color: var(--tinta-fraca); border-color: var(--linha); }
 
 .admin-vazio {
   display: flex;

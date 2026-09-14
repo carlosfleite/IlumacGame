@@ -67,6 +67,9 @@
     tabGeral.classList.toggle("is-ativa", escopo === "geral");
     tabGeral.setAttribute("aria-selected", escopo === "geral" ? "true" : "false");
 
+    podio.innerHTML = "";
+    podio.hidden = escopo === "dia";
+    lista.classList.toggle("ranking-lista-dia", escopo === "dia");
     lista.innerHTML = '<li class="ranking-vazio">Carregando…</li>';
 
     // Descarta resposta de um pedido antigo se o usuário trocar de aba
@@ -94,17 +97,20 @@
         }
 
         var topRows = rows.slice(0, 3);
-        var restoRows = rows.slice(3);
+        var restoRows = escopo === "dia" ? rows : rows.slice(3);
 
-        renderPodio(topRows);
+        if (escopo !== "dia") renderPodio(topRows);
 
         lista.innerHTML = restoRows.length === 0
           ? ""
           : restoRows
               .map(function (r) {
+                var medalha = escopo === "dia" ? MEDALHA_POR_POSTO[r.posicao] : null;
                 return (
-                  '<li class="ranking-item">' +
-                    '<span class="ranking-pos">' + r.posicao + "º</span>" +
+                  '<li class="ranking-item' + (medalha ? ' ranking-destaque ranking-lugar-' + r.posicao : '') + '" value="' + r.posicao + '">' +
+                    '<span class="ranking-pos">' +
+                      (medalha ? '<img class="ranking-medalha" src="' + medalha.src + '" alt="' + medalha.alt + '">' : '') +
+                      '<span>' + r.posicao + 'º</span></span>' +
                     "<div>" +
                       '<p class="ranking-nome">' + escapeHtml(r.nome) + "</p>" +
                     "</div>" +

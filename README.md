@@ -12,9 +12,9 @@ Jogo de quiz interativo para totem touch (retrato), 100% offline.
 
 **No totem (recomendado):** dê dois cliques em `INICIAR_QUIZ.bat`.
 
-O `.bat` cria o `.venv` se precisar, instala as dependências e abre o quiz em tela cheia.
+O `.bat` verifica as dependências locais e abre o quiz em tela cheia. Ele não baixa pacotes: se faltar alguma biblioteca, informa o erro e encerra. Prepare e teste o computador antes da feira.
 
-Manual:
+Preparação antes da feira (a instalação abaixo pode usar internet; nunca ocorre ao iniciar o jogo):
 
 ```bash
 cd quiz_sdai
@@ -33,6 +33,12 @@ python app.py
 ```
 
 Abra `http://127.0.0.1:5000/`.
+
+Para preparar sem internet, leve uma pasta `wheels` com todas as dependências compatíveis com a versão do Python e arquitetura do totem e instale com `.venv\Scripts\python -m pip install --no-index --find-links=wheels -r requirements.txt`. Python e WebView2 também precisam estar instalados previamente.
+
+## Cadastro offline
+
+O servidor e o formulário usam a mesma lista de domínios em `DOMINIOS_EMAIL`, no `app.py`. E-mails corporativos, subdomínios e domínios fora dessa lista são rejeitados. A validação confere formato e domínio permitido; não confirma existência da caixa ou propriedade do endereço. Cadastros anteriores são preservados.
 
 ## O que ajustar depois
 
