@@ -4,17 +4,28 @@ Jogo de quiz interativo para totem touch (retrato), 100% offline.
 
 ## Requisitos
 
-- Windows 10
-- Python 3.10+ (recomendado)
-- Microsoft Edge WebView2 (já incluso no Windows 10 atualizado)
+- Windows 10/11, 64 bits
+- Microsoft Edge WebView2 (já incluso no Windows 10/11 atualizado) — é o único requisito que precisa estar no totem antes da feira; o resto vai no pendrive
+- Python **não precisa estar instalado no totem** — veja "Pendrive (sem Python, sem internet)" abaixo
 
-## Como rodar
+## Pendrive (sem Python, sem internet)
 
-**No totem (recomendado):** dê dois cliques em `INICIAR_QUIZ.bat`.
+O jogo carrega um Python completo dentro da própria pasta, em `python-embed\`. O `INICIAR_QUIZ.bat` usa esse Python automaticamente quando a pasta existe — nada é baixado nem instalado no totem no dia da feira.
 
-O `.bat` verifica as dependências locais e abre o quiz em tela cheia. Ele não baixa pacotes: se faltar alguma biblioteca, informa o erro e encerra. Prepare e teste o computador antes da feira.
+**Preparar o pendrive (uma vez, nesta máquina de desenvolvimento, com internet):**
 
-Preparação antes da feira (a instalação abaixo pode usar internet; nunca ocorre ao iniciar o jogo):
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+python tools\montar_python_embarcado.py
+```
+
+Isso cria `python-embed\` com o interpretador e todas as dependências já instaladas e testadas. Depois é só copiar a pasta do projeto **inteira** (incluindo `python-embed\`, que não vai pro Git por ser só binário) para o pendrive.
+
+**No totem:** dê dois cliques em `INICIAR_QUIZ.bat`. Ele detecta `python-embed\`, confere as dependências e abre o quiz em tela cheia — sem precisar de Python instalado, sem internet, sem passos manuais. Ainda assim, teste esse fluxo completo (pendrive → totem limpo) antes da feira.
+
+## Desenvolvimento (com Python instalado nesta máquina)
 
 ```bash
 cd quiz_sdai
@@ -34,7 +45,7 @@ python app.py
 
 Abra `http://127.0.0.1:5000/`.
 
-Para preparar sem internet, leve uma pasta `wheels` com todas as dependências compatíveis com a versão do Python e arquitetura do totem e instale com `.venv\Scripts\python -m pip install --no-index --find-links=wheels -r requirements.txt`. Python e WebView2 também precisam estar instalados previamente.
+Se a `.venv` já existir com uma dependência nova instalada, rode `tools\montar_python_embarcado.py` de novo para atualizar `python-embed\` antes de gravar o pendrive.
 
 ## Cadastro offline
 

@@ -10,9 +10,14 @@ rem
 rem  O totem roda 3 dias sem supervisao tecnica. Este script:
 rem   1. verifica dependencias locais sem acessar a internet;
 rem   2. reinicia o quiz sozinho se ele fechar ou travar.
+rem
+rem  Python: usa o embarcado em python-embed\ quando ele existe (pendrive
+rem  pronto, sem Python instalado na maquina). Sem essa pasta, cai no
+rem  modo antigo (.venv + Python do sistema), usado so em desenvolvimento.
 rem ===========================================================
 
-set "PY=.venv\Scripts\python.exe"
+set "PY=python-embed\python.exe"
+if not exist "%PY%" set "PY=.venv\Scripts\python.exe"
 set "LOGDIR=logs"
 set "LOG=%LOGDIR%\watchdog.log"
 set "PARAR=PARAR.flag"

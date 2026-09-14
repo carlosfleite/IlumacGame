@@ -1,6 +1,10 @@
 # Ambiente virtual
 .venv/
 
+# Python embarcado do pendrive (~100 MB de binarios). Nao versiona: cada
+# maquina gera o dela com tools/montar_python_embarcado.py antes da feira.
+python-embed/
+
 # Bytecode Python
 __pycache__/
 *.py[cod]
