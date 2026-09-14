@@ -75,10 +75,10 @@
   --linha-vermelho: rgba(255, 255, 255, 0.28);
   --veu-branco: rgba(255, 255, 255, 0.12);
 
-  --fogo-nucleo: #ffffff;
-  --fogo-medio: #cfcfcf;
-  --fogo-borda: #ff341f;
-  --cinza-apagado: #393939;
+  --fogo-nucleo: #fff0ba;
+  --fogo-medio: #ffa628;
+  --fogo-borda: #e23320;
+  --cinza-apagado: #6d5a5c;
 
   --ok: #1c8a5a;
   --erro: #c31922;
