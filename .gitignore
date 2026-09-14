@@ -26,7 +26,9 @@ PARAR.flag
 export/
 *.csv
 
-# Backups manuais do banco (gerados durante manutenção pontual)
+# Backups do banco (automaticos no boot/fim de dia e manuais pelo painel
+# admin) — contem os mesmos dados pessoais do banco, nunca versionar.
+backups/
 quiz.db.backup_*
 
 # Sistema operacional

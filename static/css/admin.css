@@ -252,6 +252,34 @@ body.page-admin {
 
 .admin-busca:focus { outline: none; border-color: var(--vermelho); }
 
+.admin-backup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  background: var(--cartao);
+  border: var(--px) solid var(--tinta);
+  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--linha);
+}
+
+.admin-backup p {
+  margin: 4px 0 0;
+  color: var(--tinta-media);
+  font-size: 0.82rem;
+}
+
+.admin-backup code {
+  background: var(--papel);
+  padding: 1px 5px;
+}
+
+.admin-backup form { flex-shrink: 0; }
+
+.admin-backup .admin-btn { width: auto; padding: 10px 18px; font-size: 0.82rem; }
+
 .admin-tabela-wrap {
   background: var(--cartao);
   border: var(--px) solid var(--tinta);

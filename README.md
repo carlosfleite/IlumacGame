@@ -61,6 +61,18 @@ O servidor e o formulário usam a mesma lista de domínios em `DOMINIOS_EMAIL`, 
 
 O banco (`quiz.db`) nunca deve ser apagado durante o evento — ele guarda os cadastros e o ranking acumulado dos 3 dias. `config/*.json` é sincronizado com o banco a cada boot sem apagar nada.
 
+## Backups (importante se o totem trocar de mini PC entre os dias)
+
+O jogo salva sozinho uma cópia completa do banco (cadastros, tentativas, respostas) em `backups\`, nomeada com data/hora e o motivo:
+
+- **No boot** (`_boot.db`) — toda vez que o `INICIAR_QUIZ.bat`/`run.py` sobe, antes de sincronizar `config/*.json`. Cobre reinícios do watchdog e o começo de cada dia.
+- **No fim do dia** (`_fim_do_dia.db`) — automático, a partir das 21h locais (ajustável em `HORA_BACKUP_FIM_DIA`, no topo do `run.py`), sem precisar reiniciar o totem. Cobre o totem que fica ligado o dia inteiro.
+- **Manual** (`_manual.db`) — botão "Fazer backup agora" no painel admin (`/admin`), pra quando alguém quiser garantir um backup na hora, por exemplo pouco antes de desligar o totem.
+
+**O que o backup automático NÃO resolve sozinho:** ele só grava dentro da própria máquina do totem. Se a feira usa um mini PC diferente a cada dia, alguém precisa **copiar a pasta `backups\` para o pendrive (ou outro lugar seguro) no fim de cada dia**, antes de desligar aquele computador — sem essa cópia manual entre máquinas, o dia fica só na máquina que já não vai mais ser usada. O painel admin mostra a hora do último backup salvo para facilitar essa conferência.
+
+O ranking do totem já mostra "hoje" e "os 3 dias" separadamente (abas na tela de Ranking); os arquivos em `backups\` são o histórico bruto por trás disso, caso precise reabrir os dados de um dia específico depois — cada `.db` é um banco SQLite completo, dá pra abrir com `python -c "import sqlite3; ..."` ou qualquer visualizador de SQLite.
+
 ## Fluxo das telas
 
 1. Abertura (tela de repouso do totem) → 2. Cadastro (LGPD obrigatório) → 3. Regras → 4. Quiz (5 perguntas) → 5. Resultado → 6. Ranking → volta pra Abertura

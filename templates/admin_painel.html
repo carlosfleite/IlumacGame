@@ -45,6 +45,24 @@
       </div>
     </div>
 
+    <div class="admin-backup">
+      <div>
+        <strong>Backup do banco</strong>
+        <p>
+          {% if ultimo_backup %}
+            Último salvo em <code>backups\{{ ultimo_backup.nome }}</code> — {{ ultimo_backup.quando }}.
+          {% else %}
+            Nenhum backup ainda nesta instalação.
+          {% endif %}
+          No fim de cada dia da feira, copie a pasta <code>backups\</code> inteira para o pendrive —
+          o backup automático só fica salvo nesta máquina.
+        </p>
+      </div>
+      <form action="/admin/backup" method="post">
+        <button type="submit" class="admin-btn admin-btn-secundario">Fazer backup agora</button>
+      </form>
+    </div>
+
     <div class="admin-tabela-wrap">
       {% if participantes %}
         <table class="admin-tabela">

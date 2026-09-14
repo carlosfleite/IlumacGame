@@ -16,12 +16,18 @@ import json
 import logging
 import os
 import sqlite3
+from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "quiz.db")
 CONFIG_DIR = os.path.join(BASE_DIR, "config")
 PERGUNTAS_JSON = os.path.join(CONFIG_DIR, "questions.json")
 PREMIOS_JSON = os.path.join(CONFIG_DIR, "premios.json")
+
+# Backups do banco inteiro (cadastros, tentativas, respostas), um arquivo
+# .db por evento. Ficam todos aqui — nunca soltos na raiz do projeto —
+# para dar pra copiar a pasta inteira pro pendrive no fim de cada dia.
+BACKUP_DIR = os.path.join(BASE_DIR, "backups")
 
 LETRAS = ("a", "b", "c", "d")
 
@@ -407,6 +413,62 @@ def _validar_cobertura_premios(faixas, pontuacao_maxima, incremento):
         )
 
 
+# ---------------------------------------------------------------------------
+# Backup
+# ---------------------------------------------------------------------------
+
+def fazer_backup(motivo="auto", forcar=False):
+    """
+    Copia o banco inteiro para backups/, com timestamp e o motivo no nome
+    (ex.: quiz_2026-09-14_213005_fim_do_dia.db).
+
+    Usa a API nativa de backup do sqlite3 (Connection.backup), não uma
+    cópia de arquivo: sob journal_mode=WAL uma cópia de arquivo pode
+    perder linhas que ainda só existem no .db-wal. A API de backup lê o
+    banco de forma consistente mesmo com o totem em uso.
+
+    Sem 'forcar', só gera um backup por (dia local, motivo) — evita
+    empilhar cópias idênticas a cada restart do watchdog. O clique manual
+    no painel admin usa forcar=True de propósito: é uma decisão explícita
+    de alguém, sempre deve gerar o arquivo.
+
+    Retorna o caminho do arquivo criado, ou None se não gerou (banco
+    ainda não existe, ou já existe um backup do dia com esse motivo).
+    """
+    if not os.path.exists(DB_PATH):
+        return None
+
+    os.makedirs(BACKUP_DIR, exist_ok=True)
+
+    hoje = datetime.now().strftime("%Y-%m-%d")
+    sufixo = "_%s.db" % motivo
+    if not forcar:
+        ja_existe = any(
+            nome.startswith("quiz_" + hoje) and nome.endswith(sufixo)
+            for nome in os.listdir(BACKUP_DIR)
+        )
+        if ja_existe:
+            return None
+
+    destino = os.path.join(
+        BACKUP_DIR,
+        "quiz_%s%s" % (datetime.now().strftime("%Y-%m-%d_%H%M%S"), sufixo),
+    )
+
+    origem = sqlite3.connect(DB_PATH)
+    try:
+        alvo = sqlite3.connect(destino)
+        try:
+            origem.backup(alvo)
+        finally:
+            alvo.close()
+    finally:
+        origem.close()
+
+    log.info("Backup do banco salvo em %s (motivo: %s)", destino, motivo)
+    return destino
+
+
 def init_db():
     """
     Cria o schema, migra e sincroniza o conteúdo dos JSON.
@@ -417,6 +479,8 @@ def init_db():
     salvo com erro de digitação não pode derrubar o totem. Registra em log e
     segue com o conteúdo que já está no banco.
     """
+    fazer_backup("boot")
+
     conn = get_connection()
     try:
         conn.executescript(SCHEMA)
