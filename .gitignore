@@ -1,11 +1,15 @@
 # Ambiente virtual
 .venv/
 
-# Python embarcado do pendrive e o instalador dele (~100-200 MB de
-# binarios). Nao versiona: gere com tools/montar_python_embarcado.py
-# antes da feira e copie os dois pro pendrive junto com o resto.
+# Python ja instalado/extraido (~100 MB, milhares de arquivos pequenos).
+# Nao versiona: o INICIAR_QUIZ.bat gera essa pasta sozinho, a partir de
+# instalador\python-embed.zip, na primeira vez que roda em cada maquina.
 python-embed/
-instalador/
+
+# instalador/python-embed.zip (~40 MB) FICA versionado de proposito: e
+# o jeito mais simples de levar o Python do jogo de uma maquina pra
+# outra (ex.: de casa pro computador do trabalho) so com "git push" e
+# "git pull", sem precisar de pendrive/nuvem extra so pra esse arquivo.
 
 # Bytecode Python
 __pycache__/
