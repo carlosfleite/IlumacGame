@@ -1094,15 +1094,25 @@ a { color: inherit; text-decoration: none; }
 
 .podio-icone img { display: block; width: 100%; height: 100%; }
 
+/* Número no centro do disco da medalha. --cx/--cy é o centro do disco
+   medido na arte pelo contorno (em % da peça, então vale para a medalha grande do pódio
+   e a pequena da lista). O Pixellari centraliza o algarismo na largura da
+   caixa, e o miolo do desenho fica a 0,406 em do topo da linha (o
+   algarismo vai de 0,0625 em a 0,75 em) — daí o "- 0.406em". */
 .medalha-num {
+  --cx: 51.1%;
+  --cy: 69.2%;
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 12px;
-  font-size: 40px;
+  left: calc(var(--cx) - 1em);
+  width: 2em;
+  top: calc(var(--cy) - 0.406em);
+  font-size: 44px;
   color: var(--vinho);
   text-align: center;
 }
+
+.medalha-3 .medalha-num { --cx: 51.1%; --cy: 69.1%; }
+.medalha-n .medalha-num { --cx: 47.8%; --cy: 69.2%; }
 
 .podio-nome {
   max-width: 250px;
@@ -1193,7 +1203,12 @@ a { color: inherit; text-decoration: none; }
 
 .rk-medalha img { display: block; width: 100%; height: 100%; }
 
-.rk-medalha .medalha-num { bottom: 17px; font-size: 48px; }
+.rk-medalha .medalha-num { font-size: 48px; }
+
+/* A medalha rosada é 120x120 (a prata e a bronze, 115x120): largura
+   própria para não achatar, e 1,4px mais à direita para o disco ficar
+   na mesma coluna dos outros. */
+.rk-medalha.medalha-n { left: 21.4px; width: 120px; }
 
 .rk-medalha.trofeu {
   left: 0;

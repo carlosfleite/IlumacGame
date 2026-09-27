@@ -54,7 +54,7 @@
     }
     var arte = posicao === 2 ? "medalha-2" : posicao === 3 ? "medalha-3" : "medalha-n";
     return (
-      '<span class="' + classe + '">' +
+      '<span class="' + classe + " " + arte + '">' +
         '<img src="' + IMG + arte + '.svg" alt="">' +
         '<span class="px medalha-num">' + posicao + "</span>" +
       "</span>"
