@@ -3,9 +3,9 @@
     "Tabela de premiacao do Quiz SDAI. Edite aqui, salve e reinicie o totem.",
     "Nenhuma faixa esta fixa no codigo.",
     "",
-    "PENDENTE: os brindes ainda nao foram definidos pela Ilumac. Os nomes",
-    "abaixo sao provisorios e aparecem na tela de resultado do participante —",
-    "troque 'nome' e 'descricao' assim que a premiacao estiver fechada.",
+    "Brindes definidos pela Ilumac para o Fire Show 2026: 0-4 pts sem brinde,",
+    "6 pts trena, 8 pts moleskine, 10 pts garrafa. 'nome' e 'descricao'",
+    "aparecem na tela de resultado do participante.",
     "",
     "Regras de edicao:",
     "- 'chave' identifica a faixa e nao deve mudar depois do evento comecar.",
@@ -22,33 +22,33 @@
     {
       "chave": "sem-premio",
       "pontos_min": 0,
-      "pontos_max": 2,
+      "pontos_max": 4,
       "nome": "Sem prêmio",
       "descricao": "Obrigado por participar! Passe no estande para conhecer as soluções Ilumac.",
       "ativo": true
     },
     {
       "chave": "brinde-intermediario",
-      "pontos_min": 4,
+      "pontos_min": 6,
       "pontos_max": 6,
-      "nome": "Brinde intermediário",
-      "descricao": "A DEFINIR — retire seu brinde com a equipe Ilumac.",
+      "nome": "Trena",
+      "descricao": "Parabéns! Retire sua trena com a equipe Ilumac no estande.",
       "ativo": true
     },
     {
       "chave": "brinde-maior-valor",
       "pontos_min": 8,
       "pontos_max": 8,
-      "nome": "Brinde especial",
-      "descricao": "A DEFINIR — retire seu brinde com a equipe Ilumac.",
+      "nome": "Moleskine",
+      "descricao": "Mandou bem! Retire seu moleskine com a equipe Ilumac no estande.",
       "ativo": true
     },
     {
       "chave": "premio-maximo",
       "pontos_min": 10,
       "pontos_max": 10,
-      "nome": "Prêmio máximo",
-      "descricao": "A DEFINIR — pontuação perfeita! Fale com a equipe Ilumac.",
+      "nome": "Garrafa",
+      "descricao": "Pontuação perfeita! Retire sua garrafa com a equipe Ilumac no estande.",
       "ativo": true
     }
   ]

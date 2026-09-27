@@ -8,7 +8,7 @@
   "use strict";
 
   var FEEDBACK_MS = 2600; // contado só depois que a tela termina de entrar
-  var ENTRADA_MS = 500;   // deve casar com a animação reboque-entra no CSS
+  var ENTRADA_MS = 250;   // deve casar com a animação reboque-entra no CSS
   var LIMITE_MS = 20000;  // tempo por pergunta; zerou, conta como erro
 
   var params = new URLSearchParams(window.location.search);
@@ -33,6 +33,7 @@
 
   var overlay = document.getElementById("feedback-overlay");
   var reboque = document.getElementById("fb-reboque");
+  var fbDeco = document.getElementById("fb-deco");
   var fbMsg = document.getElementById("feedback-msg");
   var fbPontos = document.getElementById("feedback-pontos");
   var fbRespRotulo = document.getElementById("fb-resposta-rotulo");
@@ -215,9 +216,42 @@
     if (ev.animationName === "reboque-entra") aoChegar();
   });
 
+  /**
+   * Decoração do fundo como peças soltas (static/js/deco-mockup.js, gerado
+   * do .ai): setas no acerto, X no erro. Recriadas a cada feedback para a
+   * animação de entrada recomeçar do zero.
+   */
+  function montarDeco(acertou) {
+    var pecas = (window.DECO_MOCKUP || {})[acertou ? "certo" : "errado"] || [];
+    fbDeco.innerHTML = "";
+    pecas.forEach(function (p, i) {
+      var img = document.createElement("img");
+      img.src = "/static/img/mockup/" + p.src;
+      img.alt = "";
+      img.className = acertou ? "deco-seta" : "deco-x";
+      img.style.left = p.x + "px";
+      img.style.top = p.y + "px";
+      img.style.width = p.w + "px";
+      img.style.height = p.h + "px";
+      img.style.setProperty("--i", String(i));
+      fbDeco.appendChild(img);
+    });
+  }
+
+  // Pré-carrega a arte do feedback: sem isso, no primeiro acerto/erro o
+  // fundo e as peças apareciam alguns quadros depois do texto.
+  (function preCarregar() {
+    var d = window.DECO_MOCKUP || {};
+    var arquivos = ["fundo-certo.png", "fundo-errado.png", "selo-pontos-certo.svg",
+      "selo-pontos-errado.svg", "moldura-premio.svg", "btn-toque.svg", "mascote.svg"];
+    (d.certo || []).concat(d.errado || []).forEach(function (p) { arquivos.push(p.src); });
+    arquivos.forEach(function (a) { new Image().src = "/static/img/mockup/" + a; });
+  })();
+
   function mostrarFeedback(acertou, mensagem, pontos, respostaCerta) {
     overlay.classList.toggle("is-bom", acertou);
     overlay.classList.toggle("is-ruim", !acertou);
+    montarDeco(acertou);
     fbMsg.textContent = acertou ? "Resposta certa!" : "Resposta errada!";
     fbPontos.textContent = acertou ? "+" + pontos + " pontos" : "0 pontos";
     fbRespRotulo.textContent = acertou ? "Resposta" : "A certa era";
