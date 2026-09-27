@@ -5,7 +5,7 @@ Jogo de quiz interativo para totem touch (retrato), 100% offline.
 ## Requisitos
 
 - Windows 10/11, 64 bits
-- Microsoft Edge WebView2 (já incluso no Windows 10/11 atualizado) — é o único requisito que precisa estar no totem antes da feira; o resto vai no pendrive
+- Microsoft Edge WebView2 (já incluso no Windows 10/11 atualizado). Se faltar, o jogo **não quebra**: abre sozinho no próprio Edge em modo quiosque (tela cheia, sem barra de endereço), que vem em todo Windows 10/11
 - Python **não precisa estar instalado no totem** — o `INICIAR_QUIZ.bat` se instala sozinho na máquina, veja abaixo
 
 ## Guia rápido para quem for operar o totem na feira
@@ -17,9 +17,23 @@ Isso aqui é pra explicar pra qualquer pessoa (técnica ou não) o que acontece 
 3. **Terminada a instalação** (ou direto, se já tinha instalado antes nessa máquina), o jogo abre sozinho em tela cheia.
 4. **No segundo e terceiro dia, na MESMA máquina:** passo 2 não acontece de novo — `python-embed\` já está lá, o jogo abre na hora.
 5. **Se o segundo ou terceiro dia usar um mini PC diferente** (ou a pasta `python-embed\` sumir/corromper por qualquer motivo): o passo 2 acontece de novo, automaticamente, sem ninguém precisar fazer nada além de esperar — sempre sem internet, sempre a partir do que já está no pendrive.
-6. **No fim de cada dia da feira, antes de desligar aquele computador**, copie a pasta `backups\` (está dentro da própria pasta do jogo) para o pendrive ou outro lugar seguro. Esse é o único passo manual que existe — nenhum programa consegue mover arquivo de uma máquina pra outra sozinho sem internet. Veja a seção "Backups" abaixo para os detalhes.
+6. **Deixe o pendrive de backup espetado no totem** (um pendrive com uma pasta chamada `ILUMAC_BACKUP` na raiz). O jogo copia cada backup para ele sozinho. Sem esse pendrive, no fim de cada dia copie a pasta `backups\` à mão antes de desligar o computador. Veja a seção "Backups" abaixo.
 
-Resumindo pra quem só vai operar: **plugou o pendrive, copiou/rodou o jogo, deu dois cliques no `.bat`, esperou o que precisar esperar, e no fim do dia salvou a pasta `backups\`.** Todo o resto é automático.
+Resumindo pra quem só vai operar: **plugou o pendrive, deu dois cliques no `.bat`, esperou o que precisar esperar.** Todo o resto é automático.
+
+### Antes da feira, em cada computador do totem
+
+1. **`VERIFICAR_TOTEM.bat`** — dois cliques. Confere tudo (Python, janela, arquivos, perguntas, prêmios, banco, backups, pendrive, disco) e diz em português se está pronto. Só lê, não muda nada.
+2. **`ABRIR_JUNTO_COM_WINDOWS.bat`** — dois cliques, uma vez. O jogo passa a abrir sozinho quando o computador liga: se faltar energia ou o Windows reiniciar para atualizar, o totem volta sozinho. Rodar de novo oferece desfazer.
+
+### O que já é automático
+
+- **Jogo fechou ou travou:** o `INICIAR_QUIZ.bat` reabre em 5 s.
+- **`.bat` aberto duas vezes:** a segunda cópia percebe e fecha, sem empilhar janelas.
+- **Tela apagando / computador suspendendo:** bloqueado enquanto o jogo está aberto (sem mexer na configuração de energia da máquina).
+- **Sem WebView2:** abre no Edge em modo quiosque. Para ver como fica, rode `python-embed\python.exe run.py --navegador`.
+- **Banco danificado** (queda de energia no meio de uma gravação): ao abrir, o jogo detecta, guarda o arquivo danificado em `backups\` e volta sozinho para o último backup bom.
+- **Tela de qualquer tamanho:** o jogo foi desenhado para 1080x1920 e, em qualquer outra tela, encolhe inteiro e centraliza, sem cortar nada.
 
 ## Como o pendrive é preparado (sem Python, sem internet no dia da feira)
 
@@ -79,13 +93,18 @@ O banco (`quiz.db`) nunca deve ser apagado durante o evento — ele guarda os ca
 
 ## Backups (importante se o totem trocar de mini PC entre os dias)
 
-`backups\` fica **sempre dentro da própria pasta do jogo** (do lado de `app.py`, `quiz.db`, `python-embed\` etc.) — nunca em outro lugar do disco, nunca fora dessa pasta. Copiar/gravar o backup é sempre copiar essa única pasta. O jogo salva sozinho uma cópia completa do banco (cadastros, tentativas, respostas) ali dentro, nomeada com data/hora e o motivo:
+`backups\` fica **sempre dentro da própria pasta do jogo** (do lado de `app.py`, `quiz.db`, `python-embed\` etc.) — nunca em outro lugar do disco do computador. Copiar/gravar o backup é sempre copiar essa única pasta. O jogo salva sozinho uma cópia completa do banco (cadastros, tentativas, respostas) ali dentro, nomeada com data/hora e o motivo:
 
 - **No boot** (`_boot.db`) — toda vez que o `INICIAR_QUIZ.bat`/`run.py` sobe, antes de sincronizar `config/*.json`. Cobre reinícios do watchdog e o começo de cada dia.
+- **De hora em hora** (`_hora14.db`, `_hora15.db`...) — só nas horas em que entrou cadastro ou partida nova. Se o computador morrer à tarde, a manhã já está salva.
 - **No fim do dia** (`_fim_do_dia.db`) — automático, a partir das 21h locais (ajustável em `HORA_BACKUP_FIM_DIA`, no topo do `run.py`), sem precisar reiniciar o totem. Cobre o totem que fica ligado o dia inteiro.
 - **Manual** (`_manual.db`) — botão "Fazer backup agora" no painel admin (`/admin`), pra quando alguém quiser garantir um backup na hora, por exemplo pouco antes de desligar o totem.
 
-**O que o backup automático NÃO resolve sozinho:** ele só grava dentro da própria máquina do totem. Se a feira usa um mini PC diferente a cada dia, alguém precisa **copiar a pasta `backups\` para o pendrive (ou outro lugar seguro) no fim de cada dia**, antes de desligar aquele computador — sem essa cópia manual entre máquinas, o dia fica só na máquina que já não vai mais ser usada. O painel admin mostra a hora do último backup salvo para facilitar essa conferência.
+**Pendrive de backup (cópia automática para fora do computador):** crie uma pasta chamada **`ILUMAC_BACKUP`** na raiz de um pendrive e deixe-o espetado no totem. Cada backup acima é copiado também para `ILUMAC_BACKUP\<nome do computador>\` — assim, se o computador do totem pifar, os dados já estão fora dele, e mini PCs diferentes não misturam arquivos. Só pendrive com essa pasta recebe dados (um pendrive qualquer espetado no totem nunca recebe cadastro de ninguém). Pendrive cheio ou arrancado não atrapalha o jogo: o backup local continua saindo.
+
+Sem o pendrive de backup conectado, o backup só fica na máquina do totem: nesse caso, alguém precisa **copiar a pasta `backups\` para um pendrive no fim de cada dia**, antes de desligar aquele computador. O painel admin mostra a hora do último backup salvo para facilitar essa conferência.
+
+**Cada gravação vai para o disco na hora:** o banco grava em modo `synchronous=FULL`, então uma queda de energia não leva as últimas partidas.
 
 O ranking do totem já mostra "hoje" e "os 3 dias" separadamente (abas na tela de Ranking); os arquivos em `backups\` são o histórico bruto por trás disso, caso precise reabrir os dados de um dia específico depois — cada `.db` é um banco SQLite completo, dá pra abrir com `python -c "import sqlite3; ..."` ou qualquer visualizador de SQLite.
 
