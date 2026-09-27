@@ -43,6 +43,7 @@
           Li e concordo com o uso dos meus dados pessoais pela Ilumac para fins do Desafio
           de Instalação no Fire Show 2026 (cadastro, cronometragem, exibição no ranking do
           estande e contato sobre o resultado), conforme a Lei Geral de Proteção de Dados (LGPD).
+          <br><button type="button" class="cad-saiba" id="btn-saiba-mais">Saiba mais</button>
         </span>
       </label>
 
@@ -54,10 +55,49 @@
 
       <button type="submit" class="btn-px forma-escura cad-continuar" id="btn-cadastrar">Continuar</button>
     </form>
+
+    <!-- "Saiba mais" do termo LGPD. Descreve só o que o sistema faz de
+         fato — revisar com o jurídico/marketing antes de ampliar. -->
+    <div class="lgpd-detalhe" id="lgpd-detalhe" role="dialog" aria-modal="true"
+         aria-labelledby="lgpd-detalhe-titulo" hidden>
+      <div class="lgpd-detalhe-card">
+        <h2 class="px lgpd-detalhe-titulo" id="lgpd-detalhe-titulo">Seus dados</h2>
+        <dl class="lgpd-detalhe-lista">
+          <dt>O que coletamos</dt>
+          <dd>Nome, e-mail e telefone, além da sua pontuação e do tempo no quiz.</dd>
+          <dt>Para que usamos</dt>
+          <dd>Para registrar sua participação, montar o ranking do estande e entrar em contato sobre o resultado e o prêmio.</dd>
+          <dt>O que aparece na tela</dt>
+          <dd>No ranking, só seu primeiro e último nome, pontos e tempo. E-mail e telefone nunca aparecem.</dd>
+          <dt>Onde ficam</dt>
+          <dd>Guardados neste totem, sem envio pela internet. Depois da feira, a equipe da Ilumac usa a lista para o contato.</dd>
+          <dt>Seus direitos</dt>
+          <dd>Pela LGPD, você pode pedir acesso, correção ou exclusão dos seus dados e retirar o consentimento. Fale com a equipe da Ilumac no estande.</dd>
+        </dl>
+        <button type="button" class="btn-px forma-escura lgpd-detalhe-fechar" id="btn-lgpd-fechar">Entendi</button>
+      </div>
+    </div>
   </main>
 
   <script src="/static/js/kiosk.js"></script>
   <script src="/static/js/cadastro.js"></script>
   <script src="/static/js/teclado.js"></script>
+  <script>
+    (function () {
+      var painel = document.getElementById("lgpd-detalhe");
+      // O botão fica dentro do <label> do termo: sem o preventDefault, o
+      // toque em "Saiba mais" também marcaria/desmarcaria o checkbox.
+      document.getElementById("btn-saiba-mais").addEventListener("click", function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        painel.hidden = false;
+      });
+      function fechar() { painel.hidden = true; }
+      document.getElementById("btn-lgpd-fechar").addEventListener("click", fechar);
+      painel.addEventListener("click", function (ev) {
+        if (ev.target === painel) fechar();
+      });
+    })();
+  </script>
 </body>
 </html>
