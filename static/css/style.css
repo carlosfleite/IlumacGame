@@ -69,6 +69,13 @@
 }
 
 :root {
+  /* Escala do palco: quanto o 1080x1920 precisa encolher para caber na
+     janela. tan(atan2(a, b)) é o jeito do CSS de dividir um comprimento
+     por outro e obter um número puro. Calculado pelo próprio navegador a
+     cada mudança de tamanho — sem depender do evento resize do JS, que a
+     janela do totem pode não disparar ao entrar em tela cheia. */
+  --escala: min(tan(atan2(100vw, 1080px)), tan(atan2(100vh, 1920px)));
+
   /* cores medidas no .ai */
   --vinho: #70000e;
   --vermelho: #c31922;
@@ -102,7 +109,11 @@ html, body {
   padding: 0;
   height: 100%;
   overflow: hidden;
-  background: var(--vinho);
+  /* Em tela que não é 9:16 (monitor deitado, celular, notebook) o palco
+     encolhe e sobra faixa dos lados ou em cima/embaixo. O degradê é o
+     mesmo do fundo das pranchetas (vinho no topo, vermelho na base), então
+     a sobra parece continuação da arte e não uma tarja. */
+  background: linear-gradient(to bottom, #70000e 0%, #8a0515 45%, #c31922 100%) fixed;
   color: var(--branco);
   font-family: var(--font-texto);
   -webkit-tap-highlight-color: transparent;
