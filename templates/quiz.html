@@ -7,87 +7,54 @@
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body class="page-quiz" data-kiosk-timeout="120">
-  <div class="screen screen-quiz">
-    <div class="topbar">
-      <div class="brand-lockup">
-        <img class="brand-logo" src="/static/img/logo-ilumac-branco.svg" alt="Ilumac">
-        <span class="brand-divider" aria-hidden="true"></span>
-        <img class="brand-logo-fs" src="/static/img/logo-fireshow-branco.png" alt="Fire Show 2026">
-      </div>
-      <!-- Placar de acertos: o cronômetro virou a barra da base -->
-      <div class="timer-topo" aria-live="off">
-        <span class="rotulo">Acertos</span>
-        <span class="valor" id="quiz-acertos">0 / 5</span>
-      </div>
+  <!-- A tela da pergunta não tem prancheta no mockup: usa o fundo do
+       "Como jogar" e as mesmas peças (selo numerado, cartão branco). -->
+  <main class="tela tela--quiz">
+    <div class="px quiz-meta">
+      <span id="quiz-progresso">Pergunta 1 / 5</span>
+      <span id="quiz-pontos">0 pts</span>
     </div>
 
-    <main class="palco palco-quiz">
-      <div class="quiz-meta">
-        <span id="quiz-progresso">Pergunta 1 / 5</span>
-        <span id="quiz-pontos">0 pts</span>
-      </div>
+    <h2 class="quiz-pergunta" id="quiz-pergunta">Carregando…</h2>
 
-      <h2 class="quiz-pergunta" id="quiz-pergunta">Carregando…</h2>
+    <div class="quiz-alternativas" id="quiz-alternativas" role="group" aria-label="Alternativas"></div>
 
-      <div class="quiz-alternativas" id="quiz-alternativas" role="group" aria-label="Alternativas"></div>
-    </main>
-  </div>
-
-  <!-- Cronômetro da pergunta: a barra drena com os segundos. Zerou, a
-       pergunta conta como errada. A chama cresce a cada acerto. -->
-  <footer class="barra-fogo">
-    <div class="barra-info">
-      <div class="barra-rotulo">
-        <span>Tempo da pergunta</span>
-        <b id="barra-prazo">0:20</b>
-      </div>
-      <div class="barra-trilho" role="img" aria-label="Tempo restante da pergunta">
-        <div class="barra-progresso" id="barra-progresso"></div>
-      </div>
-    </div>
-    <div class="chama-caixa">
-      <div class="chama" id="chama" data-nivel="0" aria-hidden="true"></div>
-    </div>
-  </footer>
-
-  <!-- Feedback: o Ilumaquinho entra trazendo a tela de resultado -->
-  <div id="feedback-overlay" class="feedback-overlay" hidden>
-    <div class="fb-reboque" id="fb-reboque">
-      <div class="fb-painel" id="fb-card">
-        <div class="fb-topo" id="fb-faixa">
-          <svg class="fb-topo-icone fb-topo-icone--ok" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 13 L10 19 L20 5" fill="none" stroke="currentColor" stroke-width="4"></path>
-          </svg>
-          <svg class="fb-topo-icone fb-topo-icone--erro" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M5 5 L19 19 M19 5 L5 19" fill="none" stroke="currentColor" stroke-width="4"></path>
-          </svg>
-          <span id="fb-topo-txt">Resposta certa</span>
+    <!-- Cronômetro da pergunta: a barra drena com os segundos. Zerou, a
+         pergunta conta como errada. A chama cresce a cada acerto. -->
+    <div class="barra-fogo">
+      <div class="barra-info">
+        <div class="barra-rotulo">
+          <span>Tempo</span>
+          <b id="barra-prazo">0:20</b>
         </div>
+        <div class="barra-trilho" role="img" aria-label="Tempo restante da pergunta">
+          <div class="barra-progresso" id="barra-progresso"></div>
+        </div>
+      </div>
+      <div class="chama-caixa">
+        <div class="chama" id="chama" data-nivel="0" aria-hidden="true"></div>
+      </div>
+    </div>
 
-        <div class="fb-miolo">
-          <div class="fb-estrelas" aria-hidden="true">
-            <img src="/static/img/estrela.png" alt="" class="fb-estrela x1">
-            <img src="/static/img/estrela.png" alt="" class="fb-estrela x2">
-            <img src="/static/img/estrela.png" alt="" class="fb-estrela x3">
-          </div>
-
-          <p id="feedback-msg" class="feedback-msg"></p>
-          <p id="feedback-pontos" class="feedback-pontos"></p>
+    <!-- Feedback: pranchetas 8 (acerto, fundo verde) e 9 (erro) -->
+    <div id="feedback-overlay" class="feedback-overlay" hidden>
+      <div class="fb-reboque" id="fb-reboque">
+        <div id="fb-card">
+          <p id="feedback-msg" class="px feedback-msg"></p>
+          <p id="feedback-pontos" class="px feedback-pontos"></p>
 
           <div class="fb-resposta">
-            <div class="fb-resposta-rotulo" id="fb-resposta-rotulo">Resposta</div>
+            <p class="px fb-resposta-rotulo" id="fb-resposta-rotulo">Resposta</p>
             <p class="fb-resposta-texto" id="feedback-detalhe"></p>
           </div>
 
-          <div class="fb-mascote-area">
-            <div class="fb-mascote" id="fb-mascote" role="img" aria-label="Ilumaquinho"></div>
-          </div>
-        </div>
+          <img class="mascote fb-mascote" id="fb-mascote" src="/static/img/mockup/mascote.svg" alt="">
 
-        <p class="feedback-tap">Toque para continuar</p>
+          <p class="px feedback-tap">Toque para continuar</p>
+        </div>
       </div>
     </div>
-  </div>
+  </main>
 
   <script src="/static/js/kiosk.js"></script>
   <script src="/static/js/quiz.js"></script>

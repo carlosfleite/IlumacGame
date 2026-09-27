@@ -1,16 +1,14 @@
 /**
- * Quiz — cronômetro, perguntas, barra de fogo e feedback do Llumaquinho.
+ * Quiz — cronômetro, perguntas, barra de fogo e feedback.
  *
- * SPRITES: gerados por tools/gerar_pixel_assets.py em /static/img/
- *   ilumaquinho/andando.png  → 2 direcoes, nao 2 passos (ver style.css)
- *   ilumaquinho/deu-bom.png  → acertou
- *   ilumaquinho/deu-ruim.png → errou
+ * O feedback reproduz as pranchetas 8 (acerto) e 9 (erro) do mockup: a
+ * tela inteira troca de fundo e mostra a resposta certa.
  */
 (function () {
   "use strict";
 
   var FEEDBACK_MS = 2600; // contado só depois que a tela termina de entrar
-  var ENTRADA_MS = 1000;  // deve casar com --fb-entrada / reboque-entra no CSS
+  var ENTRADA_MS = 500;   // deve casar com a animação reboque-entra no CSS
   var LIMITE_MS = 20000;  // tempo por pergunta; zerou, conta como erro
 
   var params = new URLSearchParams(window.location.search);
@@ -35,9 +33,6 @@
 
   var overlay = document.getElementById("feedback-overlay");
   var reboque = document.getElementById("fb-reboque");
-  var fbCard = document.getElementById("fb-card");
-  var fbTopoTxt = document.getElementById("fb-topo-txt");
-  var fbMascote = document.getElementById("fb-mascote");
   var fbMsg = document.getElementById("feedback-msg");
   var fbPontos = document.getElementById("feedback-pontos");
   var fbRespRotulo = document.getElementById("fb-resposta-rotulo");
@@ -192,12 +187,11 @@
   }
 
   // ---------------------------------------------------------------------
-  // Feedback: o mascote entra puxando o card
+  // Feedback: a tela de acerto/erro entra por cima da pergunta
   // ---------------------------------------------------------------------
 
   /**
-   * Fim da entrada: o mascote para de andar e assume a expressão, e só
-   * então começa a contagem para avançar sozinho.
+   * Fim da entrada: só então começa a contagem para avançar sozinho.
    *
    * Chamado por dois caminhos de propósito. O navegador congela animações
    * quando a página fica oculta (visibilityState "hidden") — se a janela
@@ -213,7 +207,6 @@
       clearTimeout(entradaTimer);
       entradaTimer = null;
     }
-    fbMascote.classList.add("parado");
     if (feedbackTimer) clearTimeout(feedbackTimer);
     feedbackTimer = setTimeout(continuarAposFeedback, FEEDBACK_MS);
   }
@@ -223,19 +216,12 @@
   });
 
   function mostrarFeedback(acertou, mensagem, pontos, respostaCerta) {
-    var classe = acertou ? "is-bom" : "is-ruim";
-
-    fbCard.className = "fb-painel " + classe;
     overlay.classList.toggle("is-bom", acertou);
     overlay.classList.toggle("is-ruim", !acertou);
-    fbTopoTxt.textContent = acertou ? "Resposta certa" : "Resposta errada";
     fbMsg.textContent = acertou ? "Resposta certa!" : "Resposta errada!";
     fbPontos.textContent = acertou ? "+" + pontos + " pontos" : "0 pontos";
     fbRespRotulo.textContent = acertou ? "Resposta" : "A certa era";
     fbRespTexto.textContent = respostaCerta || mensagem;
-
-    // volta o mascote para o ciclo de caminhada antes de entrar de novo
-    fbMascote.className = "fb-mascote " + classe;
 
     chegou = false;
     overlay.hidden = false;

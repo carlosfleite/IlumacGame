@@ -1,34 +1,52 @@
 /* ==========================================================================
    Quiz SDAI — Ilumac Fire Show 2026
 
-   DIREÇÃO: campo vermelho institucional com a textura do brasão, interface
-   em pixel art e tipografia mista.
+   FONTE DA VERDADE: o mockup do marketing (GAME_QUIZZ_TUDO_SOBRE_SDAI.ai,
+   9 pranchetas de 1080x1920). Esta folha reproduz as pranchetas, e não
+   uma releitura delas:
 
-   Regra tipográfica (a mais importante deste arquivo):
-   Press Start 2P é uma fonte de 8px por glifo. Ela só é legível em corpo
-   grande e frase curta — em texto corrido ela vira ruído. Por isso:
+   · Palco fixo de 1080x1920 (.tela) — o tamanho exato do totem e das
+     pranchetas. Todo top/left/width/font-size aqui é a coordenada da
+     prancheta em px, medida no .ai. Em telas menores (notebook da equipe)
+     o palco inteiro é reduzido por transform (--escala, kiosk.js), então
+     a composição nunca se rearranja: só encolhe.
 
-     · PIXEL  → título de tela, número grande, mensagem de feedback,
-                botão, posição do ranking. Sempre curto e grande.
-     · MONTSERRAT → tudo que o participante precisa LER com atenção:
-                enunciado da pergunta, alternativas, rótulos de campo,
-                descrições, nomes. Sem exceção.
+   · Fundo, logos, título pequeno e decoração em pixel de cada tela são a
+     própria arte, exportada por tools/extrair_mockup.py para
+     img/mockup/fundo-*.png. O HTML desenha só o que muda (textos,
+     cartões, botões).
 
-   Demais regras que sustentam o visual:
-   1. Grade de 4px (--px). Todo espaçamento é múltiplo dela.
-   2. Cantos retos, zero border-radius.
-   3. Sombra sólida deslocada, nunca desfocada (e blur é o efeito mais
-      caro para a GPU Intel HD de 2011).
-   4. Animação em steps(). Movimento contínuo denuncia que não é pixel art.
-   5. image-rendering: pixelated em todo sprite.
+   · Botões, molduras, abas, medalhas e mascote também são os vetores do
+     .ai (img/mockup/*.svg). Os que precisam mudar de tamanho usam
+     border-image, que preserva o degrau pixelado dos cantos.
 
-   Totem 23" em RETRATO (1080x1920) · touch · 100% offline, sem CDN.
+   · Tipografia: Pixellari (a do mockup, OFL) para títulos, botões e
+     números — mesmas métricas do .ai, sem letter-spacing. O texto corrido
+     do mockup é Acumin Variable Concept (Adobe, sem licença de
+     distribuição); aqui entra a Sofia Sans Extra Condensed (OFL), mesmo
+     desenho e ~2% de diferença de largura. Os placeholders e o termo LGPD são Montserrat, como no .ai.
+
+   Telas que o mockup não desenha (a pergunta do quiz e o aviso de
+   inatividade) usam as mesmas peças.
    ========================================================================== */
 
 @font-face {
-  font-family: "Press Start 2P";
-  src: url("/static/fonts/pressstart2p.woff2") format("woff2");
-  font-weight: 400;
+  font-family: "Pixellari";
+  src: url("/static/fonts/pixellari.woff2") format("woff2");
+  font-display: block;
+}
+@font-face {
+  font-family: "Sofia Sans Extra Condensed";
+  src: url("/static/fonts/sofiasansextracondensed.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: "Sofia Sans Extra Condensed";
+  src: url("/static/fonts/sofiasansextracondensed-italic.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: italic;
   font-display: block;
 }
 @font-face {
@@ -51,49 +69,26 @@
 }
 
 :root {
-  --px: 4px;
-
+  /* cores medidas no .ai */
+  --vinho: #70000e;
   --vermelho: #c31922;
-  --vermelho-claro: #e50000;
-  --vermelho-escuro: #800000;
-  --vermelho-profundo: #70000e;
-  --vermelho-noite: #70000e;
+  --vermelho-vivo: #ff0000;
+  --ouro: #f6bb0c;
+  --creme: #f0e7cc;
+  --verde-tinta: #16352a;
+  --branco: #ffffff;
+  --tecla-tinta: #2e2326;
 
-  --cartao: #ffffff;
-  --cartao-2: #cfcfcf;
-  --contorno: #1d1d1b;
+  --font-px: "Pixellari", "Courier New", monospace;
+  --font-texto: "Sofia Sans Extra Condensed", "Arial Narrow", sans-serif;
+  --font-ui: "Montserrat", "Segoe UI", Tahoma, sans-serif;
 
-  --tinta: #1d1d1b;
-  --tinta-media: #393939;
-  --tinta-fraca: #393939;
-
-  /* Contraste medido com composição de alpha sobre #c31922:
-     branco 6.03 · 0.92 → 5.28 · 0.82 → 4.43 (reprova AA) · 0.62 → 3.04. */
-  --sobre-vermelho: #ffffff;
-  --sobre-vermelho-medio: rgba(255, 255, 255, 0.92);
-  --sobre-vermelho-fraco: rgba(255, 255, 255, 0.72);
-  --linha-vermelho: rgba(255, 255, 255, 0.28);
-  --veu-branco: rgba(255, 255, 255, 0.12);
-
-  --fogo-nucleo: #fff0ba;
-  --fogo-medio: #ffa628;
-  --fogo-borda: #e23320;
-  --cinza-apagado: #6d5a5c;
-
-  --ok: #1c8a5a;
-  --erro: #c31922;
-
-  /* Zonas da tela. O totem é 1080x1920: o layout é full-bleed e dividido
-     em topo / palco / rodapé, nunca uma coluna estreita no meio. */
-  --safe-top: 28px;
-  --safe-side: 32px;
-  --safe-bottom: 28px;
-  --zona-gap: 22px;
-  --largura-max: 1240px;
-  --barra-h: 104px;
-
-  --font-display: "Press Start 2P", "Courier New", monospace;
-  --font-body: "Montserrat", "Segoe UI", Tahoma, sans-serif;
+  /* contorno pixelado do subtítulo da abertura */
+  --contorno-vinho:
+    -4px -4px 0 var(--vinho), 0 -4px 0 var(--vinho), 4px -4px 0 var(--vinho),
+    -4px 0 0 var(--vinho), 4px 0 0 var(--vinho),
+    -4px 4px 0 var(--vinho), 0 4px 0 var(--vinho), 4px 4px 0 var(--vinho),
+    6px 6px 0 var(--vinho), 2px 7px 0 var(--vinho), 6px 2px 0 var(--vinho);
 }
 
 *,
@@ -102,1725 +97,1084 @@
   box-sizing: border-box;
 }
 
-img,
-.sprite {
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-}
-
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  color: var(--sobre-vermelho);
-  font-family: var(--font-body);
-  font-size: 18px;
+  overflow: hidden;
+  background: var(--vinho);
+  color: var(--branco);
+  font-family: var(--font-texto);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   user-select: none;
-  overflow: hidden;
 }
 
-/* Fundo de marca do Fire Show 2026 (fundo-jogo.png). Substituiu o
-   padrão do brasão: agora é um degradê vertical, vinho no topo e vermelho
-   mais vivo na base — dá profundidade sem competir com a pixel art dos
-   componentes. A arte como veio está em fundo-jogo-origem.png (3292x4109);
-   o que está em uso foi reduzido para 1123x1400 e teve 2px de artefato
-   de exportação aparados de cima e de baixo. Como é um degradê liso,
-   comprime para ~9 KB. O painel admin segue com o brasão (padrão-brasão
-   .svg) — é superfície interna, não "o jogo". */
-body {
-  display: flex;
-  justify-content: center;
-  position: relative;
-  background-color: var(--vermelho);
-  background-image: url("/static/img/fundo-jogo.png");
-  background-size: cover;
-  background-position: center center;
+p, h1, h2, ul, ol { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+button { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* ==========================================================================
+   Palco
+   ========================================================================== */
+
+.tela {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1080px;
+  height: 1920px;
+  margin: -960px 0 0 -540px;
+  transform: scale(var(--escala, 1));
+  transform-origin: 50% 50%;
+  overflow: hidden;
+  background-color: var(--vinho);
+  background-position: 0 0;
+  background-size: 1080px 1920px;
   background-repeat: no-repeat;
 }
 
-/* Esqueleto único de todas as telas.
+.tela--abertura  { background-image: url("/static/img/mockup/fundo-abertura.png"); }
+.tela--cadastro  { background-image: url("/static/img/mockup/fundo-cadastro.png"); }
+.tela--regras    { background-image: url("/static/img/mockup/fundo-regras.png"); }
+.tela--quiz      { background-image: url("/static/img/mockup/fundo-regras.png"); }
+.tela--resultado { background-image: url("/static/img/mockup/fundo-resultado.png"); }
+.tela--ranking   { background-image: url("/static/img/mockup/fundo-ranking.png"); }
 
-   Antes era uma coluna de 860px com justify-content:center — numa tela de
-   1080x1920 isso deixava 220px de vermelho morto nas laterais e empilhava
-   tudo no miolo. Agora é uma grade de três faixas: a topbar encosta no
-   topo, o rodapé encosta na base e o palco (1fr) estica no que sobra. */
-.screen {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: var(--largura-max);
-  height: 100%;
-  padding: var(--safe-top) var(--safe-side) var(--safe-bottom);
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  row-gap: var(--zona-gap);
+/* Texto em Pixellari: line-height 1 faz a caixa do texto coincidir com a
+   caixa do .ai (ascendente 768 + descendente 256 = 1 em), então o `top`
+   de cada bloco é o y do texto na prancheta. */
+.px {
+  font-family: var(--font-px);
+  font-weight: 400;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.abs { position: absolute; }
+
+/* título de tela (CADASTRO, COMO JOGAR, RANKING...) */
+.tela-titulo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 391px;
+  font-size: 60px;
+  text-align: center;
+}
+
+.mascote {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
   overflow: hidden;
-}
-
-/* Faixa do meio: recebe todo o espaço livre e distribui os filhos nele.
-   space-between é o que espalha o conteúdo em vez de agrupá-lo no centro. */
-.palco {
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: var(--zona-gap);
-}
-
-/* Faixa de baixo: a ação principal mora sempre na mesma altura, colada na
-   base — o polegar do visitante já sabe onde procurar. */
-.rodape {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  align-items: center;
-  width: 100%;
-}
-
-.rodape-duplo {
-  flex-direction: row;
-  gap: 20px;
-}
-
-.rodape-duplo > .btn { flex: 1; }
-
-/* ---- Cabeçalho ---- */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding-bottom: 16px;
-  border-bottom: var(--px) solid var(--linha-vermelho);
-}
-
-.brand-lockup {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  min-width: 0;
-}
-
-.brand-logo { height: 40px; width: auto; display: block; flex-shrink: 0; }
-.brand-logo-fs { height: 32px; width: auto; display: block; flex-shrink: 0; }
-
-.brand-divider {
-  width: var(--px);
-  height: 32px;
-  background: var(--linha-vermelho);
-  flex-shrink: 0;
-}
-
-/* Selo de contexto da tela, na ponta direita da topbar: equilibra o peso
-   dos logos à esquerda em vez de deixar a faixa pela metade. */
-.tag {
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 0.72rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--sobre-vermelho);
-  border: var(--px) solid var(--sobre-vermelho);
-  background: var(--veu-branco);
-  padding: 8px 14px;
+  clip: rect(0 0 0 0);
   white-space: nowrap;
-}
-
-.tag-stand {
-  background: var(--vermelho-noite);
-  border-color: var(--vermelho-noite);
-}
-
-/* Ponto pulsante: sinaliza que o ranking é atualizado durante o evento. */
-.tag-live::before {
-  content: "";
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  margin-right: 10px;
-  vertical-align: middle;
-  background: var(--fogo-medio);
-  animation: pisca 1.2s steps(1) infinite;
-}
-
-/* Cronômetro: rótulo em Montserrat, dígitos em pixel (curto e grande) */
-.timer-topo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-  border: var(--px) solid var(--sobre-vermelho);
-  background: var(--vermelho-profundo);
-  padding: 8px 14px;
-  white-space: nowrap;
-}
-
-.timer-topo .rotulo {
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 0.66rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--sobre-vermelho-fraco);
-}
-
-.timer-topo .valor {
-  font-family: var(--font-display);
-  font-size: 0.85rem;
-  color: var(--sobre-vermelho);
-  font-variant-numeric: tabular-nums;
-}
-
-.brand-header {
-  text-align: left;
-  flex-shrink: 0;
-}
-
-/* Cabeçalho em linha: título à esquerda, controles à direita. Usa a
-   largura toda em vez de empilhar dois blocos estreitos. */
-.brand-header--linha {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.brand-eyebrow {
-  margin: 0 0 14px;
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: 0.70rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--sobre-vermelho-medio);
-}
-
-.brand-title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 5.2vw, 2.4rem);
-  line-height: 1.2;
-  text-transform: uppercase;
-  color: var(--sobre-vermelho);
-  text-shadow: var(--px) var(--px) 0 var(--vermelho-noite);
-}
-
-/* Título que carrega o NOME do participante, e não um rótulo fixo.
-   Nome é texto de terceiro: vem com qualquer acento e qualquer
-   comprimento. A Press Start 2P desenha Í e Ú na altura de minúscula
-   para o acento caber na célula de 8px, então "PATRÍCIA" saía
-   "PATRíCIA" — e num evento brasileiro isso é questão de tempo.
-
-   A regra tipográfica no topo deste arquivo já mandava nome em
-   Montserrat; o ranking e o pódio faziam certo, só o resultado escapava.
-   De quebra Montserrat é mais estreita, então nome comprido cabe melhor. */
-.brand-title--nome {
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: clamp(1.7rem, 6vw, 3.1rem);
-  letter-spacing: 0.01em;
-  text-shadow: calc(var(--px) / 2) calc(var(--px) / 2) 0 var(--vermelho-noite);
-  text-wrap: balance;
-}
-
-.brand-sub {
-  margin: 16px 0 0;
-  font-size: 1.05rem;
-  line-height: 1.5;
-  color: var(--sobre-vermelho-medio);
 }
 
 /* ==========================================================================
-   Abertura — tela de repouso do totem (attract screen)
-
-   É a primeira tela e também para onde o kiosk.js sempre volta depois de
-   qualquer reset ou fim de partida. Fica visível a maior parte do tempo
-   entre um participante e outro, então precisa chamar atenção de longe
-   sem pesar na CPU: só animações em steps(), sem blur.
-
-   Composição de cima para baixo — herói, números, botões — para que o
-   olho percorra a tela inteira. O herói ancora logo abaixo da topbar, sem
-   respiro morto no topo: é aí que a "Fire Show 2026" precisa estar.
+   Peças do mockup
    ========================================================================== */
 
-.selo-ilumagame {
-  height: 34px;
-  width: auto;
+/* Botão cheio (vinho). A forma é o vetor do .ai; o texto é posicionado
+   pelo padding-top de cada uso, no y exato da prancheta. */
+.btn-px {
+  position: absolute;
   display: block;
-  flex-shrink: 0;
-}
-
-.screen-abertura { text-align: center; }
-
-
-.palco-abertura {
-  /* center: herói + números centralizados como bloco. flex-start empurrava
-     tudo para cima e abria um vão grande antes dos botões. */
-  align-items: center;
-  justify-content: center;
-  gap: clamp(26px, 4.5vh, 64px);
-}
-
-/* ---- herói ---- */
-.abertura-hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.abertura-eyebrow {
-  margin: 0 0 18px;
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  letter-spacing: 0.24em;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--branco);
+  font-family: var(--font-px);
+  line-height: 1;
+  text-align: center;
   text-transform: uppercase;
-  color: var(--sobre-vermelho-medio);
+  white-space: nowrap;
+  cursor: pointer;
 }
 
-.abertura-imagem {
+.btn-px:active { transform: translate(3px, 3px); }
+.btn-px:disabled { opacity: 0.6; }
+
+.forma-escura {
+  border-style: solid;
+  border-width: 18px;
+  border-image: url("/static/img/mockup/btn-escuro-p.svg") 18 fill stretch;
+}
+
+.forma-contorno {
+  border-style: solid;
+  border-width: 18px;
+  border-image: url("/static/img/mockup/btn-contorno.svg") 18 fill stretch;
+}
+
+.moldura {
+  border-style: solid;
+  border-width: 26px;
+  border-image: url("/static/img/mockup/moldura-premio.svg") 26 fill stretch;
+}
+
+/* ==========================================================================
+   Abertura  (prancheta 1)
+   ========================================================================== */
+
+.ab-titulo {
+  position: absolute;
+  left: 215px;
+  top: 280px;
+  width: 690px;
+  height: 550px;
+}
+
+.ab-sub {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 875px;
+  font-size: 60px;
+  line-height: 72px;
+  text-align: center;
+  text-shadow: var(--contorno-vinho);
+}
+
+.ab-jogar {
+  left: 330px;
+  top: 1060px;
+  width: 420px;
+  height: 145px;
+  padding-top: 41px;
+  font-size: 80px;
+  background: url("/static/img/mockup/btn-escuro.svg") 0 0 / 100% 100% no-repeat;
+}
+
+.ab-mascote {
+  left: 380px;
+  top: 1270px;
+  width: 320px;
+  height: 400px;
+}
+
+/* ==========================================================================
+   Cadastro  (pranchetas 4 e 5)
+   ========================================================================== */
+
+.cad-titulo { top: 383px; }
+
+.cad-sub {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 442px;
+  font-size: 30px;
+  line-height: 30px;
+  text-align: center;
+}
+
+.campo {
+  position: absolute;
+  left: 168px;
+  width: 740px;
+  height: 80px;
   display: block;
-  width: 100%;
-  max-width: 560px;
-  height: auto;
-  margin: 0 auto;
 }
+#campo-nome     { top: 540px; }
+#campo-email    { top: 696px; }
+#campo-telefone { top: 852px; }
 
-.abertura-titulo {
-  margin: 8px 0 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.6rem, 6vw, 2.6rem);
-  line-height: 1.2;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--sobre-vermelho);
-  text-shadow: var(--px) var(--px) 0 var(--vermelho-noite);
-}
-
-.abertura-sub {
-  margin: 18px auto 0;
-  max-width: 30ch;
-  font-size: 1.05rem;
-  line-height: 1.5;
-  color: var(--sobre-vermelho-medio);
-}
-
-/* ---- mascote + balão de fala (componente compartilhado) ----
-   Assimétrico de propósito: o mascote encosta na margem esquerda e o balão
-   se estende até a direita, ocupando a largura inteira da faixa. Usado na
-   abertura e no cadastro, sempre para preencher a faixa que sobraria
-   vazia entre o conteúdo e o botão. */
-.chamada {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  width: 100%;
-  text-align: left;
-}
-
-.chamada-mascote {
-  flex-shrink: 0;
-  width: 113px;
-  height: 128px;
-  background-image: url("/static/img/ilumaquinho/parado.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center bottom;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  animation: mascote-respira 1.6s ease-in-out infinite;
-}
-
-/* Sobe e desce suavemente: como não troca de quadro de sprite (é uma
-   translação da mesma imagem), steps() aqui só produzia um "tic" solto
-   a cada ~450ms — trocado por ease-in-out. */
-@keyframes mascote-respira {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(calc(var(--px) * -1.5)); }
-}
-
-.chamada-fala {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-  padding: 20px 22px;
-  background: var(--cartao);
-  border: var(--px) solid var(--contorno);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
-}
-
-/* Bico do balão apontando para o mascote, em blocos e não em triângulo
-   suave — coerente com o resto da interface em pixel. */
-.chamada-fala::before {
+/* Campo: branco com contorno fino e o bloco vinho deslocado atrás,
+   degraus de 4px nos cantos — como na prancheta. */
+.campo::before {
   content: "";
   position: absolute;
-  top: 50%;
-  right: 100%;
-  width: var(--px);
-  height: calc(var(--px) * 4);
-  margin-top: calc(var(--px) * -2);
-  background: var(--contorno);
-  box-shadow: calc(var(--px) * -1) 0 0 0 var(--contorno),
-              var(--px) 0 0 0 var(--cartao);
+  inset: -6px -8px -10px -6px;
+  background: var(--vinho);
+  clip-path: polygon(
+    0 8px, 4px 8px, 4px 4px, 8px 4px, 8px 0,
+    calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px, calc(100% - 4px) 8px, 100% 8px,
+    100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px), calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px), calc(100% - 8px) 100%,
+    8px 100%, 8px calc(100% - 4px), 4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px));
 }
 
-.chamada-fala p {
+.campo input {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
   margin: 0;
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 1.02rem;
-  line-height: 1.4;
-  color: var(--tinta);
+  padding: 0 24px;
+  border: 2px solid #5b3a3f;
+  border-radius: 0;
+  outline: none;
+  background: var(--branco);
+  color: #3a2a2d;
+  font-family: var(--font-ui);
+  font-size: 26px;
+  clip-path: polygon(
+    0 6px, 3px 6px, 3px 3px, 6px 3px, 6px 0,
+    calc(100% - 6px) 0, calc(100% - 6px) 3px, calc(100% - 3px) 3px, calc(100% - 3px) 6px, 100% 6px,
+    100% calc(100% - 6px), calc(100% - 3px) calc(100% - 6px), calc(100% - 3px) calc(100% - 3px), calc(100% - 6px) calc(100% - 3px), calc(100% - 6px) 100%,
+    6px 100%, 6px calc(100% - 3px), 3px calc(100% - 3px), 3px calc(100% - 6px), 0 calc(100% - 6px));
+  user-select: text;
 }
 
-/* ---- botões ---- */
-.rodape-abertura {
-  gap: 14px;
+.campo input::placeholder { color: #9a8a8c; opacity: 1; }
+
+.campo input:focus { border-color: var(--vermelho); box-shadow: inset 0 0 0 3px var(--vermelho); }
+
+.campo.invalido input { border-color: var(--vermelho-vivo); box-shadow: inset 0 0 0 3px var(--vermelho-vivo); }
+
+/* dica de erro: na faixa livre entre um campo e o próximo */
+.campo .dica {
+  position: absolute;
+  left: 0;
+  top: 90px;
+  font-family: var(--font-texto);
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--ouro);
+  white-space: nowrap;
 }
 
-.abertura-btn {
+.cad-lgpd {
+  position: absolute;
+  left: 212px;
+  top: 984px;
+  width: 652px;
+  height: 202px;
   display: block;
-  width: 100%;
-  text-decoration: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.abertura-btn-img {
-  display: block;
-  width: 100%;
-  height: auto;
-  pointer-events: none; /* clique sempre pega no <a>, não na img */
-}
-
-/* JOGAR maior, é a ação principal.
-   Diferente dos sprites da tela (que usam steps() de propósito, para
-   parecerem pixel art), esta é uma escala contínua de um botão vetorial:
-   steps() aqui só criava saltos perceptíveis a cada ~400ms, lidos como
-   travamento. ease-in-out interpola o quadro inteiro. */
-.abertura-btn--jogar {
-  max-width: 420px;
-  animation: cta-respira 1.6s ease-in-out infinite;
-}
-
-.abertura-btn--jogar:active {
-  animation: none;
-}
-
-
-@keyframes cta-respira {
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.025); }
-}
-
-@keyframes estrela-brilha {
-  0%, 100% { opacity: .5;  transform: scale(.85); }
-  50%      { opacity: 1;   transform: scale(1.1); }
-}
-
-/* ---- Botões ---- */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 72px;
-  padding: 16px 24px;
-  border: var(--px) solid var(--contorno);
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  line-height: 1.4;
-  text-transform: uppercase;
-  text-decoration: none;
-  text-align: center;
+  background: url("/static/img/mockup/caixa-lgpd.svg") 0 0 / 100% 100% no-repeat;
   cursor: pointer;
-  transition: transform 0.08s steps(2), background 0.08s steps(1);
 }
 
-.btn-block { width: 100%; }
-
-.btn-primary {
-  background: var(--cartao);
-  color: var(--vermelho);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
-}
-
-.btn-primary:active {
-  background: var(--cartao-2);
-  transform: translate(var(--px), var(--px));
-  box-shadow: var(--px) var(--px) 0 0 var(--vermelho-noite);
-}
-
-.btn-ghost {
+.cad-lgpd input {
+  position: absolute;
+  left: 54px;
+  top: 51px;
+  width: 27px;
+  height: 27px;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 3px solid var(--branco);
   background: transparent;
-  border-color: var(--sobre-vermelho);
-  color: var(--sobre-vermelho-medio);
+  cursor: pointer;
 }
 
-.btn-ghost:active {
-  background: var(--veu-branco);
-  color: var(--sobre-vermelho);
-  transform: translate(var(--px), var(--px));
+.cad-lgpd input:checked {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 7' shape-rendering='crispEdges'%3E%3Cpath fill='%23fff' d='M5 1h1v1H5zM4 2h1v1H4zM3 3h1v1H3zM1 3h1v1H1zM2 4h1v1H2z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
 }
 
-.btn-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding-top: 20px;
-  flex-shrink: 0;
+.cad-lgpd-texto {
+  position: absolute;
+  left: 94px;
+  top: 50px;
+  width: 530px;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: -0.01em;
 }
 
-/* ---- Cadastro ---- */
-/* O formulário é a faixa elástica: os campos ficam no topo dela, o
-   consentimento logo abaixo e o botão desce até a base da tela. */
-.form-cadastro {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-  min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+.cad-mascote {
+  left: 221px;
+  top: 1229px;
+  width: 222px;
+  height: 278px;
 }
 
-.form-campos {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
+.cad-balao {
+  position: absolute;
+  left: 405px;
+  top: 1206px;
+  width: 455px;
+  height: 102px;
+  padding: 18px 12px 0 60px;
+  background: url("/static/img/mockup/balao-fala.svg") 0 0 / 100% 100% no-repeat;
+  text-align: center;
+  font-family: var(--font-texto);
+  font-size: 31.5px;
+  line-height: 30px;
+  text-transform: uppercase;
 }
 
-.rodape-form { padding-top: 8px; }
-
-/* No cadastro a chamada é opcional: some quando não há altura para ela,
-   em vez de espremer o formulário.
-
-   A sobra da tela é dividida igualmente acima e abaixo da chamada
-   (margin-top/bottom:auto), então o mascote + balão ficam centralizados
-   nesse vão em vez de deixar um buraco só de um lado. O botão segue
-   ancorado na base porque a margem de baixo da chamada empurra por igual. */
-.chamada-cadastro { margin-top: auto; margin-bottom: auto; }
-
-/* ---- Teclado virtual (static/js/teclado.js) ----
-   A tela encolhe pela altura EXATA do teclado, medida em JS e devolvida em
-   --teclado-h. É a diferença para o teclado do Windows, que é uma janela
-   por cima: ali nada reflui e o Continuar fica atrás dele. */
-.com-teclado .screen {
-  height: calc(100% - var(--teclado-h, 0px));
+.cad-balao b {
+  display: block;
+  font-weight: 600;
+  font-style: italic;
 }
 
-/* Com pouca altura sobrando, o mascote é a primeira coisa a sair — o
-   formulário e o botão não podem ser espremidos por decoração. */
-.com-teclado .chamada-cadastro { display: none; }
+/* o mascote "fala" o erro do cadastro no lugar do convite */
+.cad-balao .form-error {
+  font-weight: 500;
+  font-size: 27px;
+  line-height: 29px;
+  color: var(--ouro);
+  text-transform: none;
+}
+.cad-balao .form-error:not([hidden]) ~ .balao-convite { display: none; }
+
+.cad-continuar {
+  left: 403px;
+  top: 1362px;
+  width: 290px;
+  height: 74px;
+  padding-top: 0;
+  font-size: 42px;
+}
+
+/* ---- Teclado virtual (static/js/teclado.js), prancheta 5 ---- */
 
 .teclado {
-  position: fixed;
+  position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 40;
-  padding: clamp(8px, 1.2vh, 18px) clamp(8px, 1.4vw, 20px)
-           calc(clamp(8px, 1.2vh, 18px) + env(safe-area-inset-bottom, 0px));
-  background: var(--vermelho-noite);
-  border-top: var(--px) solid var(--contorno);
+  z-index: 30;
+  padding: 9px;
+  background: var(--branco);
 }
 
 .teclado[hidden] { display: none; }
 
 .teclado-grade {
   display: grid;
-  grid-template-columns: repeat(var(--teclado-colunas, 20), minmax(0, 1fr));
-  gap: clamp(5px, 0.7vh, 12px);
+  grid-template-columns: repeat(var(--teclado-colunas, 20), 1fr);
+  grid-auto-rows: 75px;
+  gap: 15px 13px;
 }
 
-/* Teclado de telefone: 3 colunas largas ficariam absurdas na largura
-   inteira do totem, então este layout mora numa coluna central. */
 .teclado-grade.estreita {
-  max-width: 620px;
+  width: 600px;
   margin: 0 auto;
 }
 
-/* Rótulos em Montserrat, não na Press Start 2P.
-
-   A Press Start 2P TEM os acentuados (conferido glifo a glifo: nenhum cai
-   na fonte de reserva). O problema é outro: para o acento caber na célula
-   de 8px, ela desenha Í e Ú na altura de minúscula — "MAIÚSC" sai como
-   "MAIúSC". Á, Ã e Ç saem certos.
-
-   Como as teclas se leem em movimento e uma delas é justamente ÁÉÍ, vale
-   mais a legibilidade: pixel só para texto curto de display, Montserrat
-   para o que se lê com atenção. O ar de pixel vem da caixa — canto reto,
-   contorno grosso e sombra sólida deslocada. */
 .tecla {
-  min-height: clamp(52px, 6.6vh, 116px);
-  padding: 4px 2px;
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: clamp(1rem, 2.6vw, 1.7rem);
-  line-height: 1;
-  color: var(--vermelho);
-  background: var(--cartao);
-  border: var(--px) solid var(--contorno);
-  box-shadow: var(--px) var(--px) 0 0 rgba(0, 0, 0, 0.45);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 0.06s steps(2), background 0.06s steps(1);
-}
-
-.tecla:active {
-  background: var(--cartao-2);
-  transform: translate(var(--px), var(--px));
-  box-shadow: none;
-}
-
-/* Teclas de comando: mais escuras, para a vista separar letra de função
-   sem precisar ler. */
-.tecla-acao {
-  font-size: clamp(0.62rem, 1.5vw, 0.95rem);
-  letter-spacing: 0.06em;
-  color: var(--sobre-vermelho);
-  background: var(--tinta-media);
-}
-
-.tecla-acao:active { background: var(--tinta); }
-
-.tecla-acao.ativa {
-  color: var(--tinta);
-  background: var(--fogo-medio);
-}
-
-.field {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.field > span {
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 0.78rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--sobre-vermelho-medio);
-}
-
-.field input {
-  min-height: 64px;
-  padding: 12px 16px;
-  border: var(--px) solid var(--contorno);
-  font-size: 1.15rem;
-  font-family: var(--font-body);
-  font-weight: 600;
-  background: var(--cartao);
-  color: var(--tinta);
-  user-select: text;
-  box-shadow: inset calc(var(--px) * -1) calc(var(--px) * -1) 0 0 var(--cartao-2);
-}
-
-.field input::placeholder {
-  color: var(--tinta-fraca);
-  font-weight: 400;
-}
-
-.field input:focus {
-  outline: none;
-  box-shadow: inset 0 0 0 var(--px) var(--vermelho);
-}
-
-/* Campo reprovado na validação */
-.field.invalido input {
-  box-shadow: inset 0 0 0 var(--px) var(--erro);
-}
-
-.field .dica {
-  font-family: var(--font-body);
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--sobre-vermelho);
-  background: var(--vermelho-noite);
-  padding: 6px 10px;
-  border-left: var(--px) solid var(--sobre-vermelho);
-}
-
-.field .dica[hidden] { display: none; }
-
-.consent {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  padding: 16px;
-  background: var(--veu-branco);
-  border: var(--px) solid var(--linha-vermelho);
-  font-size: 0.98rem;
-  line-height: 1.45;
-  color: var(--sobre-vermelho);
-}
-
-.consent input {
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
-  accent-color: var(--vermelho-noite);
-}
-
-.form-error {
-  margin: 0;
-  padding: 14px 16px;
-  background: var(--cartao);
-  border: var(--px) solid var(--contorno);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
-  color: var(--erro);
-  font-weight: 700;
-  font-size: 0.98rem;
-}
-
-/* ---- Regras: 4 cards, não lista ----
-   O card acompanha o próprio conteúdo. Esticar as linhas até encher a
-   tela deixava o texto boiando no meio de um retângulo branco vazio —
-   pior que a sobra que tentava resolver. O que fecha a tela aqui é
-   tipografia de totem (leitura em pé, a alguns passos) e o respiro
-   distribuído pelo space-evenly, não container inflado. */
-.palco-regras { justify-content: space-evenly; }
-
-.regras-grade {
-  flex: 0 1 auto;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
-  margin: 0;
+  align-items: center;
+  justify-content: center;
   padding: 0;
-  list-style: none;
-}
-
-.regras-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  min-height: 220px;
-  padding: 26px 24px 22px;
-  background: var(--cartao);
-  border: var(--px) solid var(--contorno);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
-}
-
-/* número em selo, saindo da quina do card */
-.regras-num {
-  position: absolute;
-  top: calc(var(--px) * -3);
-  left: calc(var(--px) * -3);
-  min-width: 48px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 8px;
-  background: var(--vermelho);
-  border: var(--px) solid var(--contorno);
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  color: var(--sobre-vermelho);
-}
-
-.regras-card strong {
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  line-height: 1.5;
-  color: var(--vermelho);
-  margin-top: 12px;
-}
-
-.regras-card p {
-  margin: 0;
-  color: var(--tinta-media);
-  font-size: 0.98rem;
-  line-height: 1.45;
-}
-
-/* ---- Quiz ---- */
-.screen-quiz {
-  grid-template-rows: auto minmax(0, 1fr);
-  padding-bottom: calc(var(--barra-h) + 20px);
-}
-
-.palco-quiz { justify-content: flex-start; gap: 20px; }
-
-.quiz-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-family: var(--font-body);
+  border: 3px solid var(--tecla-tinta);
+  background: var(--branco);
+  box-shadow: 3px 3px 0 0 var(--tecla-tinta);
+  color: var(--tecla-tinta);
+  font-family: var(--font-ui);
   font-weight: 700;
-  font-size: 0.78rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--sobre-vermelho-medio);
-  flex-shrink: 0;
-}
-
-#quiz-pontos {
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  letter-spacing: 0;
-  color: var(--sobre-vermelho);
-}
-
-/* Enunciado em Montserrat: é o texto que exige leitura atenta.
-   Em Press Start 2P ficava bonito e ilegível. */
-.quiz-pergunta {
-  margin: 0 0 clamp(16px, 3vh, 32px);
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: clamp(1.3rem, 3.4vw, 1.75rem);
-  line-height: 1.32;
-  color: var(--sobre-vermelho);
-  text-shadow: calc(var(--px) / 2) calc(var(--px) / 2) 0 var(--vermelho-noite);
-  flex-shrink: 0;
-}
-
-/* As alternativas ocupam a faixa livre, mas com altura do próprio
-   conteúdo — esticá-las a ponto de virar lajotas de 300px desperdiçava
-   espaço e ficava desproporcional. Ficam encostadas logo abaixo da
-   pergunta (flex-start), não centralizadas na faixa toda: centralizar
-   reabria um vão grande entre a pergunta e a 1ª alternativa, que era
-   exatamente o problema. O que sobra vira respiro abaixo da última. */
-.quiz-alternativas {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  flex: 1;
-  min-height: 0;
-  justify-content: flex-start;
-  overflow-y: auto;
-  padding: 0 var(--px) var(--px) 0;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Todas as 52 perguntas do banco têm exatamente 4 alternativas, então
-   deixar os cards crescerem divide a sobra em quatro partes previsíveis —
-   é o que fecha o vão que ficava entre a última opção e a barra de fogo.
-   Em tela apertada o flex-grow não age e o overflow acima assume. */
-.alt-btn {
-  display: flex;
-  flex: 1 1 auto;
-  align-items: center;
-  gap: 18px;
-  width: 100%;
-  min-height: 84px;
-  padding: 20px 24px;
-  text-align: left;
-  border: var(--px) solid var(--contorno);
-  background: var(--cartao);
-  color: var(--tinta);
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 1.1rem;
-  line-height: 1.35;
+  font-size: 25px;
   cursor: pointer;
-  box-shadow: var(--px) var(--px) 0 0 var(--vermelho-noite);
-  transition: transform 0.08s steps(2), background 0.08s steps(1);
 }
 
-.alt-btn:active:not(:disabled) {
-  background: var(--cartao-2);
-  transform: translate(var(--px), var(--px));
-  box-shadow: none;
-}
+.tecla:active { transform: translate(3px, 3px); box-shadow: none; }
 
-.alt-btn:disabled { opacity: 0.5; cursor: default; }
+.tecla-acao { font-size: 22px; }
 
-.alt-letra {
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.tecla[data-acao="maiusc"].ativa,
+.tecla[data-acao="proximo"] {
   background: var(--vermelho);
-  border: var(--px) solid var(--contorno);
-  color: var(--sobre-vermelho);
-  font-family: var(--font-display);
-  font-size: 0.75rem;
+  color: var(--branco);
 }
 
-.alt-texto { flex: 1; }
+.tecla[data-acao="proximo"] {
+  font-family: var(--font-px);
+  font-weight: 400;
+  font-size: 30px;
+}
+
+.tecla[data-acao="apagar"] { background: #ececec; color: #8d8d8d; font-size: 34px; }
+.tecla[data-acao="maiusc"] { font-size: 32px; }
 
 /* ==========================================================================
-   Barra de fogo — base da tela
-
-   Um bloco por pergunta: acende em fogo no acerto, vira cinza no erro.
-   Desenhada como um painel de equipamento: moldura branca sobre trilho
-   escuro, segmentos com brilho no topo e sombra na base, chama grande
-   na ponta. A chama é uma folha de 3 quadros de 16x20px animada por
-   background-position — repinta uma área minúscula, e o chacoalho é só
-   transform, resolvido pelo compositor.
+   Como jogar  (prancheta 6)
    ========================================================================== */
 
-.barra-fogo {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 0;
-  z-index: 20;
-  width: 100%;
-  max-width: var(--largura-max);
-  height: var(--barra-h);
+.regras-lista {
+  position: absolute;
+  inset: 0;
+}
+
+.regra {
+  position: absolute;
+  left: 272px;
+  width: 552px;
+  height: 266px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 12px 20px 0 85px;
+  background: url("/static/img/mockup/moldura-regra.svg") 0 0 / 100% 100% no-repeat;
+}
+.regra:nth-child(1) { top: 494px; }
+.regra:nth-child(2) { top: 804px; }
+.regra:nth-child(3) { top: 1114px; }
+.regra:nth-child(4) { top: 1424px; }
+
+.regra-num {
+  position: absolute;
+  left: -17px;
+  top: -16px;
+  width: 107px;
+  height: 104px;
+  padding-top: 28px;
+  font-size: 57px;
+  text-align: center;
+  background: url("/static/img/mockup/selo-numero.svg") 0 0 / 100% 100% no-repeat;
+}
+
+.regra strong {
+  display: block;
+  max-width: 440px;
+  font-size: 60px;
+  line-height: 52px;
+  font-weight: 400;
+  white-space: normal;
+}
+
+.regra p {
+  margin-top: 2px;
+  font-size: 38px;
+  line-height: 37px;
+}
+
+.regra em { font-style: italic; }
+
+.regras-iniciar {
+  left: 372px;
+  top: 1722px;
+  width: 336px;
+  height: 72px;
+  padding-top: 4px;
+  font-size: 36px;
+}
+
+/* ==========================================================================
+   Pergunta do quiz (não desenhada no mockup: montada com as mesmas peças)
+   ========================================================================== */
+
+.quiz-meta {
+  position: absolute;
+  left: 180px;
+  right: 180px;
+  top: 395px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 40px;
+}
+
+#quiz-pontos { color: var(--ouro); }
+
+.quiz-pergunta {
+  position: absolute;
+  left: 170px;
+  width: 740px;
+  top: 470px;
+  height: 250px;
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 0 var(--safe-side);
-  background: var(--vermelho-noite);
-  border-top: var(--px) solid var(--contorno);
-  /* filete claro logo abaixo do contorno: dá espessura de painel */
-  box-shadow: inset 0 var(--px) 0 0 rgba(255, 255, 255, 0.18);
+  justify-content: center;
+  font-family: var(--font-texto);
+  font-weight: 500;
+  font-size: 50px;
+  line-height: 1.12;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.quiz-alternativas {
+  position: absolute;
+  left: 190px;
+  width: 720px;
+  top: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+.alt-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 150px;
+  padding: 18px 28px 18px 110px;
+  border: 0;
+  background: none;
+  color: var(--vinho);
+  font-family: var(--font-texto);
+  font-weight: 500;
+  font-size: 38px;
+  line-height: 1.1;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* corpo branco com o bloco vinho atrás, mesmo desenho do campo */
+.alt-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--branco);
+  box-shadow: 0 0 0 3px #5b3a3f, 8px 10px 0 3px var(--vinho);
+}
+
+.alt-btn:active { transform: translate(4px, 4px); }
+.alt-btn:disabled { cursor: default; }
+.alt-btn:disabled:not(:active) { opacity: 0.85; }
+
+.alt-letra {
+  position: absolute;
+  left: -22px;
+  top: 50%;
+  width: 107px;
+  height: 104px;
+  margin-top: -52px;
+  padding-top: 28px;
+  font-family: var(--font-px);
+  font-size: 57px;
+  line-height: 1;
+  color: var(--branco);
+  text-align: center;
+  background: url("/static/img/mockup/selo-numero.svg") 0 0 / 100% 100% no-repeat;
+}
+
+.alt-texto { position: relative; }
+
+/* ---- Barra de fogo: cronômetro da pergunta + chama dos acertos ---- */
+
+.barra-fogo {
+  position: absolute;
+  left: 190px;
+  width: 720px;
+  top: 1600px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
 }
 
 .barra-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
   min-width: 0;
 }
 
 .barra-rotulo {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 0.68rem;
-  letter-spacing: 0.18em;
+  font-family: var(--font-px);
+  font-size: 30px;
+  line-height: 1;
   text-transform: uppercase;
-  color: var(--sobre-vermelho-fraco);
 }
 
-.barra-rotulo b {
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  letter-spacing: 0;
-  color: var(--fogo-medio);
-}
+.barra-rotulo b { font-weight: 400; color: var(--ouro); }
 
 .barra-trilho {
-  height: 32px;
-  padding: var(--px);
-  background: var(--vermelho-noite);
-  border: var(--px) solid var(--contorno);
-  box-shadow: inset 0 0 0 var(--px) rgba(0, 0, 0, 0.45);
-  overflow: hidden;
+  height: 44px;
+  padding: 5px;
+  background: var(--vinho);
+  box-shadow: 0 0 0 4px var(--branco);
 }
 
-/* Cronômetro: enche o trilho e some com os segundos. A largura é
-   escrita pelo quiz.js a cada tick; a cor vira alerta e depois crítico
-   quando o tempo aperta. */
 .barra-progresso {
   width: 100%;
   height: 100%;
-  background: var(--fogo-medio);
-  box-shadow: inset 0 var(--px) 0 0 var(--fogo-nucleo),
-              inset 0 calc(var(--px) * -1) 0 0 var(--fogo-borda);
+  background: var(--ouro);
   transition: width 0.12s linear, background 0.3s steps(3);
 }
 
-.barra-progresso.is-alerta {
-  background: #ff341f;
-}
+.barra-progresso.is-alerta { background: #ff7a1f; }
 
 .barra-progresso.is-critico {
-  background: var(--vermelho, #c31922);
+  background: var(--vermelho-vivo);
   animation: barra-pulsa 0.6s steps(2) infinite;
 }
 
-@keyframes barra-pulsa {
-  50% { opacity: 0.6; }
-}
+@keyframes barra-pulsa { 50% { opacity: 0.6; } }
 
-/* Nicho da chama: mesma moldura dos demais componentes */
 .chama-caixa {
   flex-shrink: 0;
-  width: 76px;
-  height: 76px;
+  width: 120px;
+  height: 130px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 8px;
-  background: rgba(0, 0, 0, 0.28);
-  border: var(--px) solid var(--contorno);
-  box-shadow: inset 0 var(--px) 0 0 rgba(255, 255, 255, 0.08);
+  padding-bottom: 12px;
+  border-style: solid;
+  border-width: 26px;
+  border-image: url("/static/img/mockup/moldura-premio.svg") 26 fill stretch;
 }
 
-/* Folha de 16 quadros (21x30 cada), recortada da arte em
-   img/sprite-fogo.webp por tools/gerar_pixel_assets.py. Os 16 quadros
-   ja carregam o movimento do fogo, entao aqui nao ha chacoalho por
-   transform: a animacao e a propria arte.
-
-   A altura e sempre multiplo inteiro dos 30px nativos (2x, 3x, 4x) —
-   com image-rendering: pixelated, escala quebrada produz bloco de
-   tamanho irregular e a pixel art perde o alinhamento. */
+/* Folha de 16 quadros (21x30 cada) em img/chama.png. Altura sempre
+   múltiplo inteiro dos 30px nativos, senão o pixel perde o alinhamento. */
 .chama {
-  --chama-h: 60px;             /* 2x de 30px */
+  --chama-h: 60px;
   --chama-w: calc(var(--chama-h) * 21 / 30);
   width: var(--chama-w);
   height: var(--chama-h);
   background-image: url("/static/img/chama.png");
   background-size: calc(var(--chama-w) * 16) var(--chama-h);
   background-repeat: no-repeat;
-  background-position: 0 0;
-  transform-origin: 50% 100%;
   image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  animation: chama-quadros 0.96s steps(16) infinite,
-             chama-vida 2.4s ease-in-out infinite;
+  animation: chama-quadros 0.96s steps(16) infinite;
 }
 
-/* steps(16) percorre os 16 quadros sem precisar de 16 paradas escritas:
-   vai de 0 a -16w em saltos discretos, parando em -15w (jump-end). */
 @keyframes chama-quadros {
   from { background-position: 0 0; }
   to   { background-position: calc(var(--chama-w) * -16) 0; }
 }
 
-/* Só brilho, sem hue-rotate: a paleta de três cores é a da arte
-   original e girar matiz sujava o laranja. */
-@keyframes chama-vida {
-  0%, 100% { filter: brightness(1); }
-  50%      { filter: brightness(1.1); }
-}
-
-/* Cresce com os acertos; no 10/10 aumenta e acelera */
-.chama[data-nivel="0"] { opacity: 0.30; }
+.chama[data-nivel="0"] { opacity: 0.3; }
 .chama[data-nivel="1"] { opacity: 0.5; }
 .chama[data-nivel="2"] { opacity: 0.68; }
 .chama[data-nivel="3"] { opacity: 0.84; }
 .chama[data-nivel="4"] { opacity: 1; }
-.chama[data-nivel="5"] {
-  opacity: 1;
-  --chama-h: 90px;             /* 3x */
-  animation-duration: 0.64s, 1.2s;
-}
+.chama[data-nivel="5"] { opacity: 1; --chama-h: 90px; animation-duration: 0.64s; }
 
 /* ==========================================================================
-   Feedback: o Llumaquinho puxa o card para dentro da tela
+   Feedback da resposta  (pranchetas 8 e 9)
    ========================================================================== */
 
-/* A tela de feedback ocupa o totem inteiro.
-   COREOGRAFIA (1s de entrada, depois o conteúdo aparece):
-     1. o painel desliza da esquerda;
-     2. o Ilumaquinho entra andando à frente dele — é ele que traz a tela;
-     3. ao encostar no centro ele para e assume a pose;
-     4. só então título, selo e resposta entram, para o olho pousar neles.
-   Todo o miolo é um bloco ÚNICO centrado na vertical: nada de vão morto
-   entre a resposta e o mascote. */
 .feedback-overlay {
-  position: fixed;
+  position: absolute;
   inset: 0;
-  z-index: 50;
-  overflow: hidden;
-
-  /* Tudo que depende do tempo da entrada sai daqui. */
-  --fb-entrada: 1s;
-
-  /* LINEAR de propósito, apesar de ease-out ser o reflexo em UI.
-     O mascote herda o transform do painel, então a curva do painel vira a
-     curva do passo dele: com ease-out ele disparava (67% do caminho no
-     primeiro quarto) e depois se arrastava, com o passo sempre no mesmo
-     ritmo — pé patinando. Compensar só no mascote é pior: ele passa do
-     centro e volta de ré. Velocidade constante nos dois é o que a cena
-     pede — a tela não desacelera sozinha, ela para porque ele plantou o
-     pé, e quem marca a chegada é o conteúdo entrando. */
-  --fb-easing: linear;
+  z-index: 40;
+  cursor: pointer;
 }
 
 .feedback-overlay[hidden] { display: none; }
 
 .fb-reboque {
-  width: 100%;
-  height: 100%;
-  transform: translateX(-100%);
+  position: absolute;
+  inset: 0;
+  background-size: 1080px 1920px;
+  background-repeat: no-repeat;
 }
 
-/* Deslize contínuo, não em steps(): o painel é uma superfície de interface
-   inteira, não um sprite. Em steps() a tela entrava aos trancos. */
+.feedback-overlay.is-bom .fb-reboque  { background-image: url("/static/img/mockup/fundo-certo.png"); }
+.feedback-overlay.is-ruim .fb-reboque { background-image: url("/static/img/mockup/fundo-errado.png"); }
+
 .feedback-overlay.is-visible .fb-reboque {
-  animation: reboque-entra var(--fb-entrada) var(--fb-easing) forwards;
+  animation: reboque-entra 0.5s steps(5) both;
 }
 
 @keyframes reboque-entra {
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(0); }
-}
-
-.fb-painel {
-  width: 100%;
-  height: 100%;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  text-align: center;
-  background: var(--vermelho-noite);
-}
-
-.feedback-overlay.is-bom  .fb-painel { background: #16352a; }
-.feedback-overlay.is-ruim .fb-painel { background: #70000e; }
-
-/* Tranco da tela no erro: é o sinal mais rápido de "não foi dessa vez",
-   antes mesmo de ler qualquer palavra. */
-.feedback-overlay.is-ruim.is-visible .fb-painel {
-  animation: fb-tremor 0.36s steps(2) var(--fb-entrada) 2;
-}
-
-@keyframes fb-tremor {
-  0%, 100% { transform: translateX(0); }
-  25%      { transform: translateX(calc(var(--px) * -2)); }
-  75%      { transform: translateX(calc(var(--px) * 2)); }
-}
-
-/* ---- faixa superior: diz o resultado antes de qualquer leitura ---- */
-.fb-topo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(10px, 1.6vw, 20px);
-  padding: clamp(16px, 2.2vh, 30px) var(--safe-side);
-  font-family: var(--font-display);
-  font-size: clamp(0.72rem, 2vw, 1.15rem);
-  line-height: 1.4;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--sobre-vermelho);
-  background: var(--tinta-media);
-  border-bottom: var(--px) solid var(--contorno);
-}
-
-.feedback-overlay.is-bom  .fb-topo { background: #2f8a55; }
-.feedback-overlay.is-ruim .fb-topo { background: var(--vermelho-claro); }
-
-.fb-topo-icone {
-  width: clamp(20px, 3vw, 34px);
-  height: clamp(20px, 3vw, 34px);
-  flex-shrink: 0;
-}
-
-.fb-topo-icone--ok   { color: #f5b301; }
-.fb-topo-icone--erro { color: var(--contorno); display: none; }
-
-.feedback-overlay.is-ruim .fb-topo-icone--ok   { display: none; }
-.feedback-overlay.is-ruim .fb-topo-icone--erro { display: block; }
-
-/* ---- miolo: um bloco só, centrado na vertical ---- */
-.fb-miolo {
-  position: relative;
-  min-height: 0;
-  padding: clamp(20px, 3vh, 48px) var(--safe-side);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(18px, 3.4vh, 52px);
-  overflow: hidden;
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: none; }
 }
 
 .feedback-msg {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.4rem, 6vw, 3rem);
-  line-height: 1.3;
-  text-transform: uppercase;
-  color: var(--sobre-vermelho);
-  text-shadow: var(--px) var(--px) 0 rgba(0, 0, 0, 0.45);
+  position: absolute;
+  left: 150px;
+  width: 780px;
+  top: 423px;
+  font-size: 139px;
+  line-height: 122px;
+  text-align: center;
+  white-space: normal;
 }
 
-/* Pontos ganhos como selo, não como texto solto */
 .feedback-pontos {
-  margin: 0;
-  padding: clamp(12px, 1.6vh, 20px) clamp(20px, 3.4vw, 38px);
-  font-family: var(--font-display);
-  font-size: clamp(0.85rem, 2.6vw, 1.45rem);
-  color: var(--sobre-vermelho);
-  background: var(--contorno);
-  border: var(--px) solid var(--contorno);
-  box-shadow: var(--px) var(--px) 0 0 rgba(0, 0, 0, 0.4);
+  position: absolute;
+  left: 400px;
+  top: 698px;
+  width: 283px;
+  height: 87px;
+  padding-top: 27px;
+  font-size: 40px;
+  text-align: center;
+  background: 0 0 / 100% 100% no-repeat;
 }
 
 .feedback-overlay.is-bom .feedback-pontos {
-  color: #16352a;
-  background: #f2e8c9;
+  color: var(--verde-tinta);
+  background-image: url("/static/img/mockup/selo-pontos-certo.svg");
 }
 
 .feedback-overlay.is-ruim .feedback-pontos {
-  color: var(--sobre-vermelho);
-  background: #1d1d1b;
+  background-image: url("/static/img/mockup/selo-pontos-errado.svg");
 }
 
-/* Card da resposta certa */
 .fb-resposta {
-  width: min(100%, 860px);
-  border: var(--px) solid var(--contorno);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 rgba(0, 0, 0, 0.45);
-  text-align: left;
-}
-
-.fb-resposta-rotulo {
-  padding: clamp(10px, 1.3vh, 18px) clamp(14px, 2vw, 26px);
-  font-family: var(--font-display);
-  font-size: clamp(0.55rem, 1.5vw, 0.82rem);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--sobre-vermelho);
-  background: var(--ok);
-  border-bottom: var(--px) solid var(--contorno);
-}
-
-.fb-resposta-texto {
-  margin: 0;
-  padding: clamp(16px, 2.2vh, 30px) clamp(14px, 2vw, 26px);
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: clamp(0.95rem, 2.6vw, 1.4rem);
-  line-height: 1.4;
-  text-wrap: pretty;
-  color: var(--tinta);
-  background: var(--cartao);
-}
-
-/* ---- mascote ---- */
-.fb-mascote-area {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-}
-
-/* Sprites nativos com 128px de altura (tools/gerar_pixel_assets.py).
-   --masc-h manda em tudo: largura, folha e altura do passo saem dela por
-   proporção, então a escala muda num lugar só.
-
-   ATENÇÃO ao andando.png: apesar do nome, ele NÃO é um ciclo de
-   caminhada. Os dois quadros são a mesma pose espelhada — vêm de
-   ilumaquinho-andar-direita.png e -esquerda.png, que são duas DIREÇÕES,
-   não dois passos. Alternar entre eles não fazia o mascote andar, fazia
-   ele se virar do avesso ~5x por segundo (era o "andando errado").
-   Fixamos um quadro e o passo vem de um sobe-desce, mesmo recurso do
-   mascote da abertura.
-
-   E os nomes da arte de origem enganam: quem se chama "andar-direita"
-   está com os pés apontando para a ESQUERDA (o nome parece vir de qual
-   mão segura o extintor). Como o mascote atravessa a tela para a
-   direita, o quadro certo é a célula 1, não a 0 — com a 0 ele andava de
-   costas. Conferir na arte, não no nome do arquivo. */
-.fb-mascote {
-  --masc-h: 192px;                          /* 128 * 1.5 */
-  --masc-w: calc(var(--masc-h) * 0.898);    /* célula 115 / 128 */
-  --masc-salto: calc(var(--masc-h) * 0.023);
-  --masc-quadro: calc(var(--masc-w) * -1);  /* célula 1 = virado p/ direita */
-  position: relative;
-  flex-shrink: 0;
-  width: var(--masc-w);
-  /* A caixa tem a altura do sprite MAIS o salto, e o sprite pousa no
-     fundo dela. Sem essa folga o salto empurrava o desenho para fora da
-     caixa e as antenas eram decepadas em quadro sim, quadro não. */
-  height: calc(var(--masc-h) + var(--masc-salto));
-  background-image: url("/static/img/ilumaquinho/andando.png");
-  background-size: calc(var(--masc-w) * 2) var(--masc-h);
-  background-repeat: no-repeat;
-  background-position: var(--masc-quadro) var(--masc-salto);
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  animation: mascote-passo 0.26s steps(1) infinite;
-}
-
-/* O passo mexe em background-position-y, não em transform: transform é do
-   deslocamento pela tela (mascote-puxa), e duas animações na MESMA
-   propriedade não somam — a última simplesmente ganha. O x fica parado:
-   é ele que escolhe a célula, mexer nele vira o boneco. */
-@keyframes mascote-passo {
-  0%, 100% { background-position: var(--masc-quadro) var(--masc-salto); } /* pé no chão */
-  50%      { background-position: var(--masc-quadro) 0; }                 /* no ar */
-}
-
-/* Ele anda mais devagar que o painel (35vw contra 100vw), então começa
-   colado na borda da frente — puxando — e vai ficando para trás até parar
-   no centro. Passar de 35vw joga o mascote para fora do painel, onde o
-   overflow do miolo o corta pela metade. */
-.feedback-overlay.is-visible .fb-mascote {
-  animation: mascote-passo 0.26s steps(1) infinite,
-             mascote-puxa var(--fb-entrada) var(--fb-easing) forwards;
-}
-
-@keyframes mascote-puxa {
-  from { transform: translateX(35vw); }
-  to   { transform: translateX(0); }
-}
-
-/* Chegou: para de andar e assume a pose.
-   background-size com altura explícita em vez de "contain": contain
-   mediria a caixa COM a folga do salto e a pose sairia mais alta que o
-   sprite da caminhada, dando um pulo de escala na troca. */
-.feedback-overlay.is-visible .fb-mascote.parado,
-.fb-mascote.parado {
-  animation: none;
-  transform: none;
-  background-size: auto var(--masc-h);
-  background-position: center bottom;
-}
-
-.fb-mascote.parado.is-bom {
-  background-image: url("/static/img/ilumaquinho/deu-bom.png");
-}
-
-/* deu-ruim.png é uma cena inteira (mascote + Central Lyax), 242x168 nativo
-   — bem mais larga que o sprite de personagem. Alarga só este estado,
-   mantendo a mesma altura das outras poses. */
-.fb-mascote.parado.is-ruim {
-  width: calc(var(--masc-h) * 1.4405);
-  background-image: url("/static/img/ilumaquinho/deu-ruim.png");
-}
-
-/* ---- rodapé ---- */
-.feedback-tap {
-  margin: 0;
-  padding: clamp(18px, 2.4vh, 34px) var(--safe-side);
-  font-family: var(--font-display);
-  font-size: clamp(0.7rem, 1.9vw, 1.05rem);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #ffffff;
-  background: rgba(0, 0, 0, 0.26);
-  border-top: var(--px) solid rgba(0, 0, 0, 0.3);
-  animation: pisca 1.2s steps(1) infinite;
-}
-
-@keyframes pisca {
-  0%, 50%   { opacity: 1; }
-  51%, 100% { opacity: 0.35; }
-}
-
-/* ---- entrada do conteúdo, depois que o painel encosta ----
-   backwards segura o estado inicial durante o atraso, senão o texto
-   apareceria pronto e só depois animaria. */
-.feedback-overlay.is-visible .feedback-msg {
-  animation: fb-titulo 0.34s steps(4) var(--fb-entrada) backwards;
-}
-
-@keyframes fb-titulo {
-  from { opacity: 0; transform: scale(0.55); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
-.feedback-overlay.is-visible .feedback-pontos {
-  animation: fb-selo 0.42s steps(5) calc(var(--fb-entrada) + 0.12s) backwards;
-}
-
-@keyframes fb-selo {
-  0%   { opacity: 0; transform: scale(0.3); }
-  70%  { opacity: 1; transform: scale(1.16); }
-  100% { opacity: 1; transform: scale(1); }
-}
-
-.feedback-overlay.is-visible .fb-resposta {
-  animation: fb-sobe 0.3s steps(4) calc(var(--fb-entrada) + 0.24s) backwards;
-}
-
-@keyframes fb-sobe {
-  from { opacity: 0; transform: translateY(calc(var(--px) * 5)); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ---- estrelas: só no acerto, decoração atrás do conteúdo ---- */
-.fb-estrelas { display: none; }
-
-.feedback-overlay.is-bom .fb-estrelas {
-  display: block;
   position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.fb-estrela {
-  position: absolute;
-  width: clamp(26px, 5.4vw, 74px);
-  animation: estrela-brilha 2.4s ease-in-out infinite;
-}
-
-.feedback-overlay.is-visible .fb-estrela {
-  animation: fb-selo 0.4s steps(4) calc(var(--fb-entrada) + 0.2s) backwards,
-             estrela-brilha 2.4s ease-in-out calc(var(--fb-entrada) + 0.6s) infinite;
-}
-
-/* Nos cantos da faixa vazia, longe do título e das bordas da tela. */
-.fb-estrela.x1 { top: 12%; left: 9%; }
-.fb-estrela.x2 { top: 20%; right: 11%; width: clamp(18px, 3.6vw, 50px); animation-delay: 0.7s; }
-.fb-estrela.x3 { bottom: 16%; right: 15%; width: clamp(14px, 2.8vw, 38px); opacity: 0.7; }
-
-/* ---- Resultado ---- */
-
-/* Sem o space-between herdado do .palco: os blocos (nome, placar, prêmio,
-   tempo) se agrupam no centro vertical. Antes ficavam espalhados pelos
-   ~1500px da tela, com dois vãos de ~370px entre eles — os "muitos
-   espaços". */
-.palco-resultado {
-  /* center + gap curto: os quatro blocos (nome, placar, premio, tempo)
-     ficam colados como um bloco unico e a sobra vertical vira margem em
-     cima e embaixo, emoldurando o conteudo. O problema antigo eram VAOS
-     ENTRE os blocos (dois de ~370px); margem simetrica nas pontas nao
-     incomoda do mesmo jeito. */
-  justify-content: center;
-  gap: clamp(14px, 2vh, 26px);
-}
-
-/* Card do placar é o momento: a reação do mascote e a nota, os dois
-   grandes, centrados no card — sem a tira de espaço morto que sobrava
-   entre um número encostado à esquerda e o mascote encostado à direita. */
-.resultado-score {
-  display: flex;
-  align-items: center;
-  justify-content: space-evenly;
-  gap: clamp(12px, 2.5vw, 40px);
-  padding: clamp(24px, 3.5vh, 56px) clamp(20px, 2.5vw, 40px);
-  background: var(--cartao);
-  border: var(--px) solid var(--contorno);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
-}
-
-.resultado-placar {
-  flex: 0 1 auto;
-  text-align: center;
-}
-
-/* O mascote reage ao placar (faixa definida no resultado.html). O troféu
-   fica como padrão só para o caso de o atributo não chegar: é melhor cair
-   na pose que já estava aqui do que num quadro vazio. */
-.resultado-mascote {
-  flex: 0 1 auto;
-  width: clamp(190px, 38vw, 420px);
-  height: clamp(220px, 42vw, 480px);
-  background-image: url("/static/img/IlumaquinhoTrofeu.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center bottom;
-  animation: mascote-respira 1.6s ease-in-out infinite;
-}
-
-/* ilumaquinho-chorando.png, e NÃO ilumaquinho-triste.png: aquele é a cena
-   com a Central Lyax e continua sendo a arte de origem do deu-ruim.png do
-   quiz (tools/gerar_pixel_assets.py) — trocar lá mudaria o feedback das
-   perguntas junto. Este aqui é o personagem sozinho, então dispensa o
-   enquadramento forçado que a cena exigia.
-
-   A arte como veio está em ilumaquinho-chorando-origem.png. Ela é RGB com
-   fundo PRETO, que viraria um quadrado preto no card branco; o que está
-   em uso passou por flood fill a partir das bordas (limiar 24 — o
-   contorno é cinza e sobrevive), recorte da moldura transparente e
-   redução para 620px de altura. Mesmo tratamento que o IlumaquinhoTrofeu
-   já tinha recebido.
-
-   Parado de propósito: as outras duas faixas respiram, esta não. A
-   quietude é o que diferencia quem não teve o que comemorar. */
-.resultado-mascote[data-faixa="baixa"] {
-  background-image: url("/static/img/ilumaquinho-chorando.png");
-  animation: none;
-}
-
-.resultado-mascote[data-faixa="media"] {
-  background-image: url("/static/img/ilumaquinho-feliz.png");
-}
-
-.resultado-mascote[data-faixa="alta"] {
-  background-image: url("/static/img/IlumaquinhoTrofeu.png");
-}
-
-.resultado-label {
-  margin: 0;
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: clamp(0.7rem, 1.5vw, 0.9rem);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--tinta-fraca);
-}
-
-.resultado-pontos {
-  margin: clamp(10px, 1.4vh, 18px) 0 0;
+  left: 272px;
+  top: 837px;
+  width: 554px;
+  height: 266px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: clamp(6px, 1vh, 12px);
-  line-height: 1;
+  justify-content: center;
+  padding: 10px 70px 0;
+  text-align: center;
+  text-wrap: balance;
+  background: url("/static/img/mockup/moldura-premio.svg") 0 0 / 100% 100% no-repeat;
 }
 
-.resultado-pontos b {
-  font-family: var(--font-display);
-  font-size: clamp(4rem, 18vw, 9.5rem);
-  color: var(--vermelho);
-  text-shadow: var(--px) var(--px) 0 var(--contorno);
+.fb-resposta-rotulo { font-size: 60px; }
+
+.fb-resposta-texto {
+  margin-top: 0;
+  font-size: 38px;
+  line-height: 38px;
 }
 
-.resultado-pontos span {
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: clamp(0.8rem, 2vw, 1.15rem);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--tinta-media);
+.fb-mascote {
+  left: 392px;
+  top: 1133px;
+  width: 300px;
+  height: 375px;
 }
 
-/* O prêmio é o motivo de ter jogado: card inteiro, mais peso que o tempo. */
-.resultado-premio {
-  padding: clamp(24px, 3vh, 44px) clamp(24px, 4vw, 48px);
-  background: var(--cartao);
-  border: var(--px) solid var(--contorno);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
+.feedback-tap {
+  position: absolute;
+  left: 278px;
+  top: 1720px;
+  width: 524px;
+  height: 75px;
+  padding-top: 24px;
+  font-size: 36px;
+  text-align: center;
+  background: url("/static/img/mockup/btn-toque.svg") 0 0 / 100% 100% no-repeat;
+  animation: pisca 1.2s steps(2) infinite;
+}
+
+@keyframes pisca { 50% { opacity: 0.55; } }
+
+/* ==========================================================================
+   Resultado  (prancheta 7)
+   ========================================================================== */
+
+.res-rotulo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 382px;
+  font-size: 43px;
   text-align: center;
 }
 
-.resultado-premio .resultado-label { color: var(--vermelho); }
-
-.resultado-premio-nome {
-  margin: clamp(8px, 1.2vh, 16px) 0 0;
-  /* Montserrat, não Press Start 2P: o nome do prêmio ainda será definido
-     pela Ilumac (premios.json diz "A DEFINIR"), pode vir longo e pode ter
-     Í/Ú — que a fonte pixel desenha na altura de minúscula. "Brinde
-     intermediário" já encostava nas bordas do card em pixel. */
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: clamp(1.2rem, 4vw, 2.1rem);
-  line-height: 1.25;
-  color: var(--tinta);
-  text-wrap: balance;
+.res-nome {
+  position: absolute;
+  left: 60px;
+  right: 60px;
+  top: 444px;
+  font-size: 82px;
+  text-align: center;
+  overflow: hidden;
 }
 
-.resultado-desc {
-  margin: clamp(8px, 1.2vh, 14px) auto 0;
-  max-width: 46ch;
-  color: var(--tinta-media);
-  font-size: clamp(0.95rem, 2vw, 1.2rem);
-  line-height: 1.45;
-  text-wrap: pretty;
+.res-mascote {
+  left: 257px;
+  top: 653px;
+  width: 294px;
+  height: 368px;
 }
 
-.resultado-desc:empty { display: none; }
+.res-pontos {
+  position: absolute;
+  left: 560px;
+  width: 270px;
+  top: 692px;
+  font-size: 358px;
+  text-align: center;
+}
 
-/* Tempo é critério de desempate, não o resultado: uma linha discreta,
-   direto no fundo vermelho — sem card competindo com o do prêmio. */
-.resultado-tempo {
-  margin: 0;
+.res-pontos.dois-digitos { font-size: 250px; top: 760px; }
+
+.res-de {
+  position: absolute;
+  left: 560px;
+  width: 270px;
+  top: 976px;
+  font-size: 21px;
+  text-align: center;
+}
+
+.res-premio {
+  position: absolute;
+  left: 272px;
+  top: 1074px;
+  width: 554px;
+  height: 266px;
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
   justify-content: center;
-  gap: 12px;
+  padding: 0 60px;
+  text-align: center;
+  text-wrap: balance;
+  background: url("/static/img/mockup/moldura-premio.svg") 0 0 / 100% 100% no-repeat;
 }
 
-.resultado-tempo .resultado-label { color: var(--sobre-vermelho-fraco); }
-
-.resultado-tempo b {
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: clamp(1.05rem, 2.6vw, 1.5rem);
-  letter-spacing: 0.02em;
-  color: var(--sobre-vermelho);
+.res-premio-nome {
+  font-size: 60px;
+  overflow: hidden;
 }
 
-/* ---- Ranking ---- */
-.palco-ranking { justify-content: flex-start; }
-
-.ranking-tabs {
-  display: flex;
-  gap: 12px;
-  flex-shrink: 0;
+.res-premio-desc {
+  margin-top: -8px;
+  font-size: 38px;
+  line-height: 38px;
 }
+
+.res-tempo-rotulo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 1374px;
+  padding-left: 32px;
+  font-size: 17px;
+  text-align: center;
+}
+
+.res-tempo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 1398px;
+  padding-left: 32px;
+  font-size: 83px;
+  text-align: center;
+}
+
+.res-tempo small { font-size: 56px; }
+
+.res-ranking {
+  left: 160px;
+  top: 1720px;
+  width: 322px;
+  height: 75px;
+  padding-top: 6px;
+  font-size: 36px;
+}
+
+.res-novo {
+  left: 477px;
+  top: 1720px;
+  width: 441px;
+  height: 75px;
+  padding-top: 6px;
+  font-size: 36px;
+}
+
+/* ==========================================================================
+   Ranking  (pranchetas 2 e 3)
+   ========================================================================== */
+
+.rk-titulo { top: 391px; }
 
 .ranking-tab {
-  min-height: 56px;
-  padding: 12px 26px;
-  border: var(--px) solid var(--sobre-vermelho);
-  background: transparent;
-  color: var(--sobre-vermelho-medio);
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  position: absolute;
+  top: 490px;
+  height: 76px;
+  padding: 5px 0 0;
+  font-size: 36px;
+  color: var(--branco);
+  background: none;
   cursor: pointer;
-  transition: background 0.08s steps(1), color 0.08s steps(1);
+  border-style: solid;
+  border-width: 18px;
+  border-image: url("/static/img/mockup/aba-contorno.svg") 18 fill stretch;
 }
 
 .ranking-tab.is-ativa {
-  background: var(--cartao);
-  color: var(--vermelho);
-  border-color: var(--cartao);
+  border-image: url("/static/img/mockup/aba-cheia.svg") 18 fill stretch;
 }
 
-.ranking-wrap {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-right: var(--px);
-}
+#tab-dia   { left: 108px; width: 357px; }
+#tab-geral { left: 470px; width: 500px; }
 
-.ranking-lista {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+/* ---- pódio (ranking geral) ---- */
 
-.ranking-item {
-  display: grid;
-  grid-template-columns: 76px 1fr auto;
-  gap: 18px;
-  align-items: center;
-  padding: 18px 22px;
-  background: var(--cartao);
-  border: var(--px) solid var(--contorno);
-  box-shadow: var(--px) var(--px) 0 0 var(--vermelho-noite);
-  border-left-width: calc(var(--px) * 3);
-  border-left-color: var(--cartao-2);
-}
+.ranking-podio[hidden] { display: none; }
 
-/* ---- Pódio: 1º, 2º e 3º saem da lista e viram três cards com o
-   troféu/medalha correspondente (static/img/TROFÉU.png, MedalhaPrata.png,
-   MedalhaBronze.png). O card do 1º lugar fica maior e no centro, mesmo
-   sendo o primeiro item do JSON — daí o order na flex. */
-.ranking-podio {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 14px;
-  margin-bottom: 18px;
-  flex-shrink: 0;
-}
-
-/* 2º e 3º dividem a mesma altura FIXA (não min-height) — um nome de duas
-   linhas no 3º lugar deixava o card do bronze mais alto que o da prata,
-   invertendo a hierarquia visual do pódio. Só o 1º lugar foge dessa régua.
-   O nome ganha clamp de 2 linhas (.podio-nome) para caber dentro da altura
-   fixa mesmo com nomes longos. */
 .podio-posto {
-  flex: 1;
-  min-width: 0;
-  height: 210px;
+  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 18px 12px 16px;
-  overflow: hidden;
-  background: var(--vermelho-noite);
-  border: var(--px) solid var(--contorno);
-  box-shadow: var(--px) var(--px) 0 0 rgba(0, 0, 0, 0.4);
+  color: var(--vinho);
   text-align: center;
+  background: 0 0 / 100% 100% no-repeat;
 }
 
 .podio-posto.posto-1 {
-  order: 2;
-  height: 254px;
-  padding-top: 26px;
-  padding-bottom: 22px;
-  background: var(--cartao);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--vermelho-noite);
+  left: 360px;
+  top: 595px;
+  width: 360px;
+  height: 417px;
+  padding-top: 57px;
+  background-image: url("/static/img/mockup/podio-card-1.svg");
 }
 
-.podio-posto.posto-2 { order: 1; }
-.podio-posto.posto-3 { order: 3; }
-
-/* Altura fixa, largura automatica: a arte da prata tem a fita mais longa
-   que a do bronze/trofeu. Se dimensionasse pela largura, ela ficava ~2x
-   mais alta, estourava a altura fixa do card (overflow:hidden) e comia o
-   nome do jogador. */
-.podio-medalha {
-  display: block;
-  height: 56px;
-  width: auto;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
+.podio-posto.posto-2,
+.podio-posto.posto-3 {
+  top: 660px;
+  width: 290px;
+  height: 330px;
+  padding-top: 57px;
+  background-image: url("/static/img/mockup/podio-card-2.svg");
 }
 
-.podio-posto.posto-1 .podio-medalha { height: 76px; }
+.podio-posto.posto-2 { left: 65px; }
+.podio-posto.posto-3 { left: 725px; }
 
-.podio-nome {
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 0.92rem;
-  line-height: 1.25;
-  color: var(--sobre-vermelho);
+.podio-icone {
+  position: relative;
+  width: 103px;
+  height: 108px;
+  flex-shrink: 0;
 }
 
-.podio-posto.posto-1 .podio-nome { font-size: 1rem; color: var(--tinta); }
+.posto-1 .podio-icone { width: 150px; height: 168px; margin-top: -5px; }
 
-.podio-pts {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 0.78rem;
-  color: var(--sobre-vermelho);
-}
+.podio-icone img { display: block; width: 100%; height: 100%; }
 
-.podio-posto.posto-1 .podio-pts { color: var(--vermelho); font-size: 0.88rem; }
-
-.podio-tempo {
-  margin: 0;
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 0.74rem;
-  color: var(--sobre-vermelho-fraco);
-  font-variant-numeric: tabular-nums;
-}
-
-.podio-posto.posto-1 .podio-tempo { color: var(--tinta-fraca); }
-
-.ranking-pos {
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  color: var(--tinta-fraca);
+.medalha-num {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  font-size: 40px;
+  color: var(--vinho);
   text-align: center;
 }
 
-.ranking-nome {
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: 1.08rem;
-  font-weight: 700;
-  line-height: 1.25;
-  color: var(--tinta);
+.podio-nome {
+  max-width: 250px;
+  margin-top: 8px;
+  font-size: 26px;
+  overflow: hidden;
 }
 
-.ranking-stats { text-align: right; }
+.posto-1 .podio-nome { max-width: 320px; margin-top: 0; font-size: 43px; }
 
-.ranking-pts {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 0.78rem;
-  color: var(--vermelho);
+.podio-pts {
+  margin-top: 4px;
+  font-size: 57px;
+  color: var(--vermelho-vivo);
 }
 
-.ranking-tempo {
-  margin: 8px 0 0;
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 0.82rem;
-  color: var(--tinta-fraca);
-  font-variant-numeric: tabular-nums;
+.podio-pts sup,
+.rk-pts sup {
+  font-size: 0.58em;
+  vertical-align: 0.62em;
+  text-transform: none;
+}
+
+.posto-1 .podio-pts { font-size: 72px; }
+
+.podio-tempo { margin-top: 2px; font-size: 22px; }
+.posto-1 .podio-tempo { font-size: 28px; }
+
+/* ---- lista ---- */
+
+.ranking-lista {
+  position: absolute;
+  left: 180px;
+  top: 600px;
+  width: 720px;
+}
+
+/* ranking geral: as linhas do .ai são 90% das do ranking do dia */
+.ranking-lista.lista-geral {
+  top: 1046px;
+  left: 172px;
+  transform: scale(0.9);
+  transform-origin: 0 0;
+}
+
+.rk-barra {
+  position: absolute;
+  left: 96px;
+  top: 34px;
+  width: 622px;
+  height: 103px;
+  background: url("/static/img/mockup/linha-ranking.svg") 0 0 / 100% 100% no-repeat;
+}
+
+.ranking-item {
+  position: relative;
+  height: 124px;
+}
+
+.rk-nome {
+  position: absolute;
+  left: 146px;
+  width: 460px;
+  top: 70px;
+  font-size: 47px;
+  color: var(--vinho);
+  text-align: center;
+  overflow: hidden;
+}
+
+.rk-pts {
+  position: absolute;
+  left: 622px;
+  width: 94px;
+  top: 69px;
+  font-size: 45px;
+  color: var(--ouro);
+  text-align: center;
+}
+
+.rk-medalha {
+  position: absolute;
+  left: 20px;
+  top: 0;
+  width: 115px;
+  height: 120px;
+}
+
+.rk-medalha img { display: block; width: 100%; height: 100%; }
+
+.rk-medalha .medalha-num { bottom: 17px; font-size: 48px; }
+
+.rk-medalha.trofeu {
+  left: 0;
+  top: -34px;
+  width: 170px;
+  height: 190px;
 }
 
 .ranking-vazio {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 200px;
+  font-family: var(--font-px);
+  font-size: 40px;
+  line-height: 1.2;
   text-align: center;
-  color: var(--sobre-vermelho-medio);
-  padding: 40px 16px;
-  list-style: none;
-  font-size: 1.05rem;
+  white-space: normal;
 }
 
-/* ---- Aviso de inatividade (kiosk.js) ---- */
+.lista-geral .ranking-vazio { top: -420px; }
+
+.rk-novo {
+  left: 320px;
+  top: 1720px;
+  width: 441px;
+  height: 75px;
+  padding-top: 6px;
+  font-size: 36px;
+}
+
+/* ==========================================================================
+   Aviso de inatividade (kiosk.js)
+   ========================================================================== */
+
 .kiosk-inatividade {
   position: fixed;
   inset: 0;
@@ -1828,318 +1182,63 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--safe-side);
-  background: rgba(112, 0, 14, 0.96);
+  background: rgba(112, 0, 14, 0.94);
 }
 
 .kiosk-inatividade[hidden] { display: none; }
 
 .kiosk-inatividade-card {
-  width: 100%;
-  max-width: 620px;
-  padding: clamp(32px, 4vh, 56px) clamp(24px, 3vw, 44px);
-  background: var(--cartao);
-  border: var(--px) solid var(--contorno);
-  border-top-width: calc(var(--px) * 4);
-  border-top-color: var(--vermelho);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 rgba(0, 0, 0, 0.5);
-  text-align: center;
+  width: 700px;
+  flex-shrink: 0;
+  padding: 50px 40px 56px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(20px, 2.6vh, 34px);
+  gap: 30px;
+  text-align: center;
+  border-style: solid;
+  border-width: 26px;
+  border-image: url("/static/img/mockup/moldura-premio.svg") 26 fill stretch;
+  background: var(--vermelho);
+  background-clip: padding-box;
+  transform: scale(var(--escala, 1));
 }
 
 .kiosk-inatividade-titulo {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(0.95rem, 2.4vw, 1.45rem);
-  line-height: 1.45;
+  font-family: var(--font-px);
+  font-size: 60px;
+  line-height: 1;
   text-transform: uppercase;
-  color: var(--tinta);
 }
 
-/* A contagem era um número no meio da frase — justamente o dado que faz
-   a pessoa agir, escondido no texto. Agora é o elemento dominante:
-   quem passa de longe entende só de olhar que tem um relógio correndo. */
 .kiosk-inatividade-relogio {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-/* Sem piscar: o número TROCA a cada segundo, que já é movimento de
-   sobra, e uma piscada levaria a 0,35 de opacidade justamente o dado
-   que a pessoa precisa ler. A urgência vem do tamanho e do vermelho. */
 .kiosk-inatividade-contador {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: clamp(96px, 13vw, 176px);
-  padding: clamp(14px, 1.8vh, 26px) clamp(18px, 2vw, 30px);
-  font-family: var(--font-display);
-  font-size: clamp(2.2rem, 7vw, 4rem);
+  font-family: var(--font-px);
+  font-size: 200px;
   line-height: 1;
-  color: var(--sobre-vermelho);
-  background: var(--vermelho);
-  border: var(--px) solid var(--contorno);
-  box-shadow: var(--px) var(--px) 0 0 var(--vermelho-noite);
 }
 
 .kiosk-inatividade-unidade {
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: clamp(0.68rem, 1.5vw, 0.9rem);
-  letter-spacing: 0.18em;
+  font-family: var(--font-px);
+  font-size: 30px;
   text-transform: uppercase;
-  color: var(--tinta-fraca);
 }
 
 .kiosk-inatividade-texto {
-  margin: 0;
-  color: var(--tinta-media);
-  font-size: clamp(0.95rem, 2vw, 1.2rem);
-  line-height: 1.5;
-  text-wrap: pretty;
+  font-size: 39px;
+  line-height: 1.1;
 }
 
 .kiosk-inatividade-btn {
-  width: 100%;
-  background: var(--vermelho);
-  color: var(--sobre-vermelho);
-  box-shadow: calc(var(--px) * 2) calc(var(--px) * 2) 0 0 var(--contorno);
-}
-
-.kiosk-inatividade-btn:active { background: var(--vermelho-escuro); }
-
-/* ==========================================================================
-   Totem alto (1080x1920, 23" em retrato)
-
-   O visitante lê esta tela de pé, a 1,5–3 m de distância, num corredor de
-   feira concorrido. Tudo aqui é uma escala acima do que faria sentido num
-   monitor de mesa: logos, números, alvos de toque e as margens de
-   segurança. A tela é usada de borda a borda — sem coluna estreita.
-   ========================================================================== */
-@media (min-height: 1200px) {
-  :root {
-    --px: 6px;
-    --barra-h: 150px;
-    --safe-top: 44px;
-    --safe-side: 56px;
-    --safe-bottom: 44px;
-    --zona-gap: 40px;
-  }
-
-  html, body { font-size: 24px; }
-
-  /* Marca maior: é o que se enxerga primeiro do corredor. */
-  .brand-logo { height: 76px; }
-  .brand-logo-fs { height: 60px; }
-  .brand-divider { height: 60px; }
-  .topbar { padding-bottom: 26px; }
-  .tag { font-size: 0.82rem; padding: 14px 22px; }
-  .tag-live::before { width: 14px; height: 14px; }
-  .timer-topo { padding: 14px 22px; gap: 18px; }
-  .timer-topo .rotulo { font-size: 0.74rem; }
-  .timer-topo .valor { font-size: 1.1rem; }
-
-  .brand-eyebrow { font-size: 0.82rem; margin-bottom: 18px; }
-  .brand-title { font-size: clamp(2.2rem, 5.4vw, 3.2rem); }
-  .brand-sub { font-size: 1.2rem; }
-
-  .btn { min-height: 108px; font-size: 1.15rem; }
-  .rodape { gap: 22px; }
-  .rodape-duplo { gap: 28px; }
-
-  /* ---- abertura ---- */
-  .abertura-eyebrow { font-size: 0.92rem; letter-spacing: 0.3em; }
-  .abertura-imagem { max-width: 800px; }
-  .abertura-titulo { font-size: 3.4rem; letter-spacing: 0.08em; }
-  .abertura-sub { font-size: 1.5rem; max-width: 26ch; margin-top: 26px; }
-
-  .chamada { gap: 32px; }
-  .chamada-mascote { width: 226px; height: 256px; }
-  .chamada-fala { padding: 32px 36px; }
-  .chamada-fala p { font-size: 1.4rem; }
-
-  /* O botão ocupa a base inteira: alvo de toque enorme e visível de
-     longe, que é o único gesto que esta tela precisa provocar. */
-  .abertura-btn--jogar { max-width: 760px; }
-
-
-  /* ---- cadastro ---- */
-  .field input { min-height: 116px; font-size: 1.5rem; padding: 16px 22px; }
-  .form-cadastro { gap: 34px; }
-  .form-campos { gap: 34px; }
-  .field > span { font-size: 0.86rem; }
-  .consent { padding: 24px; font-size: 1.1rem; }
-  .consent input { width: 44px; height: 44px; }
-
-  /* ---- regras ----
-     Altura vem do conteúdo (padding + corpo), não de um número fixo: o
-     card cresce junto com a tipografia em vez de abrir vão interno. */
-  .regras-grade { gap: clamp(20px, 2.2vh, 34px); }
-  .regras-card {
-    min-height: 0;
-    padding: clamp(30px, 3.2vh, 62px) clamp(28px, 3vw, 40px);
-    gap: clamp(10px, 1.1vh, 18px);
-  }
-  .regras-num { min-width: 66px; height: 56px; font-size: 0.92rem; }
-  .regras-card strong { font-size: clamp(1.05rem, 1.65vh, 1.5rem); }
-  .regras-card p { font-size: clamp(1.25rem, 2.15vh, 1.95rem); }
-
-  /* ---- quiz ---- */
-  .quiz-meta { font-size: 0.88rem; }
-  #quiz-pontos { font-size: 1rem; }
-  /* Tipografia e alturas em vh, não em valor fixo: esta faixa vai de 1200px
-     até o totem de 1920px, e o que preenche a tela lá estoura numa janela
-     de 1400px. A margem maior sob o enunciado empurra os cards para baixo. */
-  .quiz-pergunta {
-    font-size: clamp(1.7rem, 2.9vh, 2.6rem);
-    margin-bottom: clamp(28px, 2.6vh, 56px);
-  }
-  .quiz-alternativas { gap: clamp(20px, 1.7vh, 32px); }
-  .alt-btn {
-    min-height: clamp(105px, 7.8vh, 150px);
-    font-size: clamp(1.5rem, 2.3vh, 1.85rem);
-    padding: clamp(24px, 1.8vh, 34px) 40px;
-    gap: 32px;
-  }
-  .alt-letra {
-    width: clamp(72px, 5vh, 96px);
-    height: clamp(72px, 5vh, 96px);
-    font-size: clamp(1.1rem, 1.5vh, 1.4rem);
-  }
-
-  .barra-trilho { height: 46px; }
-  .barra-rotulo { font-size: 0.8rem; }
-  .barra-rotulo b { font-size: 0.9rem; }
-  .chama-caixa { width: 112px; height: 112px; }
-  .chama { --chama-h: 90px; }                      /* 3x de 30px */
-  .chama[data-nivel="5"] { --chama-h: 120px; }     /* 4x */
-
-  /* ---- feedback ----
-     Tipografia, espaços e estrelas já escalam sozinhos (clamp + o rem
-     dobrado acima). Aqui só o sprite, que é discreto por natureza: uma
-     escala intermediária embaçaria o pixel. 3x o nativo de 128px. */
-  .fb-mascote { --masc-h: 384px; }
-
-  /* ---- ranking ---- */
-  .ranking-tab { min-height: 76px; font-size: 0.86rem; padding: 14px 34px; }
-  .ranking-lista { gap: 18px; }
-  .ranking-item { grid-template-columns: 100px 1fr auto; padding: 26px 32px; }
-  .ranking-pos { font-size: 1.1rem; }
-  .ranking-nome { font-size: 1.5rem; }
-  .ranking-pts { font-size: 1.05rem; }
-  .ranking-tempo { font-size: 1rem; }
-
-  .ranking-podio { gap: 24px; margin-bottom: 28px; }
-  .podio-posto { height: 268px; padding: 26px 20px 22px; gap: 14px; }
-  .podio-posto.posto-1 { height: 324px; padding-top: 36px; padding-bottom: 30px; }
-  .podio-medalha { height: 82px; }
-  .podio-posto.posto-1 .podio-medalha { height: 110px; }
-  .podio-nome { font-size: 1.2rem; }
-  .podio-posto.posto-1 .podio-nome { font-size: 1.35rem; }
-  .podio-pts { font-size: 1rem; }
-  .podio-posto.posto-1 .podio-pts { font-size: 1.15rem; }
-  .podio-tempo { font-size: 0.92rem; }
-
-  .selo-ilumagame { height: 48px; }
-}
-
-/* Entre o desktop de desenvolvimento e o totem: mantém a composição
-   distribuída, só com a escala intermediária. */
-@media (min-height: 860px) and (max-height: 1199px) {
-  :root { --zona-gap: 30px; --safe-side: 40px; }
-  .abertura-imagem { max-width: 640px; }
-  .abertura-btn--jogar { max-width: 540px; }
-  .alt-btn { min-height: 130px; font-size: 1.25rem; padding: 28px 32px; }
-  .alt-letra { width: 64px; height: 64px; }
-}
-
-/* Telas baixas (monitor deitado, janela de desenvolvimento): o mascote é o
-   primeiro a sair — o herói e o botão de jogar são o que não pode faltar. */
-@media (max-height: 1000px) {
-  .chamada { display: none; }
-}
-
-/* Janela baixa (o notebook da equipe, não o totem): o bloco do feedback
-   passava do miolo por poucos px e o overflow cortava os pés do mascote.
-   Cai para 1x o sprite nativo — múltiplo inteiro, então continua nítido. */
-@media (max-height: 760px) {
-  .fb-mascote { --masc-h: 128px; }
-  /* Sem altura sobrando, as estrelas caem em cima do título em vez de
-     ocuparem canto vazio — decoração é a primeira coisa a sair. */
-  .feedback-overlay.is-bom .fb-estrelas { display: none; }
-}
-
-@media (max-height: 820px) {
-  :root { --zona-gap: 16px; --safe-top: 20px; --safe-bottom: 20px; }
-  .abertura-imagem { max-width: 420px; }
-  .abertura-btn--jogar { max-width: 320px; }
-  .abertura-sub { display: none; }
-}
-
-/* Celular: uma coluna, alvos ainda confortáveis. Não é o alvo do projeto,
-   mas é onde a equipe testa no dia a dia. */
-@media (max-width: 560px) {
-  :root { --safe-side: 18px; }
-  /* Rede de segurança: em tela de celular o palco rola em vez de esconder
-     conteúdo atrás da borda. No totem ele nunca rola. */
-  .palco { overflow-y: auto; justify-content: flex-start; }
-  .ranking-item { grid-template-columns: 48px 1fr auto; padding: 14px 16px; }
-  .ranking-podio { gap: 8px; }
-  .podio-posto { height: 156px; padding: 12px 8px 10px; gap: 6px; }
-  .podio-posto.posto-1 { height: 188px; padding-top: 18px; padding-bottom: 14px; }
-  .podio-medalha { height: 40px; }
-  .podio-posto.posto-1 .podio-medalha { height: 54px; }
-  .podio-nome { font-size: 0.76rem; }
-  .podio-posto.posto-1 .podio-nome { font-size: 0.86rem; }
-  .podio-pts { font-size: 0.68rem; }
-  .podio-tempo { font-size: 0.62rem; }
-  .brand-logo { height: 30px; }
-  .brand-logo-fs { height: 24px; }
-  .regras-grade { grid-template-columns: 1fr; grid-auto-rows: auto; overflow-y: auto; }
-  .resultado-score { flex-direction: column; }
-  .rodape-duplo { flex-direction: column; }
-  .brand-header--linha { align-items: flex-start; }
-  .tag-stand { display: none; }
-}
-
-
-/* Ranking diario em lista: medalhas na mesma coluna das posicoes. */
-.ranking-podio[hidden] { display: none; }
-.ranking-wrap { padding-bottom: calc(var(--px) * 2); }
-.ranking-item > div { min-width: 0; }
-.ranking-nome { overflow-wrap: anywhere; }
-.ranking-lista-dia .ranking-pos {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-.ranking-medalha {
-  width: 64px;
-  height: 64px;
-  object-fit: contain;
-  image-rendering: pixelated;
-}
-.ranking-lista-dia .ranking-destaque { min-height: 132px; }
-.ranking-lista-dia .ranking-lugar-1 {
-  border-left-color: var(--vermelho);
-  background: var(--cartao);
-}
-.ranking-lista-dia .ranking-lugar-1 .ranking-nome { color: var(--vermelho); }
-.ranking-lista-dia .ranking-lugar-2 { border-left-color: #b0b0b0; }
-.ranking-lista-dia .ranking-lugar-3 { border-left-color: #800000; }
-@media (min-width: 900px) and (orientation: portrait) {
-  .ranking-lista-dia .ranking-destaque { min-height: 160px; }
-  .ranking-medalha { width: 80px; height: 80px; }
-}
-@media (max-width: 480px) {
-  .ranking-medalha { width: 40px; height: 48px; }
-  .ranking-lista-dia .ranking-destaque { min-height: 108px; }
-  .ranking-lista-dia .ranking-item { gap: 10px; }
+  position: relative;
+  width: 520px;
+  height: 90px;
+  padding-top: 4px;
+  font-size: 40px;
 }
