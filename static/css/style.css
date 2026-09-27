@@ -765,13 +765,56 @@ a { color: inherit; text-decoration: none; }
 .feedback-overlay.is-bom .fb-reboque  { background-image: url("/static/img/mockup/fundo-certo.png"); }
 .feedback-overlay.is-ruim .fb-reboque { background-image: url("/static/img/mockup/fundo-errado.png"); }
 
+/* Entrada limpa: a tela de acerto/erro só aparece por cima da pergunta.
+   O nome "reboque-entra" é o que o quiz.js espera no animationend. */
 .feedback-overlay.is-visible .fb-reboque {
-  animation: reboque-entra 0.5s steps(5) both;
+  animation: reboque-entra 0.25s ease-out both;
 }
 
 @keyframes reboque-entra {
-  from { opacity: 0; transform: translateY(40px); }
-  to   { opacity: 1; transform: none; }
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ---- Decoração animada (peças de static/js/deco-mockup.js) ---- */
+
+.fb-deco img {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Acerto: as setas sobem até o lugar e seguem subindo aos pulinhos, em
+   degraus de pixel. Cada uma sai um pouco depois da anterior. */
+.deco-seta {
+  animation:
+    seta-entra 0.5s cubic-bezier(0.2, 0.8, 0.3, 1) calc(var(--i) * 60ms) both,
+    seta-sobe 0.9s steps(3) calc(0.5s + var(--i) * 60ms) infinite;
+}
+
+@keyframes seta-entra {
+  from { transform: translateY(160px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+@keyframes seta-sobe {
+  0%, 100% { transform: none; }
+  50%      { transform: translateY(-18px); }
+}
+
+/* Erro: os X balançam de um lado para o outro e param, e repetem. */
+.deco-x {
+  transform-origin: 50% 50%;
+  animation: x-balanca 1.6s ease-in-out calc(var(--i) * 70ms) infinite;
+}
+
+@keyframes x-balanca {
+  0%, 45%, 100% { transform: none; }
+  9%  { transform: translateX(-12px) rotate(-10deg); }
+  18% { transform: translateX(12px) rotate(10deg); }
+  27% { transform: translateX(-8px) rotate(-6deg); }
+  36% { transform: translateX(6px) rotate(4deg); }
 }
 
 .feedback-msg {

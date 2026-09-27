@@ -39,6 +39,8 @@
     <!-- Feedback: pranchetas 8 (acerto, fundo verde) e 9 (erro) -->
     <div id="feedback-overlay" class="feedback-overlay" hidden>
       <div class="fb-reboque" id="fb-reboque">
+        <!-- setas (acerto) e X (erro) do mockup, animados pelo CSS -->
+        <div class="fb-deco" id="fb-deco" aria-hidden="true"></div>
         <div id="fb-card">
           <p id="feedback-msg" class="px feedback-msg"></p>
           <p id="feedback-pontos" class="px feedback-pontos"></p>
@@ -57,6 +59,7 @@
   </main>
 
   <script src="/static/js/kiosk.js"></script>
+  <script src="/static/js/deco-mockup.js"></script>
   <script src="/static/js/quiz.js"></script>
 </body>
 </html>

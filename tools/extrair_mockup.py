@@ -16,6 +16,7 @@ Uso (PyMuPDF não é dependência do jogo, só desta ferramenta):
     pip install pymupdf
     python tools/extrair_mockup.py caminho/para/GAME_QUIZZ_TUDO_SOBRE_SDAI.ai
 """
+import json
 import os
 import sys
 
@@ -131,12 +132,14 @@ def salvar(nome, largura, altura, corpo):
     print("%-28s %6.1f KB" % (nome, len(svg) / 1024))
 
 
-def fundo(pagina, nome, tirar=(), manter=None):
-    """Prancheta inteira, sem os caminhos contidos nas zonas `tirar`.
-    `manter(i, d)` pode forçar a permanência de um caminho."""
+def fundo(pagina, nome, tirar=(), manter=None, pular=()):
+    """Prancheta inteira, sem os caminhos contidos nas zonas `tirar` nem os
+    de índice em `pular`. `manter(i, d)` pode forçar a permanência."""
     corpo = []
     for i, d in enumerate(pagina.get_drawings()):
         r = d["rect"]
+        if i in pular:
+            continue
         if manter and manter(i, d):
             corpo.append(elemento(d, 0, 0))
             continue
@@ -157,6 +160,45 @@ def peca(pagina, nome, zona, filtro=None, margem=0):
             continue
         corpo.append(elemento(d, x0, y0))
     salvar(nome, zona[2] - zona[0] + 2 * margem, zona[3] - zona[1] + 2 * margem, corpo)
+
+
+def decoracao(pagina, prefixo, tirar):
+    """Separa a decoração em pixel (setas, X, blocos) do fundo, uma peça
+    por grupo de caminhos encostados, para o CSS animar cada uma.
+    Devolve os índices usados (para o fundo pular) e a lista de peças com
+    a posição na prancheta."""
+    grupos = []
+    for i, d in enumerate(pagina.get_drawings()):
+        r = d["rect"]
+        if r.width >= 1079 or any(dentro(r, z) for z in tirar):
+            continue  # faixa do degradê, conteúdo, logos ou título
+        grupos.append([r.x0, r.y0, r.x1, r.y1, [i]])
+    juntou = True
+    while juntou:
+        juntou = False
+        saida = []
+        for g in grupos:
+            for o in saida:
+                if not (g[2] + 3 < o[0] or g[0] - 3 > o[2] or g[3] + 3 < o[1] or g[1] - 3 > o[3]):
+                    o[0], o[1] = min(o[0], g[0]), min(o[1], g[1])
+                    o[2], o[3] = max(o[2], g[2]), max(o[3], g[3])
+                    o[4] += g[4]
+                    juntou = True
+                    break
+            else:
+                saida.append(g)
+        grupos = saida
+
+    desenhos = pagina.get_drawings()
+    pecas, usados = [], set()
+    for n, (x0, y0, x1, y1, idx) in enumerate(sorted(grupos, key=lambda g: (g[1], g[0]))):
+        nome = "deco-%s-%d.svg" % (prefixo, n + 1)
+        idx = sorted(idx)
+        salvar(nome, x1 - x0, y1 - y0, [elemento(desenhos[i], x0, y0) for i in idx])
+        usados.update(idx)
+        pecas.append({"src": nome, "x": round(x0, 1), "y": round(y0, 1),
+                      "w": round(x1 - x0, 1), "h": round(y1 - y0, 1)})
+    return usados, pecas
 
 
 def rasterizar(nome):
@@ -199,8 +241,18 @@ def main(caminho_ai):
     fundo(doc[CADASTRO], "fundo-cadastro.svg", ZONAS[CADASTRO], painel)
     fundo(doc[REGRAS], "fundo-regras.svg", ZONAS[REGRAS], painel)
     fundo(doc[RESULTADO], "fundo-resultado.svg", ZONAS[RESULTADO], painel)
-    fundo(doc[CERTO], "fundo-certo.svg", ZONAS[CERTO], painel)
-    fundo(doc[ERRADO], "fundo-errado.svg", ZONAS[ERRADO], painel)
+    # Acerto e erro: setas e X saem do fundo e viram peças soltas, que o
+    # feedback anima (setas sobem no acerto, X balançam no erro).
+    logos_titulo = (80, 55, 1000, 360)
+    deco = {}
+    for pag, chave in ((CERTO, "certo"), (ERRADO, "errado")):
+        usados, deco[chave] = decoracao(doc[pag], chave, ZONAS[pag] + [logos_titulo])
+        fundo(doc[pag], "fundo-%s.svg" % chave, ZONAS[pag], painel, usados)
+    js = os.path.join(os.path.dirname(__file__), "..", "static", "js", "deco-mockup.js")
+    with open(js, "w", encoding="utf-8") as f:
+        f.write("// Gerado por tools/extrair_mockup.py: decoração das telas de acerto e\n"
+                "// erro, com a posição de cada peça na prancheta (px do totem).\n"
+                "window.DECO_MOCKUP = %s;\n" % json.dumps(deco, indent=2))
 
     # Peças soltas
     peca(doc[ABERTURA], "titulo-grande.svg", (215, 280, 905, 830))
