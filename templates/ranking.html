@@ -7,41 +7,25 @@
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body class="page-ranking" data-kiosk-timeout="45">
-  <div class="screen screen-ranking">
-    <div class="topbar">
-      <div class="brand-lockup">
-        <img class="brand-logo" src="/static/img/logo-ilumac-branco.svg" alt="Ilumac">
-        <span class="brand-divider" aria-hidden="true"></span>
-        <img class="brand-logo-fs" src="/static/img/logo-fireshow-branco.png" alt="Fire Show 2026">
-      </div>
-      <span class="tag tag-live">Ao vivo</span>
+  <!-- Pranchetas 2 (ranking geral, com pódio) e 3 (ranking do dia) -->
+  <main class="tela tela--ranking">
+    <h1 class="px tela-titulo rk-titulo">Ranking</h1>
+
+    <div role="tablist">
+      <button type="button" class="px ranking-tab is-ativa" id="tab-dia" role="tab" aria-selected="true">Ranking do dia</button>
+      <button type="button" class="px ranking-tab" id="tab-geral" role="tab" aria-selected="false">Ranking geral (3 dias)</button>
     </div>
 
-    <main class="palco palco-ranking">
-      <header class="brand-header brand-header--linha">
-        <div>
-          <p class="brand-eyebrow">Fire Show 2026 · Stand D73/D124</p>
-          <h1 class="brand-title">Ranking</h1>
-        </div>
-        <div class="ranking-tabs" role="tablist">
-          <button type="button" class="ranking-tab is-ativa" id="tab-dia" role="tab" aria-selected="true">Hoje</button>
-          <button type="button" class="ranking-tab" id="tab-geral" role="tab" aria-selected="false">3 dias</button>
-        </div>
-      </header>
+    <div class="ranking-podio" id="ranking-podio" hidden></div>
 
-      <div class="ranking-podio" id="ranking-podio"></div>
+    <ol class="ranking-lista" id="ranking-lista">
+      <li class="ranking-vazio">Carregando…</li>
+    </ol>
 
-      <div class="ranking-wrap">
-        <ol class="ranking-lista" id="ranking-lista">
-          <li class="ranking-vazio">Carregando…</li>
-        </ol>
-      </div>
-    </main>
-
-    <footer class="rodape">
-      <a class="btn btn-primary btn-block" href="/" id="btn-reiniciar">Novo jogador</a>
-    </footer>
-  </div>
+    <!-- Não existe no mockup: sem ele, quem chega depois fica preso no
+         ranking até o aviso de inatividade. -->
+    <a class="btn-px forma-contorno rk-novo" href="/" id="btn-reiniciar">Novo participante</a>
+  </main>
   <script src="/static/js/kiosk.js"></script>
   <script src="/static/js/ranking.js"></script>
 </body>

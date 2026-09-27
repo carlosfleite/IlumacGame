@@ -7,55 +7,26 @@
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body class="page-resultado" data-kiosk-timeout="60">
-  <div class="screen screen-resultado">
-    <div class="topbar">
-      <div class="brand-lockup">
-        <img class="brand-logo" src="/static/img/logo-ilumac-branco.svg" alt="Ilumac">
-        <span class="brand-divider" aria-hidden="true"></span>
-        <img class="brand-logo-fs" src="/static/img/logo-fireshow-branco.png" alt="Fire Show 2026">
-      </div>
-      <span class="tag">Resultado</span>
+  <!-- Prancheta 7 do mockup -->
+  <main class="tela tela--resultado">
+    <p class="px res-rotulo">Quiz finalizado</p>
+    <h1 class="px res-nome" id="resultado-nome">—</h1>
+
+    <img class="mascote res-mascote" src="/static/img/mockup/mascote.svg" alt="">
+    <p class="px res-pontos" id="resultado-pontos">0</p>
+    <p class="px res-de">de 10</p>
+
+    <div class="res-premio">
+      <p class="px res-premio-nome" id="resultado-premio">—</p>
+      <p class="res-premio-desc" id="resultado-premio-desc"></p>
     </div>
 
-    <main class="palco palco-resultado">
-      <header class="brand-header">
-        <!-- "Finalizado" e não "Concluído": a Press Start 2P desenha Í e Ú
-             na altura de minúscula para o acento caber na célula, e
-             "CONCLUÍDO" saía "CONCLUíDO". -->
-        <p class="brand-eyebrow">Quiz finalizado</p>
-        <h1 class="brand-title brand-title--nome" id="resultado-nome">—</h1>
-      </header>
+    <p class="px res-tempo-rotulo">Seu tempo</p>
+    <p class="px res-tempo" id="resultado-tempo">00:00<small>.00</small></p>
 
-      <!-- O card do placar é o momento: a reação do mascote à esquerda,
-           a nota à direita, os dois grandes e no centro do card — sem a
-           tira de espaço morto que sobrava entre eles. -->
-      <div class="resultado-score">
-        <div class="resultado-mascote" id="resultado-mascote" role="img" aria-label="Ilumaquinho"></div>
-        <div class="resultado-placar">
-          <p class="resultado-label">Pontuação</p>
-          <p class="resultado-pontos"><b id="resultado-pontos">0</b><span>de 10</span></p>
-        </div>
-      </div>
-
-      <!-- O prêmio é o motivo de ter jogado: card inteiro, em destaque. -->
-      <div class="resultado-premio">
-        <p class="resultado-label">Seu prêmio</p>
-        <p class="resultado-premio-nome" id="resultado-premio">—</p>
-        <p class="resultado-desc" id="resultado-premio-desc"></p>
-      </div>
-
-      <!-- Tempo é critério de desempate, não o resultado: uma linha discreta. -->
-      <p class="resultado-tempo">
-        <span class="resultado-label">Tempo total</span>
-        <b id="resultado-tempo">00:00</b>
-      </p>
-    </main>
-
-    <footer class="rodape rodape-duplo">
-      <a class="btn btn-primary" href="/ranking">Ver ranking</a>
-      <a class="btn btn-ghost" href="/" id="btn-novo">Novo participante</a>
-    </footer>
-  </div>
+    <a class="btn-px forma-escura res-ranking" href="/ranking">Ver ranking</a>
+    <a class="btn-px forma-contorno res-novo" href="/" id="btn-novo">Novo participante</a>
+  </main>
 
   <script src="/static/js/kiosk.js"></script>
   <script>
@@ -71,37 +42,34 @@
         return;
       }
 
-      function fmt(ms) {
-        var s = Math.floor((ms || 0) / 1000);
+      // 00:05.54 — minutos:segundos e centésimos menores, como no mockup
+      function pintarTempo(el, ms) {
+        ms = Math.max(0, Math.round(ms || 0));
+        var cs = Math.floor(ms / 10) % 100;
+        var s = Math.floor(ms / 1000);
         var m = Math.floor(s / 60);
         s = s % 60;
-        return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+        el.textContent = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+        var small = document.createElement("small");
+        small.textContent = "." + (cs < 10 ? "0" : "") + cs;
+        el.appendChild(small);
       }
 
-      /**
-       * O mascote reage ao placar. São 5 perguntas de 2 pontos, então na
-       * prática só caem 0, 2, 4, 6, 8 e 10 — mas as faixas são por
-       * intervalo, e não por valor, para continuarem valendo se a
-       * pontuação por acerto mudar.
-       */
-      function faixaDoPlacar(p) {
-        if (p <= 2) return { faixa: "baixa", alt: "Ilumaquinho triste" };
-        if (p <= 6) return { faixa: "media", alt: "Ilumaquinho comemorando" };
-        return { faixa: "alta", alt: "Ilumaquinho com troféu" };
-      }
+      var elPontos = document.getElementById("resultado-pontos");
+      var pontos = String(r.pontuacao);
+      elPontos.textContent = pontos;
+      elPontos.classList.toggle("dois-digitos", pontos.length > 1);
 
-      var mascote = document.getElementById("resultado-mascote");
-      var reacao = faixaDoPlacar(Number(r.pontuacao) || 0);
-      mascote.setAttribute("data-faixa", reacao.faixa);
-      mascote.setAttribute("aria-label", reacao.alt);
-
-      document.getElementById("resultado-nome").textContent = r.nome || "Participante";
-      document.getElementById("resultado-pontos").textContent = String(r.pontuacao);
-      document.getElementById("resultado-tempo").textContent = fmt(r.tempo_total_ms);
+      var elNome = document.getElementById("resultado-nome");
+      elNome.textContent = r.nome || "Participante";
       document.getElementById("resultado-premio").textContent =
         (r.premio && r.premio.nome) ? r.premio.nome : "Sem prêmio";
       document.getElementById("resultado-premio-desc").textContent =
         (r.premio && r.premio.descricao) ? r.premio.descricao : "";
+      pintarTempo(document.getElementById("resultado-tempo"), r.tempo_total_ms);
+
+      caberNaLinha(elNome);
+      caberNaLinha(document.getElementById("resultado-premio"));
 
       document.getElementById("btn-novo").addEventListener("click", function () {
         sessionStorage.removeItem("participante_id");

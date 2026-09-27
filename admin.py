@@ -9,14 +9,15 @@ linkado em nenhuma tela do jogo.
 """
 import csv
 import io
+import os
 from datetime import datetime, timedelta
 
-from flask import Blueprint, Response, render_template
+from flask import Blueprint, Response, redirect, render_template, url_for
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
 from fpdf import FPDF
 
-from database import get_connection, sql_melhor_tentativa
+from database import fazer_backup, get_connection, sql_melhor_tentativa
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -83,6 +84,24 @@ def _nome_arquivo(extensao):
     return "ilumac_participantes_%s.%s" % (datetime.now().strftime("%Y-%m-%d_%H%M"), extensao)
 
 
+def _ultimo_backup():
+    """Nome e hora do backup mais recente em backups/, ou None se não há nenhum."""
+    from database import BACKUP_DIR
+
+    if not os.path.isdir(BACKUP_DIR):
+        return None
+    arquivos = [f for f in os.listdir(BACKUP_DIR) if f.endswith(".db")]
+    if not arquivos:
+        return None
+    mais_recente = max(
+        arquivos, key=lambda f: os.path.getmtime(os.path.join(BACKUP_DIR, f))
+    )
+    quando = datetime.fromtimestamp(
+        os.path.getmtime(os.path.join(BACKUP_DIR, mais_recente))
+    )
+    return {"nome": mais_recente, "quando": quando.strftime("%d/%m/%Y %H:%M:%S")}
+
+
 # ---------------------------------------------------------------------------
 # Painel
 # ---------------------------------------------------------------------------
@@ -120,7 +139,21 @@ def painel():
         total=total,
         consentiram=consentiram,
         jogaram=jogaram,
+        ultimo_backup=_ultimo_backup(),
     )
+
+
+@admin_bp.route("/backup", methods=["POST"])
+def backup_manual():
+    """
+    Backup sob demanda, pedido por quem está no estande — por exemplo,
+    pouco antes de desligar o totem no fim do dia, sem depender do
+    horário automático (ver HORA_BACKUP_FIM_DIA em run.py). forcar=True
+    porque aqui é uma decisão explícita de uma pessoa: sempre gera o
+    arquivo, mesmo se já existir um backup do dia.
+    """
+    fazer_backup("manual", forcar=True)
+    return redirect(url_for("admin.painel"))
 
 
 # ---------------------------------------------------------------------------

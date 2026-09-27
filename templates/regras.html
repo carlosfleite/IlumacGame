@@ -7,55 +7,38 @@
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body class="page-regras" data-kiosk-timeout="60">
-  <div class="screen screen-regras">
-    <div class="topbar">
-      <div class="brand-lockup">
-        <img class="brand-logo" src="/static/img/logo-ilumac-branco.svg" alt="Ilumac">
-        <span class="brand-divider" aria-hidden="true"></span>
-        <img class="brand-logo-fs" src="/static/img/logo-fireshow-branco.png" alt="Fire Show 2026">
-      </div>
-      <span class="tag">Passo 2 de 3</span>
-    </div>
+  <!-- Prancheta 6 do mockup -->
+  <main class="tela tela--regras">
+    <h1 class="px tela-titulo">Como jogar</h1>
 
-    <main class="palco palco-regras">
-      <header class="brand-header">
-        <p class="brand-eyebrow">Fire Show 2026 · Stand D73/D124</p>
-        <h1 class="brand-title">Como jogar</h1>
-      </header>
-
-      <ul class="regras-grade">
-        <li class="regras-card">
-          <span class="regras-num">01</span>
-          <strong>5 perguntas</strong>
-          <p>Sorteadas do banco SDAI — sem repetir na mesma partida.</p>
-        </li>
-        <li class="regras-card">
-          <span class="regras-num">02</span>
-          <strong>2 pontos por acerto</strong>
-          <p>Cada acerto acende um bloco da barra de fogo. Máximo: 10 pontos.</p>
-        </li>
-        <li class="regras-card">
-          <span class="regras-num">03</span>
-          <strong>Cronômetro ligado</strong>
-          <p>O tempo total aparece no topo e corre enquanto você responde.</p>
-        </li>
-        <li class="regras-card">
-          <span class="regras-num">04</span>
-          <strong>Desempate por tempo</strong>
-          <p>Mesma pontuação? Ganha quem respondeu mais rápido.</p>
-        </li>
-      </ul>
-    </main>
+    <ul class="regras-lista">
+      <li class="regra">
+        <span class="px regra-num">01</span>
+        <strong class="px">5 perguntas</strong>
+        <p>Sorteadas do banco SDAI —<br>sem repetir na mesma partida.</p>
+      </li>
+      <li class="regra">
+        <span class="px regra-num">02</span>
+        <strong class="px">2 pontos<br>por acerto</strong>
+        <p>Cada acerto faz a chama crescer.<br><em>Máximo: 10 pontos.</em></p>
+      </li>
+      <li class="regra">
+        <span class="px regra-num">03</span>
+        <strong class="px">Cronômetro<br>ligado</strong>
+        <p>O tempo total aparece no topo e<br>corre enquanto você responde.</p>
+      </li>
+      <li class="regra">
+        <span class="px regra-num">04</span>
+        <strong class="px">Desempate<br>por tempo</strong>
+        <p>Mesma pontuação? Ganha quem<br>respondeu mais rápido.</p>
+      </li>
+    </ul>
 
     {# href real: se o pid não vier na URL, o script abaixo completa pelo
        sessionStorage. Assim o botão funciona mesmo sem JS. #}
-    <footer class="rodape">
-      <a class="btn btn-primary btn-block" id="btn-iniciar"
-         href="/quiz{% if pid %}?pid={{ pid }}{% endif %}">
-        Começar o quiz
-      </a>
-    </footer>
-  </div>
+    <a class="btn-px forma-escura regras-iniciar" id="btn-iniciar"
+       href="/quiz{% if pid %}?pid={{ pid }}{% endif %}">Estou pronto</a>
+  </main>
 
   <script src="/static/js/kiosk.js"></script>
   <script>

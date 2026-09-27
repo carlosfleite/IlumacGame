@@ -25,10 +25,16 @@ import flask.cli
 import webview
 
 from app import create_app
+from database import fazer_backup
 
 HOST = "127.0.0.1"
 PORT = 5000
 URL = f"http://{HOST}:{PORT}/"
+
+# Horario local (24h) a partir do qual o backup de fim de dia acontece
+# sozinho, sem precisar reiniciar o totem. Ajuste conforme o horario de
+# fechamento real da feira.
+HORA_BACKUP_FIM_DIA = 21
 
 # A janela do totem abre com ?kiosk=1: e esse parametro que liga o
 # travamento de tecla (F5/F11/F12/Ctrl+R) e o reset por inatividade no
@@ -130,12 +136,31 @@ def _esperar_servidor(tentativas=100, intervalo=0.1):
     return False
 
 
+def _vigiar_backup_fim_de_dia():
+    """
+    O backup de boot (em database.init_db) cobre reinicios do watchdog,
+    mas a feira tem dias inteiros com o totem ligado sem cair — sem isso
+    o dia so seria salvo quando o processo reiniciasse por acaso. Essa
+    thread confere a cada 10 min e dispara o backup sozinha assim que
+    passa do horario de fechamento, uma vez por dia local.
+    """
+    while True:
+        try:
+            if time.localtime().tm_hour >= HORA_BACKUP_FIM_DIA:
+                fazer_backup("fim_do_dia")
+        except Exception:
+            logging.exception("Falha ao tentar o backup de fim de dia")
+        time.sleep(600)
+
+
 def main():
     _configurar_log()
     logging.info("Iniciando totem — Quiz SDAI")
 
     server = threading.Thread(target=_run_flask, daemon=True)
     server.start()
+
+    threading.Thread(target=_vigiar_backup_fim_de_dia, daemon=True).start()
 
     if not _esperar_servidor():
         logging.error("Servidor Flask nao respondeu a tempo em %s", URL)

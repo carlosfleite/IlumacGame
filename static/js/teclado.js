@@ -8,8 +8,8 @@
  * sabendo que abriu — no retrato 1080x1920 ele come ~768px e engole o
  * botao Continuar, sem nada rolar para compensar.
  *
- * Aqui a altura e nossa, entao a tela encolhe junto (body.com-teclado +
- * --teclado-h no CSS) e o botao continua alcancavel.
+ * Aqui a altura e nossa: o teclado ocupa a faixa de baixo do palco
+ * (prancheta 5 do mockup), abaixo dos campos e do botao Continuar.
  *
  * Alimenta os campos disparando eventos "input" de verdade, senao a
  * mascara de telefone e a limpeza de erro do cadastro.js nao rodariam.
@@ -42,16 +42,16 @@
         letras("1 2 3 4 5 6 7 8 9 0"),
         letras("Q W E R T Y U I O P"),
         letras("A S D F G H J K L Ç"),
-        [{ t: "MAIÚSC", a: "maiusc", s: 3 }].concat(
+        [{ t: "⇧", a: "maiusc", s: 3 }].concat(
           letras("Z X C V B N M"),
-          [{ t: "APAGAR", a: "apagar", s: 3 }]
+          [{ t: "⌫", a: "apagar", s: 3 }]
         ),
         [
           { t: "ÁÉÍ", a: "modo:acentos", s: 3 },
           { t: "@" },
           { t: "ESPAÇO", a: "espaco", s: 8 },
           { t: "." },
-          { t: "PRÓXIMO", a: "proximo", s: 5 },
+          { t: "PRÓXIMO →", a: "proximo", s: 5 },
         ],
       ],
     },
@@ -64,7 +64,7 @@
           letras("Ú Ü Ç Ñ"),
           [
             { t: "ESPAÇO", a: "espaco", s: 6 },
-            { t: "APAGAR", a: "apagar", s: 3 },
+            { t: "⌫", a: "apagar", s: 3 },
             { t: "ABC", a: "modo:texto", s: 3 },
           ]
         ),
@@ -80,9 +80,9 @@
         letras("4 5 6"),
         letras("7 8 9"),
         [
-          { t: "APAGAR", a: "apagar", s: 1 },
+          { t: "⌫", a: "apagar", s: 1 },
           { t: "0", s: 1 },
-          { t: "PRÓXIMO", a: "proximo", s: 1 },
+          { t: "PRÓXIMO →", a: "proximo", s: 1 },
         ],
       ],
     },
@@ -106,7 +106,9 @@
   var grade = document.createElement("div");
   grade.className = "teclado-grade";
   caixa.appendChild(grade);
-  document.body.appendChild(caixa);
+  // Dentro do palco (.tela), na faixa de baixo — como na prancheta 5 do
+  // mockup. Assim ele escala junto com o resto da tela.
+  (document.querySelector(".tela") || document.body).appendChild(caixa);
 
   // O toque na tecla NAO pode tirar o foco do campo: sem foco nao ha
   // cursor e o proprio navegador fecharia o teclado.
@@ -129,6 +131,7 @@
         var b = document.createElement("button");
         b.type = "button";
         b.className = "tecla" + (tecla.a ? " tecla-acao" : "");
+        if (tecla.a) b.setAttribute("data-acao", tecla.a);
         b.style.gridColumn = "span " + (tecla.s || (layout.estreito ? 1 : 2));
 
         var rotulo = tecla.t;
@@ -274,11 +277,9 @@
     document.body.classList.add("com-teclado");
     medir();
 
-    // depois do reflow, garante que o campo em foco ficou visivel
-    window.requestAnimationFrame(function () {
-      medir();
-      if (campo) campo.scrollIntoView({ block: "center" });
-    });
+    // Sem scrollIntoView: o palco tem tamanho fixo e os campos ficam acima
+    // do teclado; rolar o palco deslocaria a arte do fundo.
+    window.requestAnimationFrame(medir);
   }
 
   function fechar() {

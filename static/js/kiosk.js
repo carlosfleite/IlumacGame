@@ -1,4 +1,37 @@
 /**
+ * Palco fixo 1080x1920 (o tamanho das pranchetas do mockup e do totem).
+ * No totem a escala é 1; em qualquer outra janela o palco inteiro encolhe
+ * junto, em vez de a composição se rearranjar. Roda em toda tela e antes
+ * de tudo, inclusive fora do modo totem.
+ */
+(function () {
+  "use strict";
+
+  function escalar() {
+    var e = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+    document.documentElement.style.setProperty("--escala", String(e));
+  }
+  escalar();
+  window.addEventListener("resize", escalar);
+
+  /**
+   * Reduz a fonte de um texto de uma linha até caber na largura da
+   * caixa (nomes longos no resultado e no ranking). Mede em px do palco:
+   * scrollWidth/clientWidth ignoram o transform da escala.
+   */
+  window.caberNaLinha = function (el, minimo) {
+    if (!el) return;
+    el.style.fontSize = "";
+    var tamanho = parseFloat(window.getComputedStyle(el).fontSize);
+    var piso = minimo || tamanho * 0.4;
+    while (el.scrollWidth > el.clientWidth + 1 && tamanho > piso) {
+      tamanho -= 2;
+      el.style.fontSize = tamanho + "px";
+    }
+  };
+})();
+
+/**
  * kiosk.js — comportamento de totem, carregado em TODAS as telas.
  *
  * Resolve dois problemas de operação desassistida na feira:
@@ -194,7 +227,7 @@
       '<p class="kiosk-inatividade-texto">' +
       "Sem toque, o quiz volta para o início." +
       "</p>" +
-      '<button type="button" class="btn btn-primary kiosk-inatividade-btn">' +
+      '<button type="button" class="btn-px forma-escura kiosk-inatividade-btn">' +
       "Continuar jogando" +
       "</button>" +
       "</div>";

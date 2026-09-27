@@ -1,6 +1,16 @@
 # Ambiente virtual
 .venv/
 
+# Python ja instalado/extraido (~100 MB, milhares de arquivos pequenos).
+# Nao versiona: o INICIAR_QUIZ.bat gera essa pasta sozinho, a partir de
+# instalador\python-embed.zip, na primeira vez que roda em cada maquina.
+python-embed/
+
+# instalador/python-embed.zip (~40 MB) FICA versionado de proposito: e
+# o jeito mais simples de levar o Python do jogo de uma maquina pra
+# outra (ex.: de casa pro computador do trabalho) so com "git push" e
+# "git pull", sem precisar de pendrive/nuvem extra so pra esse arquivo.
+
 # Bytecode Python
 __pycache__/
 *.py[cod]
@@ -22,7 +32,9 @@ PARAR.flag
 export/
 *.csv
 
-# Backups manuais do banco (gerados durante manutenção pontual)
+# Backups do banco (automaticos no boot/fim de dia e manuais pelo painel
+# admin) — contem os mesmos dados pessoais do banco, nunca versionar.
+backups/
 quiz.db.backup_*
 
 # Sistema operacional
