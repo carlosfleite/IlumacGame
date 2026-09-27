@@ -408,49 +408,6 @@ body {
   color: var(--sobre-vermelho-medio);
 }
 
-/* ---- faixa de números ----
-   Ocupa toda a largura útil e resume a partida em três dados grandes,
-   legíveis a vários metros. */
-.abertura-numeros {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0;
-  width: 100%;
-  margin: 0;
-  padding: 20px 0;
-  list-style: none;
-  border-top: var(--px) solid var(--linha-vermelho);
-  border-bottom: var(--px) solid var(--linha-vermelho);
-}
-
-.abertura-numeros li {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.abertura-numeros li + li {
-  border-left: var(--px) solid var(--linha-vermelho);
-}
-
-.abertura-numeros b {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  line-height: 1;
-  color: var(--sobre-vermelho);
-  text-shadow: var(--px) var(--px) 0 var(--vermelho-noite);
-}
-
-.abertura-numeros span {
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 0.72rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--sobre-vermelho-fraco);
-}
-
 /* ---- mascote + balão de fala (componente compartilhado) ----
    Assimétrico de propósito: o mascote encosta na margem esquerda e o balão
    se estende até a direita, ocupando a largura inteira da faixa. Usado na
@@ -552,10 +509,6 @@ body {
   animation: none;
 }
 
-/* RANKING um pouco menor */
-.abertura-btn--ranking {
-  max-width: 340px;
-}
 
 @keyframes cta-respira {
   0%, 100% { transform: scale(1); }
@@ -2005,19 +1958,14 @@ body {
   .abertura-titulo { font-size: 3.4rem; letter-spacing: 0.08em; }
   .abertura-sub { font-size: 1.5rem; max-width: 26ch; margin-top: 26px; }
 
-  .abertura-numeros { padding: 30px 0; }
-  .abertura-numeros b { font-size: 2.4rem; }
-  .abertura-numeros span { font-size: 0.86rem; }
-
   .chamada { gap: 32px; }
   .chamada-mascote { width: 226px; height: 256px; }
   .chamada-fala { padding: 32px 36px; }
   .chamada-fala p { font-size: 1.4rem; }
 
-  /* Os botões ocupam a base inteira: alvo de toque enorme e visível de
+  /* O botão ocupa a base inteira: alvo de toque enorme e visível de
      longe, que é o único gesto que esta tela precisa provocar. */
   .abertura-btn--jogar { max-width: 760px; }
-  .abertura-btn--ranking { max-width: 600px; }
 
 
   /* ---- cadastro ---- */
@@ -2106,14 +2054,12 @@ body {
   :root { --zona-gap: 30px; --safe-side: 40px; }
   .abertura-imagem { max-width: 640px; }
   .abertura-btn--jogar { max-width: 540px; }
-  .abertura-btn--ranking { max-width: 430px; }
   .alt-btn { min-height: 130px; font-size: 1.25rem; padding: 28px 32px; }
   .alt-letra { width: 64px; height: 64px; }
 }
 
-/* Telas baixas (monitor deitado, janela de desenvolvimento): o mascote e a
-   faixa de números são os primeiros a sair — o herói e o botão de jogar
-   são o que não pode faltar. */
+/* Telas baixas (monitor deitado, janela de desenvolvimento): o mascote é o
+   primeiro a sair — o herói e o botão de jogar são o que não pode faltar. */
 @media (max-height: 1000px) {
   .chamada { display: none; }
 }
@@ -2130,10 +2076,8 @@ body {
 
 @media (max-height: 820px) {
   :root { --zona-gap: 16px; --safe-top: 20px; --safe-bottom: 20px; }
-  .abertura-numeros { display: none; }
   .abertura-imagem { max-width: 420px; }
   .abertura-btn--jogar { max-width: 320px; }
-  .abertura-btn--ranking { max-width: 270px; }
   .abertura-sub { display: none; }
 }
 
@@ -2161,8 +2105,6 @@ body {
   .rodape-duplo { flex-direction: column; }
   .brand-header--linha { align-items: flex-start; }
   .tag-stand { display: none; }
-  .abertura-numeros b { font-size: 1.1rem; }
-  .abertura-numeros span { font-size: 0.6rem; letter-spacing: 0.1em; }
 }
 
 

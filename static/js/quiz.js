@@ -229,7 +229,7 @@
     overlay.classList.toggle("is-bom", acertou);
     overlay.classList.toggle("is-ruim", !acertou);
     fbTopoTxt.textContent = acertou ? "Resposta certa" : "Resposta errada";
-    fbMsg.textContent = acertou ? "Ih, deu bom!" : "Ih, deu ruim!";
+    fbMsg.textContent = acertou ? "Resposta certa!" : "Resposta errada!";
     fbPontos.textContent = acertou ? "+" + pontos + " pontos" : "0 pontos";
     fbRespRotulo.textContent = acertou ? "Resposta" : "A certa era";
     fbRespTexto.textContent = respostaCerta || mensagem;
