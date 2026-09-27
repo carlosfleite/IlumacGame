@@ -12,10 +12,13 @@ terminar o processo com código != 0 e registrar o motivo no log — não
 travar esperando input.
 """
 
+import ctypes
 import logging
 import logging.handlers
 import os
 import re
+import socket
+import subprocess
 import sys
 import threading
 import time
@@ -25,7 +28,7 @@ import flask.cli
 import webview
 
 from app import create_app
-from database import fazer_backup
+from database import backup_periodico, fazer_backup
 
 HOST = "127.0.0.1"
 PORT = 5000
@@ -45,6 +48,10 @@ URL_JANELA = URL + "?kiosk=1"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_DIR = os.path.join(BASE_DIR, "logs")
+
+# Código de saída que o INICIAR_QUIZ.bat entende como "já tem um totem
+# rodando nesta máquina": ele encerra em vez de reabrir em loop.
+SAIDA_JA_RODANDO = 3
 
 
 class _SoOQueImporta(logging.Filter):
@@ -136,37 +143,167 @@ def _esperar_servidor(tentativas=100, intervalo=0.1):
     return False
 
 
-def _vigiar_backup_fim_de_dia():
+def _vigiar_backups():
     """
     O backup de boot (em database.init_db) cobre reinicios do watchdog,
-    mas a feira tem dias inteiros com o totem ligado sem cair — sem isso
-    o dia so seria salvo quando o processo reiniciasse por acaso. Essa
-    thread confere a cada 10 min e dispara o backup sozinha assim que
-    passa do horario de fechamento, uma vez por dia local.
+    mas a feira tem dias inteiros com o totem ligado sem cair. Esta thread
+    confere a cada 10 min e:
+      - faz o backup da hora, se entrou dado novo (database.backup_periodico);
+      - faz o backup de fim de dia assim que passa do horario de
+        fechamento, uma vez por dia local.
+    Cada backup tambem vai para o pendrive ILUMAC_BACKUP, se conectado.
     """
     while True:
         try:
+            backup_periodico()
             if time.localtime().tm_hour >= HORA_BACKUP_FIM_DIA:
                 fazer_backup("fim_do_dia")
         except Exception:
-            logging.exception("Falha ao tentar o backup de fim de dia")
+            logging.exception("Falha ao tentar o backup automatico")
         time.sleep(600)
+
+
+def _porta_ocupada():
+    """Outro run.py (ou outro programa) ja atende na porta do totem?"""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(0.5)
+        return s.connect_ex((HOST, PORT)) == 0
+
+
+def _manter_tela_ligada():
+    """
+    Impede o Windows de apagar a tela ou suspender enquanto o jogo roda.
+    Vale so enquanto este processo estiver vivo: nao mexe na configuracao
+    de energia da maquina (que continua a mesma quando o totem fecha).
+    """
+    if os.name != "nt":
+        return
+    ES_CONTINUOUS = 0x80000000
+    ES_SYSTEM_REQUIRED = 0x00000001
+    ES_DISPLAY_REQUIRED = 0x00000002
+    try:
+        ctypes.windll.kernel32.SetThreadExecutionState(
+            ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED
+        )
+    except Exception:
+        logging.exception("Nao consegui impedir a suspensao da tela")
+
+
+def _tem_webview2():
+    """
+    Mesmo teste que o pywebview faz para escolher o motor da janela:
+    .NET 4.6.2+ e o runtime do WebView2 (Edge) instalado.
+
+    Por que conferir antes: sem o WebView2, o pywebview 5 NAO falha — ele
+    cai sozinho para o MSHTML, o motor do Internet Explorer, que nao
+    entende o CSS do jogo. A janela abriria com a tela toda quebrada e
+    nenhum erro no log.
+    """
+    if os.name != "nt":
+        return True
+    import winreg
+
+    try:
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                            r"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full") as k:
+            if winreg.QueryValueEx(k, "Release")[0] < 394802:
+                return False
+    except OSError:
+        return False
+
+    chave = r"Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+    caminhos = [
+        (winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\WOW6432Node\\" + chave),
+        (winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\" + chave),
+        (winreg.HKEY_CURRENT_USER, "SOFTWARE\\" + chave),
+    ]
+    for raiz, caminho in caminhos:
+        try:
+            with winreg.OpenKey(raiz, caminho) as k:
+                versao = str(winreg.QueryValueEx(k, "pv")[0])
+            if int(versao.split(".")[0]) >= 86:
+                return True
+        except (OSError, ValueError):
+            continue
+    return False
+
+
+def _navegador_kiosk():
+    """Edge (vem em todo Windows 10/11) ou, na falta dele, o Chrome."""
+    candidatos = []
+    for base in (os.environ.get("ProgramFiles(x86)"), os.environ.get("ProgramFiles"),
+                 os.environ.get("LOCALAPPDATA")):
+        if not base:
+            continue
+        candidatos.append(os.path.join(base, "Microsoft", "Edge", "Application", "msedge.exe"))
+        candidatos.append(os.path.join(base, "Google", "Chrome", "Application", "chrome.exe"))
+    for caminho in candidatos:
+        if os.path.isfile(caminho):
+            return caminho
+    return None
+
+
+def _abrir_no_navegador():
+    """
+    Plano B da janela: o proprio Edge em modo quiosque (tela cheia, sem
+    barra de endereco nem abas). Perfil proprio dentro de logs/ para abrir
+    sempre um processo novo — com o perfil padrao, o Edge entregaria a URL
+    a uma janela ja aberta e voltaria na hora, e o watchdog reabriria sem
+    parar. Espera o navegador fechar para devolver o controle ao watchdog,
+    igual a janela do pywebview.
+    """
+    exe = _navegador_kiosk()
+    if not exe:
+        logging.error("Sem WebView2 e sem Edge/Chrome nesta maquina: nao ha como abrir o jogo")
+        time.sleep(60)  # evita reabrir em loop apertado
+        sys.exit(1)
+
+    perfil = os.path.join(LOG_DIR, "perfil-navegador")
+    logging.warning("Abrindo o jogo em modo quiosque no navegador: %s", exe)
+    processo = subprocess.Popen([
+        exe,
+        "--kiosk", URL_JANELA,
+        "--edge-kiosk-type=fullscreen",
+        "--user-data-dir=" + perfil,
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--disable-features=Translate",
+        "--disable-pinch",
+        "--overscroll-history-navigation=0",
+    ])
+    processo.wait()
 
 
 def main():
     _configurar_log()
     logging.info("Iniciando totem — Quiz SDAI")
 
+    # INICIAR_QUIZ.bat aberto duas vezes: o segundo servidor nao subiria
+    # (porta em uso), mas a janela dele abriria por cima da do primeiro.
+    if _porta_ocupada():
+        logging.warning("Ja existe um totem rodando em %s; esta copia vai encerrar", URL)
+        sys.exit(SAIDA_JA_RODANDO)
+
+    _manter_tela_ligada()
+
     server = threading.Thread(target=_run_flask, daemon=True)
     server.start()
 
-    threading.Thread(target=_vigiar_backup_fim_de_dia, daemon=True).start()
+    threading.Thread(target=_vigiar_backups, daemon=True).start()
 
     if not _esperar_servidor():
         logging.error("Servidor Flask nao respondeu a tempo em %s", URL)
         sys.exit(1)
 
     logging.info("Servidor no ar em %s", URL)
+
+    # "python run.py --navegador" força o plano B, para testar no totem
+    # como o jogo fica numa maquina sem WebView2.
+    if "--navegador" in sys.argv or not _tem_webview2():
+        logging.warning("WebView2 ausente (ou --navegador) - usando o navegador como janela")
+        _abrir_no_navegador()
+        logging.info("Navegador encerrado — devolvendo o controle ao watchdog")
+        return
 
     # Trava o que o pywebview permite travar no lado da janela.
     webview.settings["ALLOW_DOWNLOADS"] = False
@@ -184,7 +321,14 @@ def main():
         confirm_close=False,
         text_select=False,
     )
-    webview.start()
+    try:
+        webview.start(gui="edgechromium")
+    except Exception:
+        # WebView2 registrado mas quebrado (atualizacao pela metade, por
+        # exemplo): em vez de o watchdog reabrir a mesma falha para sempre,
+        # o jogo segue no navegador.
+        logging.exception("A janela do pywebview falhou - usando o navegador")
+        _abrir_no_navegador()
 
     logging.info("Janela encerrada — devolvendo o controle ao watchdog")
 
