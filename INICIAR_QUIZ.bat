@@ -26,22 +26,11 @@ set "PY=python-embed\python.exe"
 set "ZIP_INSTALADOR=instalador\python-embed.zip"
 
 if not exist "%PY%" if exist "%ZIP_INSTALADOR%" (
-    echo ========================================
-    echo  Primeira vez do jogo NESTA maquina.
-    echo  Instalando o Python do totem agora...
-    echo  ^(100%% local, sem internet - pode levar alguns minutos^)
-    echo ========================================
-    echo.
-    powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-        "Expand-Archive -LiteralPath '%ZIP_INSTALADOR%' -DestinationPath 'python-embed' -Force"
+    call instalador\instalar_python.bat
     if not exist "%PY%" (
-        echo [ERRO] Nao consegui instalar a partir de %ZIP_INSTALADOR%.
-        echo O arquivo pode estar corrompido ou faltando no pendrive.
         pause
         exit /b 1
     )
-    echo [OK] Python do totem instalado nesta maquina.
-    echo.
 )
 
 rem Sem python-embed\ nem o instalador\python-embed.zip: so sobra o modo
