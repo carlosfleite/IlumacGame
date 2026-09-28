@@ -1369,13 +1369,16 @@ a { color: inherit; text-decoration: none; }
   height: 110px;
   object-fit: contain;
   pointer-events: none;
-  animation: egg-moeda-surge 3.2s ease-out both;
+  /* Duração casada com o atraso do aviso em easter-eggs.js (a moeda some
+     bem depois de o aviso já ter aparecido, em vez de ficar 600ms parada
+     e invisível esperando a remoção do elemento). */
+  animation: egg-moeda-surge 3.7s ease-out both;
 }
 
 @keyframes egg-moeda-surge {
   0% { opacity: 0; transform: translateY(90px) rotate(-90deg) scale(0.2); }
-  18% { opacity: 1; transform: translateY(0) rotate(10deg) scale(1.18); }
-  65% { opacity: 1; transform: translateY(-16px) rotate(-8deg) scale(1); }
+  16% { opacity: 1; transform: translateY(0) rotate(10deg) scale(1.18); }
+  78% { opacity: 1; transform: translateY(-16px) rotate(-8deg) scale(1); }
   100% { opacity: 0; transform: translateY(-70px) rotate(25deg) scale(0.8); }
 }
 

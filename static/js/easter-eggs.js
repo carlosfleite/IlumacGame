@@ -13,10 +13,12 @@
     aviso.textContent = texto;
     tela.appendChild(aviso);
     requestAnimationFrame(function () { aviso.classList.add("is-visible"); });
+    // 2600ms era curto: no totem real, com barulho e gente em volta, muita
+    // gente batia o olho e o aviso já tinha sumido. 3400ms dá tempo de ler.
     setTimeout(function () {
       aviso.classList.remove("is-visible");
       setTimeout(function () { aviso.remove(); }, 350);
-    }, 2600);
+    }, 3400);
     return aviso;
   }
 
@@ -50,9 +52,14 @@
       moeda.src = "/static/img/ILUMACOIN.png";
       moeda.alt = "Ilumacoin encontrada";
       tela.appendChild(moeda);
-      criarAviso("Você encontrou o Ilumaquinho secreto!", "egg-aviso-abertura");
-      setTimeout(function () { moeda.remove(); }, 3300);
-      setTimeout(function () { mascote.classList.remove("egg-comemorando"); }, 3300);
+      // O aviso tem z-index maior que a moeda e cai bem em cima dela: se
+      // aparecesse junto, cobria a moeda antes de ela terminar de "surgir".
+      // Meio segundo de atraso deixa a moeda ser vista primeiro.
+      setTimeout(function () {
+        criarAviso("Você encontrou o Ilumaquinho secreto!", "egg-aviso-abertura");
+      }, 500);
+      setTimeout(function () { moeda.remove(); }, 3800);
+      setTimeout(function () { mascote.classList.remove("egg-comemorando"); }, 3800);
     });
 
     // 8. Depois de um minuto sem interação, o Ilumaquinho cochila. O
@@ -113,11 +120,18 @@
       var agora = Date.now();
       if (agora - ultimoToque > 2200) toques = 0;
       ultimoToque = agora;
-      toques += 1;
       mascote.classList.remove("egg-pulinho");
       void mascote.offsetWidth;
       mascote.classList.add("egg-pulinho");
-      if (toques < 4 || (erro && !erro.hidden)) return;
+
+      // Com o erro de validação na tela, o toque só faz o mascote pular;
+      // não soma para a piada. Sem isso, toques dados enquanto o erro
+      // estava visível ficavam guardados e a piada disparava de surpresa
+      // assim que a pessoa corrigisse o campo.
+      if (erro && !erro.hidden) { toques = 0; return; }
+
+      toques += 1;
+      if (toques < 4) return;
 
       toques = 0;
       clearTimeout(restaurar);
@@ -150,7 +164,12 @@
       moeda.addEventListener("click", function () {
         sessionStorage.setItem("egg_ilumacoin_ranking", "1");
         moeda.classList.add("is-encontrada");
-        criarAviso("Ilumacoin encontrada!", "egg-aviso-ranking");
+        // Mesmo motivo do easter egg da abertura: o aviso cai bem em cima
+        // da moeda (mesmo "top"), então esperamos a animação de "pegar"
+        // (0.45s) aparecer antes de cobrir a área com o aviso.
+        setTimeout(function () {
+          criarAviso("Ilumacoin encontrada!", "egg-aviso-ranking");
+        }, 300);
         setTimeout(function () { moeda.remove(); }, 500);
       });
       moeda.addEventListener("animationend", function () { moeda.remove(); });
