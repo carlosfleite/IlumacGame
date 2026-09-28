@@ -38,6 +38,7 @@
   var fbPontos = document.getElementById("feedback-pontos");
   var fbRespRotulo = document.getElementById("fb-resposta-rotulo");
   var fbRespTexto = document.getElementById("feedback-detalhe");
+  var fbMascote = document.getElementById("fb-mascote");
 
   var perguntas = [];
   var indice = 0;
@@ -243,7 +244,8 @@
   (function preCarregar() {
     var d = window.DECO_MOCKUP || {};
     var arquivos = ["fundo-certo.png", "fundo-errado.png", "selo-pontos-certo.svg",
-      "selo-pontos-errado.svg", "moldura-premio.svg", "btn-toque.svg", "mascote.svg"];
+      "selo-pontos-errado.svg", "moldura-premio.svg", "btn-toque.svg", "mascote.svg",
+      "ilumaquinho-triste.png"];
     (d.certo || []).concat(d.errado || []).forEach(function (p) { arquivos.push(p.src); });
     arquivos.forEach(function (a) { new Image().src = "/static/img/mockup/" + a; });
   })();
@@ -256,6 +258,9 @@
     fbPontos.textContent = acertou ? "+" + pontos + " pontos" : "0 pontos";
     fbRespRotulo.textContent = acertou ? "Resposta" : "A certa era";
     fbRespTexto.textContent = respostaCerta || mensagem;
+    fbMascote.src = acertou
+      ? "/static/img/mockup/mascote.svg"
+      : "/static/img/mockup/ilumaquinho-triste.png";
 
     chegou = false;
     overlay.hidden = false;
