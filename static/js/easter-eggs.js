@@ -147,7 +147,24 @@
 
   function prepararRanking() {
     var tela = document.querySelector(".tela--ranking");
-    if (!tela || sessionStorage.getItem("egg_ilumacoin_ranking")) return;
+    if (!tela) return;
+
+    // Quem já achou a moeda leva um selinho de Ilumacoin junto da tag
+    // "Você" na própria linha do ranking. A lista é redesenhada do zero a
+    // cada troca de aba (dia/geral), então reaplicamos o selo sempre que
+    // ela mudar — não só no instante em que a moeda foi pega.
+    var lista = document.getElementById("ranking-lista");
+    function marcarVoceComMoeda() {
+      if (!sessionStorage.getItem("egg_ilumacoin_ranking")) return;
+      var tag = document.querySelector(".rk-voce");
+      if (tag) tag.classList.add("egg-achou-moeda");
+    }
+    if (lista && window.MutationObserver) {
+      new MutationObserver(marcarVoceComMoeda).observe(lista, { childList: true });
+    }
+    marcarVoceComMoeda();
+
+    if (sessionStorage.getItem("egg_ilumacoin_ranking")) return;
 
     // 6. Aparição rara: aproximadamente uma em cada quatro visitas ao
     // ranking. Se não for capturada, pode reaparecer em uma visita futura.
@@ -164,6 +181,7 @@
       moeda.addEventListener("click", function () {
         sessionStorage.setItem("egg_ilumacoin_ranking", "1");
         moeda.classList.add("is-encontrada");
+        marcarVoceComMoeda();
         // Mesmo motivo do easter egg da abertura: o aviso cai bem em cima
         // da moeda (mesmo "top"), então esperamos a animação de "pegar"
         // (0.45s) aparecer antes de cobrir a área com o aviso.

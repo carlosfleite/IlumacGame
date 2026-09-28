@@ -1236,6 +1236,19 @@ a { color: inherit; text-decoration: none; }
   background: var(--vermelho);
   font-size: 22px;
   line-height: 1;
+  white-space: nowrap;
+}
+
+/* Selo de quem pegou a Ilumacoin rara do ranking (easter-eggs.js). Some
+   sozinho se a pessoa não achou: a tag "Você" continua igual. */
+.rk-voce.egg-achou-moeda::after {
+  content: "";
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin-left: 6px;
+  vertical-align: -6px;
+  background: url("/static/img/ILUMACOIN.png") center / contain no-repeat;
 }
 
 .rk-nome {
