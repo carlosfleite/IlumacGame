@@ -202,6 +202,41 @@
     true
   );
 
+  // Saída discreta para a equipe: na tela inicial, dois toques rápidos no
+  // brasão da Ilumac criam o sinal de parada e encerram o processo. Um
+  // toque isolado não faz nada, evitando saída acidental.
+  function prepararSaidaPeloBrasao() {
+    var botao = document.getElementById("ab-sair");
+    if (!botao || !travado) return;
+
+    var primeiroToqueEm = 0;
+    var encerrando = false;
+
+    function encerrar() {
+      if (encerrando) return;
+      encerrando = true;
+      fetch("/api/totem/encerrar", {
+        method: "POST",
+        headers: { "X-Totem-Exit": "ilumac" },
+      }).catch(function () {
+        // O processo pode encerrar antes de o navegador receber a resposta.
+      });
+    }
+
+    botao.addEventListener("click", function (ev) {
+      ev.preventDefault();
+      var agora = Date.now();
+      if (primeiroToqueEm && agora - primeiroToqueEm <= 650) {
+        primeiroToqueEm = 0;
+        encerrar();
+        return;
+      }
+      primeiroToqueEm = agora;
+    });
+  }
+
+  prepararSaidaPeloBrasao();
+
   // ---------------------------------------------------------------------
   // Reset por inatividade
   // ---------------------------------------------------------------------
@@ -218,6 +253,12 @@
   var regressiva = null; // interval da contagem regressiva
   var overlay = null;
   var elSegundos = null;
+  var elUnidade = null;
+
+  function atualizarRegressiva(restante) {
+    elSegundos.textContent = String(restante);
+    elUnidade.textContent = restante === 1 ? "segundo" : "segundos";
+  }
 
   function montarOverlay() {
     overlay = document.createElement("div");
@@ -242,6 +283,7 @@
       "</div>";
     document.body.appendChild(overlay);
     elSegundos = overlay.querySelector(".kiosk-inatividade-contador");
+    elUnidade = overlay.querySelector(".kiosk-inatividade-unidade");
     // Interagir com o aviso (botão ou qualquer ponto) cancela o reset
     overlay.addEventListener("click", reiniciarContagem);
   }
@@ -265,7 +307,7 @@
 
   function mostrarAviso() {
     var restante = AVISO_S;
-    elSegundos.textContent = String(restante);
+    atualizarRegressiva(restante);
     overlay.removeAttribute("hidden");
 
     regressiva = setInterval(function () {
@@ -275,7 +317,7 @@
         resetar();
         return;
       }
-      elSegundos.textContent = String(restante);
+      atualizarRegressiva(restante);
     }, 1000);
   }
 

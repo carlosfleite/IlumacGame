@@ -5,6 +5,7 @@ App local single-user (totem); estado da tentativa fica em memória.
 """
 
 import logging
+import os
 import random
 import re
 import threading
@@ -126,6 +127,27 @@ def pagina_cadastro():
     return render_template("cadastro.html", dominios_email=DOMINIOS_EMAIL)
 
 
+@app.route("/api/totem/encerrar", methods=["POST"])
+def api_totem_encerrar():
+    """Encerra o processo e sinaliza ao watchdog para não reabrir o totem."""
+    if (
+        request.remote_addr not in ("127.0.0.1", "::1")
+        or request.headers.get("X-Totem-Exit") != "ilumac"
+    ):
+        return jsonify({"ok": False, "erro": "Acesso negado."}), 403
+
+    parar_flag = os.path.join(os.path.dirname(os.path.abspath(__file__)), "PARAR.flag")
+    with open(parar_flag, "w", encoding="ascii") as arquivo:
+        arquivo.write("encerrado pelo brasao\n")
+
+    # Dá tempo para a resposta HTTP chegar à janela. Quando o processo sai,
+    # o .bat encontra PARAR.flag e encerra o watchdog em vez de reiniciar.
+    timer = threading.Timer(0.5, lambda: os._exit(0))
+    timer.daemon = True
+    timer.start()
+    return jsonify({"ok": True})
+
+
 @app.route("/regras")
 def pagina_regras():
     # O pid vai para o template para o botão "Começar" ser um <a href> real.
@@ -230,6 +252,19 @@ def api_cadastro():
         ).fetchone()
         if existente:
             participante_id = existente["id"]
+            # O e-mail identifica a mesma pessoa, mas nome e telefone podem
+            # ter sido corrigidos numa nova participação. Sem atualizar, o
+            # ranking continuava mostrando os dados antigos e dava a impressão
+            # de que o novo cadastro não tinha sido salvo.
+            conn.execute(
+                """
+                UPDATE participantes
+                SET nome = ?, telefone = ?, consentimento_lgpd = ?
+                WHERE id = ?
+                """,
+                (nome, telefone_fmt, consentimento, participante_id),
+            )
+            conn.commit()
         else:
             cur = conn.execute(
                 """
@@ -617,6 +652,8 @@ def api_ranking():
         rows = conn.execute(
             """
             SELECT
+                best.id AS tentativa_id,
+                best.participante_id,
                 p.nome,
                 best.pontuacao,
                 best.tempo_total_ms,
@@ -635,6 +672,8 @@ def api_ranking():
         for i, row in enumerate(rows, start=1):
             ranking.append({
                 "posicao": i,
+                "tentativa_id": row["tentativa_id"],
+                "participante_id": row["participante_id"],
                 "nome": row["nome"],
                 "pontuacao": row["pontuacao"],
                 "tempo_total_ms": row["tempo_total_ms"],
@@ -672,4 +711,14 @@ def create_app():
 
 if __name__ == "__main__":
     create_app()
-    app.run(host="127.0.0.1", port=5000, debug=True, threaded=True)
+    # Sem reloader: no Windows ele cria um segundo processo que pode ficar
+    # escutando a porta 5000 mesmo depois de a janela de teste ser fechada.
+    # O INICIAR_QUIZ.bat então interpreta esse processo invisível como outro
+    # jogo aberto. O run.py já usa esta mesma configuração segura.
+    app.run(
+        host="127.0.0.1",
+        port=5000,
+        debug=False,
+        threaded=True,
+        use_reloader=False,
+    )

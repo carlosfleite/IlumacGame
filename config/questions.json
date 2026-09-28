@@ -14,8 +14,11 @@
     "  o totem revezava entre os grupos de dificuldade, mas como os grupos",
     "  tem tamanhos diferentes isso fazia a pergunta do grupo menor sair",
     "  quase 2x mais que a do maior. Agora o sorteio e uniforme e o que",
-    "  espalha e a janela de descanso: uma pergunta servida so pode voltar",
-    "  depois de ~6 partidas, entao nunca cai duas partidas seguidas.",
+    "  espalha e a janela de descanso: com 50 perguntas ativas e 5 por",
+    "  partida, cada pergunta aparece uma vez no ciclo de 10 partidas e so",
+    "  pode voltar a partir da 11a.",
+    "- O campo opcional 'fonte' registra a pagina, manual ou video oficial",
+    "  usado para validar a pergunta; ele nao aparece para o jogador.",
     "- E preciso ter pelo menos 'perguntas_por_partida' perguntas ativas.",
     "",
     "IMPORTANTE — nao deixe a resposta certa 'aparecer' pelo tamanho: ao",
@@ -213,7 +216,7 @@
       },
       "correta": "a",
       "ativa": true,
-      "revisar": true
+      "fonte": "https://www.youtube.com/watch?v=zvjzwQJzS4Q"
     },
     {
       "chave": "obstrucao-detector",
@@ -238,7 +241,7 @@
       },
       "correta": "b",
       "ativa": true,
-      "revisar": true
+      "fonte": "https://www.youtube.com/watch?v=zvjzwQJzS4Q"
     },
     {
       "chave": "norma-iluminacao-emergencia",
@@ -306,7 +309,7 @@
       "correta": "d",
       "dificuldade": "iniciante",
       "ativa": true,
-      "revisar": true
+      "fonte": "https://www.ilumac.com.br/central-de-alarme-wireless-lyax"
     },
     {
       "chave": "deteccao-gas-funcao",
@@ -334,7 +337,7 @@
       "correta": "b",
       "dificuldade": "iniciante",
       "ativa": true,
-      "revisar": true
+      "fonte": "https://www.ilumac.com.br/central-de-alarme-wireless-lyax"
     },
     {
       "chave": "acionador-rearmavel",
@@ -391,17 +394,17 @@
     },
     {
       "chave": "manutencao-causa-falha",
-      "texto": "Segundo as masterclasses da Ilumac, qual é uma das principais causas de falha em detectores?",
+      "texto": "Segundo a masterclass de manutenção da Ilumac, por que ambientes com muita poeira exigem manutenção mais frequente dos detectores?",
       "alternativas": {
-        "a": "A variação normal de temperatura entre o dia e a noite no local",
-        "b": "A instalação do detector a menos de 30 cm da parede mais próxima",
-        "c": "A sujeira e a poeira acumuladas na câmara sensora do detector",
-        "d": "O uso de detectores de fabricantes diferentes no mesmo laço"
+        "a": "Porque a poeira aumenta automaticamente a área de cobertura do detector",
+        "b": "Porque a poeira altera o endereço digital programado no equipamento",
+        "c": "Porque o acúmulo de sujeira pode comprometer o funcionamento do detector",
+        "d": "Porque a poeira descarrega imediatamente a bateria interna da central"
       },
       "correta": "c",
       "dificuldade": "iniciante",
       "ativa": true,
-      "revisar": true
+      "fonte": "https://www.youtube.com/watch?v=zvjzwQJzS4Q"
     },
     {
       "chave": "central-log-eventos",
@@ -473,7 +476,7 @@
     },
     {
       "chave": "cabo-3-vias-ke80",
-      "texto": "Em centrais endereçáveis Ilumac com rede de 3 vias (como a KE-80), esse cabo carrega:",
+      "texto": "Na central KE-80 da Ilumac (produto descontinuado), o cabo de instrumentação de 3 vias carrega:",
       "alternativas": {
         "a": "Alimentação e comunicação de dados ao mesmo tempo, no mesmo cabo",
         "b": "Apenas a alimentação elétrica de todos os dispositivos do laço",
@@ -482,11 +485,12 @@
       },
       "correta": "a",
       "dificuldade": "intermediaria",
-      "ativa": true
+      "ativa": true,
+      "fonte": "https://www.ilumac.com.br/ke-80"
     },
     {
       "chave": "supervisor-rs232-quantidade",
-      "texto": "Via saída serial RS232/RS485, um painel supervisor da linha KE-DUAL pode interligar quantas centrais numa mesma sub-rede?",
+      "texto": "Pelas saídas RS232/RS485, quantas centrais KE-DUAL do mesmo modelo podem ser interligadas para operar como um único sistema?",
       "alternativas": {
         "a": "Até 2 centrais na mesma sub-rede supervisionada pelo painel",
         "b": "Até 8 centrais na mesma sub-rede supervisionada pelo painel",
@@ -495,7 +499,8 @@
       },
       "correta": "b",
       "dificuldade": "intermediaria",
-      "ativa": true
+      "ativa": true,
+      "fonte": "https://www.ilumac.com.br/ke-dual"
     },
     {
       "chave": "lyax-zonas",
@@ -508,7 +513,8 @@
       },
       "correta": "c",
       "dificuldade": "intermediaria",
-      "ativa": true
+      "ativa": true,
+      "fonte": "https://www.ilumac.com.br/central-de-alarme-wireless-lyax"
     },
     {
       "chave": "lyax-alcance-externo",
@@ -521,7 +527,8 @@
       },
       "correta": "d",
       "dificuldade": "intermediaria",
-      "ativa": true
+      "ativa": true,
+      "fonte": "https://www.ilumac.com.br/central-de-alarme-wireless-lyax"
     },
     {
       "chave": "me1e-dispositivos-convencionais",
@@ -535,7 +542,7 @@
       "correta": "a",
       "dificuldade": "intermediaria",
       "ativa": true,
-      "revisar": true
+      "fonte": "https://www.ilumac.com.br/me1-e"
     },
     {
       "chave": "resistor-fim-de-linha",
@@ -553,30 +560,31 @@
     },
     {
       "chave": "detector-termico-ip65",
-      "texto": "Detectores térmicos com proteção IP65, como os da linha TDPW da Ilumac, são indicados especialmente para:",
+      "texto": "Segundo a Ilumac, detectores térmicos IP65 da linha TDPW são indicados especialmente para:",
       "alternativas": {
         "a": "Escritórios climatizados com ar-condicionado central instalado",
         "b": "Datacenters mantidos sob temperatura e umidade controladas",
-        "c": "Ambientes com umidade ou jatos de água, como cozinhas industriais",
+        "c": "Locais com vapor, gases ou partículas em suspensão, como estacionamentos",
         "d": "Elevadores de passageiros instalados em prédios comerciais"
       },
       "correta": "c",
       "dificuldade": "intermediaria",
-      "ativa": true
+      "ativa": true,
+      "fonte": "https://www.ilumac.com.br/detector-termico-enderecavel-tdpw-e"
     },
     {
       "chave": "detector-linear-temperatura-cabo",
-      "texto": "O detector linear de temperatura por cabo sensor, como o DWTC-302, é indicado principalmente para:",
+      "texto": "O detector linear de temperatura DWTC-302 é indicado para proteger continuamente locais como:",
       "alternativas": {
         "a": "Ambientes pequenos e totalmente fechados, sem circulação de ar",
         "b": "Detectar fumaça ao longo de todo o comprimento do cabo sensor",
         "c": "Medir com precisão a umidade relativa do ar do ambiente",
-        "d": "Proteção contínua de áreas extensas, como túneis e correias"
+        "d": "Esteiras transportadoras, leitos de cabos, quadros elétricos e subestações"
       },
       "correta": "d",
       "dificuldade": "intermediaria",
       "ativa": true,
-      "revisar": true
+      "fonte": "https://www.ilumac.com.br/detector-linear-de-temperatura-dwtc302"
     },
 
     {
@@ -590,21 +598,20 @@
       },
       "correta": "a",
       "dificuldade": "dificil",
-      "revisar": true,
-      "ativa": true
+      "ativa": true,
+      "fonte": "https://www.youtube.com/watch?v=zvjzwQJzS4Q"
     },
     {
       "chave": "isolador-efeito-sem-protecao",
-      "texto": "Se um laço endereçável não tivesse isoladores de curto-circuito distribuídos, o que poderia acontecer em caso de falha num único ponto?",
+      "texto": "Qual é o risco de um curto-circuito em um trecho de laço endereçável sem isolação adequada?",
       "alternativas": {
         "a": "Melhoraria a velocidade de comunicação de todo o laço endereçável",
-        "b": "Um curto num único ponto derrubaria a comunicação de todo o laço",
+        "b": "O curto poderia comprometer a comunicação de vários dispositivos do circuito",
         "c": "Aumentaria a autonomia da bateria interna da central de alarme",
         "d": "Ativaria automaticamente o sistema de sprinklers do ambiente"
       },
       "correta": "b",
       "dificuldade": "dificil",
-      "revisar": true,
       "ativa": true
     },
     {
@@ -632,7 +639,8 @@
       },
       "correta": "d",
       "dificuldade": "dificil",
-      "ativa": true
+      "ativa": true,
+      "fonte": "https://www.ilumac.com.br/central-de-alarme-wireless-lyax"
     },
     {
       "chave": "lyax-capacidade-dispositivos",
@@ -645,7 +653,8 @@
       },
       "correta": "a",
       "dificuldade": "dificil",
-      "ativa": true
+      "ativa": true,
+      "fonte": "https://www.ilumac.com.br/central-de-alarme-wireless-lyax"
     },
     {
       "chave": "manutencao-motivos-masterclass",
@@ -658,8 +667,8 @@
       },
       "correta": "b",
       "dificuldade": "dificil",
-      "ativa": false,
-      "revisar": true
+      "ativa": true,
+      "fonte": "https://www.youtube.com/watch?v=zvjzwQJzS4Q"
     },
     {
       "chave": "kedual-flexibilidade-lacos",
@@ -672,7 +681,8 @@
       },
       "correta": "c",
       "dificuldade": "dificil",
-      "ativa": true
+      "ativa": true,
+      "fonte": "https://www.ilumac.com.br/ke-dual"
     },
     {
       "chave": "protocolo-alf500",
@@ -685,7 +695,8 @@
       },
       "correta": "d",
       "dificuldade": "dificil",
-      "ativa": true
+      "ativa": true,
+      "fonte": "https://www.ilumac.com.br/detector-termico-enderecavel-tdpw-e"
     },
     {
       "chave": "detector-nomenclatura-sdo",
@@ -711,7 +722,8 @@
       },
       "correta": "b",
       "dificuldade": "dificil",
-      "ativa": true
+      "ativa": true,
+      "fonte": "https://www.ilumac.com.br/tanda"
     },
     {
       "chave": "lyax-memoria-eventos",
@@ -724,7 +736,8 @@
       },
       "correta": "c",
       "dificuldade": "dificil",
-      "ativa": true
+      "ativa": true,
+      "fonte": "https://www.ilumac.com.br/central-de-alarme-wireless-lyax"
     }
   ]
 }

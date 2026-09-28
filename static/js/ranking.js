@@ -16,6 +16,15 @@
   var escopoAtual = "dia";
   var pedidoEmAndamento = 0;
 
+  function participanteAtual() {
+    try {
+      var resultado = JSON.parse(sessionStorage.getItem("ultimo_resultado") || "null");
+      return resultado && Number(resultado.participante_id);
+    } catch (e) {
+      return 0;
+    }
+  }
+
   // 0:55, como no mockup
   function fmtMs(ms) {
     var s = Math.floor((ms || 0) / 1000);
@@ -39,10 +48,8 @@
       .replace(/"/g, "&quot;");
   }
 
-  // Quantas linhas cabem no palco, como nas pranchetas 2 e 3 do mockup:
-  // no dia, 8 linhas (a 9ª da prancheta daria lugar ao botão de voltar);
-  // no geral, o pódio e mais 4 linhas.
-  var LINHAS_DIA = 8;
+  // No geral, aparecem o pódio e mais 4 linhas, como no mockup. O ranking
+  // do dia recebe até 100 pessoas e rola dentro da própria lista.
   var LINHAS_GERAL = 4;
 
   var IMG = "/static/img/mockup/";
@@ -85,15 +92,18 @@
     });
   }
 
-  function renderLista(rows) {
+  function renderLista(rows, destacarParticipante) {
     lista.innerHTML = rows
       .map(function (r) {
+        var atual = destacarParticipante && Number(r.participante_id) === destacarParticipante;
         return (
-          '<li class="ranking-item" value="' + r.posicao + '">' +
+          '<li class="ranking-item' + (atual ? ' is-atual' : '') + '" value="' + r.posicao + '"' +
+            (atual ? ' aria-current="true"' : '') + '>' +
             '<span class="rk-barra"></span>' +
             icone(r.posicao, "rk-medalha") +
             '<p class="px rk-nome">' + escapeHtml(nomeCurto(r.nome)) + "</p>" +
             '<p class="px rk-pts">' + pontos(r.pontuacao) + "</p>" +
+            (atual ? '<span class="px rk-voce">Você</span>' : '') +
           "</li>"
         );
       })
@@ -101,6 +111,14 @@
     Array.prototype.forEach.call(lista.querySelectorAll(".rk-nome"), function (el) {
       window.caberNaLinha(el);
     });
+
+    var atual = lista.querySelector(".ranking-item.is-atual");
+    if (atual && !lista.classList.contains("lista-geral")) {
+      lista.scrollTop = Math.max(
+        0,
+        atual.offsetTop - (lista.clientHeight - atual.offsetHeight) / 2
+      );
+    }
   }
 
   btnReiniciar.addEventListener("click", function () {
@@ -126,7 +144,7 @@
     // corrida e ficar na tela até o próximo clique.
     var meuPedido = ++pedidoEmAndamento;
 
-    fetch("/api/ranking?limite=20&escopo=" + encodeURIComponent(escopo))
+    fetch("/api/ranking?limite=100&escopo=" + encodeURIComponent(escopo))
       .then(function (res) {
         return res.json();
       })
@@ -146,7 +164,7 @@
         }
 
         if (escopo === "dia") {
-          renderLista(rows.slice(0, LINHAS_DIA));
+          renderLista(rows, participanteAtual());
         } else {
           renderPodio(rows.slice(0, 3));
           renderLista(rows.slice(3, 3 + LINHAS_GERAL));
