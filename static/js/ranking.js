@@ -11,6 +11,7 @@
   var btnReiniciar = document.getElementById("btn-reiniciar");
   var tabDia = document.getElementById("tab-dia");
   var tabGeral = document.getElementById("tab-geral");
+  var baloes = document.getElementById("rk-baloes");
 
   var escopoAtual = "dia";
   var pedidoEmAndamento = 0;
@@ -116,6 +117,7 @@
 
     podio.innerHTML = "";
     podio.hidden = escopo === "dia";
+    if (baloes) baloes.hidden = escopo === "dia";
     lista.classList.toggle("lista-geral", escopo === "geral");
     lista.innerHTML = '<li class="ranking-vazio">Carregando…</li>';
 
