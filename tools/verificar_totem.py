@@ -123,7 +123,26 @@ else:
 atalho = os.path.join(os.environ.get("APPDATA", ""), "Microsoft", "Windows", "Start Menu",
                       "Programs", "Startup", "Quiz SDAI.lnk")
 if os.path.exists(atalho):
-    ok("O quiz abre sozinho quando o Windows liga")
+    # O atalho pode ter ficado de uma cópia anterior do jogo (outro .zip
+    # baixado em outra pasta): aí o Windows abriria a versão velha.
+    import subprocess
+    try:
+        alvo = subprocess.run(
+            ["powershell", "-NoProfile", "-Command",
+             "(New-Object -ComObject WScript.Shell).CreateShortcut($env:ATALHO_QUIZ).TargetPath"],
+            capture_output=True, text=True, timeout=20,
+            env=dict(os.environ, ATALHO_QUIZ=atalho),
+        ).stdout.strip()
+    except Exception:
+        alvo = ""
+    este = os.path.join(BASE, "INICIAR_QUIZ.bat")
+    if alvo and os.path.normcase(os.path.abspath(alvo)) == os.path.normcase(este):
+        ok("O quiz abre sozinho quando o Windows liga")
+    elif alvo:
+        aviso("O Windows abre o quiz de OUTRA pasta (%s) - rode ABRIR_JUNTO_COM_WINDOWS.bat "
+              "nesta pasta para apontar para esta copia" % os.path.dirname(alvo))
+    else:
+        aviso("Nao consegui ler o atalho de abertura automatica")
 else:
     aviso("O quiz NAO abre sozinho com o Windows (rode ABRIR_JUNTO_COM_WINDOWS.bat)")
 

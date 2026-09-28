@@ -21,6 +21,12 @@ Isso aqui é pra explicar pra qualquer pessoa (técnica ou não) o que acontece 
 
 Resumindo pra quem só vai operar: **plugou o pendrive, deu dois cliques no `.bat`, esperou o que precisar esperar.** Todo o resto é automático.
 
+### Baixando o jogo pelo GitHub (.zip)
+
+Na página do repositório: **Code → Download ZIP** (branch `main`). Extraia o .zip num lugar de **caminho curto**, por exemplo `C:\IlumacGame` ou a Área de Trabalho — dentro de muitas pastas (ou no OneDrive) o caminho fica longo demais para o Windows e o Python do jogo não instala; o `.bat` avisa se for o caso. O .zip já traz o instalador do Python (`instalador\python-embed.zip`): a primeira abertura instala tudo sem internet, em cerca de 1 minuto.
+
+Baixou uma versão nova em outra pasta? Rode o `ABRIR_JUNTO_COM_WINDOWS.bat` da pasta nova: o atalho de abertura automática passa a apontar para ela (o `VERIFICAR_TOTEM.bat` avisa se ele ainda aponta para a cópia antiga). O banco (`quiz.db`) e os `backups\` ficam na pasta antiga — copie os dois para a nova se já houver cadastros.
+
 ### Antes da feira, em cada computador do totem
 
 1. **`VERIFICAR_TOTEM.bat`** — dois cliques. Confere tudo (Python, janela, arquivos, perguntas, prêmios, banco, backups, pendrive, disco) e diz em português se está pronto. Só lê, não muda nada.
