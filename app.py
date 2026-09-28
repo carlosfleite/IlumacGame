@@ -268,13 +268,14 @@ def _sortear_perguntas(rows, quantidade):
     """
     por_id = {row["id"]: row for row in rows}
 
-    # Quantas perguntas ficam de molho entre uma aparição e outra. Deixamos
-    # descansar TODAS menos um pool de reserva — quanto maior o banco ativo,
-    # maior o intervalo até uma pergunta poder repetir. O pool de reserva
-    # (~3 partidas, mínimo 12) mantém variedade no sorteio e evita estourar
-    # se metade do banco for desativada pelo admin.
-    reserva = max(quantidade * 3, 12)
-    janela = max(0, len(rows) - reserva)
+    # Mantém em descanso o maior número possível sem impedir a próxima
+    # rodada. Com 50 perguntas e 5 por partida, as últimas 45 ficam
+    # bloqueadas: as 5 restantes fecham um ciclo completo de 10 partidas e
+    # só então as primeiras podem voltar. Se o total não for múltiplo do
+    # tamanho da rodada (por exemplo, 49), o mesmo cálculo maximiza o
+    # intervalo, embora seja matematicamente inevitável repetir uma pergunta
+    # para completar a décima partida.
+    janela = max(0, len(rows) - quantidade)
 
     with _recentes_lock:
         conn = get_connection()

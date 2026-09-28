@@ -290,11 +290,20 @@
   }
 
   alvos.forEach(function (el) {
-    // Desliga o teclado nativo: com o nosso na tela, os dois juntos
-    // brigariam pelo mesmo espaco. Fica no JS e nao no HTML de proposito —
-    // se este script nao carregar, o campo volta a aceitar o teclado do
-    // sistema em vez de ficar impossivel de preencher.
+    // readonly e a barreira efetiva contra o teclado virtual do Windows e
+    // contra teclados fisicos. O teclado do jogo continua funcionando porque
+    // altera el.value diretamente e dispara o evento input. inputmode=none
+    // fica como reforco para navegadores que ainda tentem abrir o painel de
+    // entrada ao tocar num campo somente leitura.
+    el.readOnly = true;
     el.setAttribute("inputmode", "none");
+
+    // Bloqueia tambem colagem, arrastar texto e eventos de entrada externos.
+    // As teclas do jogo nao passam por estes eventos: chamam inserir/apagar.
+    el.addEventListener("beforeinput", function (ev) { ev.preventDefault(); });
+    el.addEventListener("paste", function (ev) { ev.preventDefault(); });
+    el.addEventListener("drop", function (ev) { ev.preventDefault(); });
+    el.addEventListener("keydown", function (ev) { ev.preventDefault(); });
 
     el.addEventListener("focus", function () {
       if (fecharTimer) { clearTimeout(fecharTimer); fecharTimer = null; }
