@@ -15,7 +15,9 @@ pergunta removida do JSON é desativada, jamais deletada.
 import json
 import logging
 import os
+import shutil
 import sqlite3
+import string
 from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -28,6 +30,12 @@ PREMIOS_JSON = os.path.join(CONFIG_DIR, "premios.json")
 # .db por evento. Ficam todos aqui — nunca soltos na raiz do projeto —
 # para dar pra copiar a pasta inteira pro pendrive no fim de cada dia.
 BACKUP_DIR = os.path.join(BASE_DIR, "backups")
+
+# Pendrive de backup: qualquer unidade removível com uma pasta com este
+# nome na raiz recebe uma cópia de cada backup, sozinha. A pasta é o
+# "consentimento" da equipe — um pendrive qualquer espetado no totem nunca
+# recebe dados de participante.
+PASTA_PENDRIVE = "ILUMAC_BACKUP"
 
 LETRAS = ("a", "b", "c", "d")
 
@@ -55,14 +63,17 @@ def get_connection():
       partida). Sem isso, consultar o ranking enquanto alguém termina o quiz
       pode devolver "database is locked".
     - busy_timeout: em vez de falhar na hora, espera o lock por até 5 s.
-    - synchronous=NORMAL: seguro sob WAL e bem mais leve no disco que FULL.
+    - synchronous=FULL: cada cadastro e cada resposta vão para o disco na
+      hora do commit. Com NORMAL, uma queda de energia no estande podia
+      levar as últimas partidas; o volume de escrita do quiz é minúsculo,
+      então o custo extra não aparece.
     """
     conn = sqlite3.connect(DB_PATH, timeout=5.0)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.execute("PRAGMA journal_mode = WAL")
     conn.execute("PRAGMA busy_timeout = 5000")
-    conn.execute("PRAGMA synchronous = NORMAL")
+    conn.execute("PRAGMA synchronous = FULL")
     return conn
 
 
@@ -417,10 +428,64 @@ def _validar_cobertura_premios(faixas, pontuacao_maxima, incremento):
 # Backup
 # ---------------------------------------------------------------------------
 
+def _integro(caminho):
+    """True se o arquivo abre como SQLite e passa no quick_check."""
+    try:
+        conn = sqlite3.connect("file:%s?mode=ro" % caminho, uri=True, timeout=5.0)
+        try:
+            return conn.execute("PRAGMA quick_check").fetchone()[0] == "ok"
+        finally:
+            conn.close()
+    except sqlite3.Error:
+        return False
+
+
+def _pastas_pendrive():
+    """Pastas ILUMAC_BACKUP em unidades removíveis conectadas agora."""
+    if os.name != "nt":
+        return []
+    import ctypes
+
+    pastas = []
+    for letra in string.ascii_uppercase:
+        raiz = letra + ":\\"
+        try:
+            if ctypes.windll.kernel32.GetDriveTypeW(raiz) != 2:  # DRIVE_REMOVABLE
+                continue
+        except Exception:
+            continue
+        pasta = os.path.join(raiz, PASTA_PENDRIVE)
+        if os.path.isdir(pasta):
+            pastas.append(pasta)
+    return pastas
+
+
+def espelhar_no_pendrive(arquivo):
+    """
+    Copia um backup para o pendrive de backup, se houver um conectado.
+    Nunca levanta exceção: pendrive cheio ou arrancado no meio da cópia
+    não pode derrubar o totem. Subpasta com o nome do computador para os
+    backups de mini PCs diferentes não se misturarem.
+    """
+    copiados = []
+    for pasta in _pastas_pendrive():
+        try:
+            destino = os.path.join(pasta, os.environ.get("COMPUTERNAME", "totem"))
+            os.makedirs(destino, exist_ok=True)
+            shutil.copy2(arquivo, destino)
+            copiados.append(destino)
+        except OSError as exc:
+            log.warning("Nao consegui copiar o backup para %s: %s", pasta, exc)
+    if copiados:
+        log.info("Backup copiado para o pendrive: %s", ", ".join(copiados))
+    return copiados
+
+
 def fazer_backup(motivo="auto", forcar=False):
     """
     Copia o banco inteiro para backups/, com timestamp e o motivo no nome
-    (ex.: quiz_2026-09-14_213005_fim_do_dia.db).
+    (ex.: quiz_2026-09-14_213005_fim_do_dia.db), e espelha no pendrive de
+    backup se houver um conectado (ver PASTA_PENDRIVE).
 
     Usa a API nativa de backup do sqlite3 (Connection.backup), não uma
     cópia de arquivo: sob journal_mode=WAL uma cópia de arquivo pode
@@ -460,13 +525,83 @@ def fazer_backup(motivo="auto", forcar=False):
         alvo = sqlite3.connect(destino)
         try:
             origem.backup(alvo)
+            # A cópia herda o modo WAL do original, e abrir o backup depois
+            # criaria -wal/-shm soltos do lado. Em modo DELETE o backup é
+            # um arquivo único, fácil de copiar para o pendrive.
+            alvo.execute("PRAGMA journal_mode = DELETE")
         finally:
             alvo.close()
     finally:
         origem.close()
 
     log.info("Backup do banco salvo em %s (motivo: %s)", destino, motivo)
+    espelhar_no_pendrive(destino)
     return destino
+
+
+_assinatura_ultimo_periodico = None
+
+
+def backup_periodico():
+    """
+    Backup ao longo do dia: no máximo um por hora cheia, e só se entrou
+    dado novo desde o último. Antes, entre o backup de boot e o de fim de
+    dia podia passar o dia inteiro — um disco que falhasse à tarde levava
+    a manhã junto.
+    """
+    global _assinatura_ultimo_periodico
+    if not os.path.exists(DB_PATH):
+        return None
+    conn = sqlite3.connect(DB_PATH, timeout=5.0)
+    try:
+        assinatura = tuple(
+            tuple(conn.execute("SELECT COUNT(*), COALESCE(MAX(id), 0) FROM %s" % t).fetchone())
+            for t in ("participantes", "quiz_tentativas", "quiz_respostas")
+        )
+    except sqlite3.Error:
+        return None
+    finally:
+        conn.close()
+    if assinatura == _assinatura_ultimo_periodico:
+        return None
+    arquivo = fazer_backup("hora%s" % datetime.now().strftime("%H"))
+    if arquivo:
+        _assinatura_ultimo_periodico = assinatura
+    return arquivo
+
+
+def recuperar_banco_corrompido():
+    """
+    Se o quiz.db não abre ou falha no quick_check (queda de energia no
+    meio de uma escrita, disco com defeito), troca pelo backup íntegro
+    mais recente, sozinho — o totem volta a funcionar perdendo no máximo
+    a última hora. O arquivo danificado não é apagado: vai para backups/
+    com "corrompido" no nome, para uma tentativa de resgate depois.
+    Devolve o nome do backup usado, ou None se não precisou/não achou.
+    """
+    if not os.path.exists(DB_PATH) or _integro(DB_PATH):
+        return None
+
+    log.error("quiz.db falhou na verificacao de integridade - recuperando do backup")
+    os.makedirs(BACKUP_DIR, exist_ok=True)
+    marca = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    for extra in ("", "-wal", "-shm"):
+        origem = DB_PATH + extra
+        if os.path.exists(origem):
+            shutil.move(origem, os.path.join(BACKUP_DIR, "corrompido_%s_quiz.db%s" % (marca, extra)))
+
+    candidatos = sorted(
+        (n for n in os.listdir(BACKUP_DIR) if n.startswith("quiz_") and n.endswith(".db")),
+        reverse=True,  # o nome começa pela data/hora: ordem alfabética = cronológica
+    )
+    for nome in candidatos:
+        caminho = os.path.join(BACKUP_DIR, nome)
+        if _integro(caminho):
+            shutil.copy2(caminho, DB_PATH)
+            log.error("quiz.db restaurado a partir de %s", nome)
+            return nome
+    log.error("Nenhum backup integro encontrado; o jogo comeca com um banco novo")
+    return None
 
 
 def init_db():
@@ -479,6 +614,7 @@ def init_db():
     salvo com erro de digitação não pode derrubar o totem. Registra em log e
     segue com o conteúdo que já está no banco.
     """
+    recuperar_banco_corrompido()
     fazer_backup("boot")
 
     conn = get_connection()

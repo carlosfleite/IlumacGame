@@ -11,6 +11,7 @@
   var btnReiniciar = document.getElementById("btn-reiniciar");
   var tabDia = document.getElementById("tab-dia");
   var tabGeral = document.getElementById("tab-geral");
+  var baloes = document.getElementById("rk-baloes");
 
   var escopoAtual = "dia";
   var pedidoEmAndamento = 0;
@@ -54,7 +55,7 @@
     }
     var arte = posicao === 2 ? "medalha-2" : posicao === 3 ? "medalha-3" : "medalha-n";
     return (
-      '<span class="' + classe + '">' +
+      '<span class="' + classe + " " + arte + '">' +
         '<img src="' + IMG + arte + '.svg" alt="">' +
         '<span class="px medalha-num">' + posicao + "</span>" +
       "</span>"
@@ -116,6 +117,7 @@
 
     podio.innerHTML = "";
     podio.hidden = escopo === "dia";
+    if (baloes) baloes.hidden = escopo === "dia";
     lista.classList.toggle("lista-geral", escopo === "geral");
     lista.innerHTML = '<li class="ranking-vazio">Carregando…</li>';
 

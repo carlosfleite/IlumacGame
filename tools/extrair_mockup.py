@@ -12,6 +12,10 @@ reescreve em SVG, filtrando por região:
   · peças soltas (mascote, troféu, medalhas...) = só o que cai dentro da
     região informada, recortado no próprio tamanho.
 
+Máscaras de recorte do Illustrator viram clipPath no SVG, e o que uma
+máscara esconde por inteiro nem é exportado (o .ai tem desenhos guardados
+atrás de máscaras vazias, que no mockup não aparecem).
+
 Uso (PyMuPDF não é dependência do jogo, só desta ferramenta):
     pip install pymupdf
     python tools/extrair_mockup.py caminho/para/GAME_QUIZZ_TUDO_SOBRE_SDAI.ai
@@ -73,7 +77,72 @@ def caminho(d, dx, dy):
     return "".join(partes)
 
 
-def elemento(d, dx, dy):
+_cache = {}
+
+
+def _e_retangulo(clip):
+    """A máscara é um retângulo alinhado (então o scissor já a descreve)?"""
+    itens = clip["items"]
+    if len(itens) == 1 and itens[0][0] == "re":
+        return True
+    return all(it[0] == "l" and (abs(it[1].x - it[2].x) < 0.01 or abs(it[1].y - it[2].y) < 0.01)
+               for it in itens)
+
+
+def desenhos(pagina):
+    """
+    Os caminhos visíveis da prancheta, na ordem de pintura, cada um com as
+    máscaras que o recortam ("_clips") e o retângulo que de fato aparece
+    ("rect", já cortado pelas máscaras).
+
+    No get_drawings(extended=True) uma máscara de nível N vale para tudo
+    que vem depois com nível maior que N, até aparecer algo de nível <= N.
+    """
+    chave = (id(pagina.parent), pagina.number)
+    if chave in _cache:
+        return _cache[chave]
+    pilha, saida, n = [], [], 0
+    for x in pagina.get_drawings(extended=True):
+        while pilha and pilha[-1]["level"] >= x["level"]:
+            pilha.pop()
+        if x["type"] == "clip":
+            n += 1
+            x["_id"] = "m%d_%d" % (pagina.number, n)
+            pilha.append(x)
+            continue
+        if x["type"] == "group":
+            continue
+        visivel = fitz.Rect(x["rect"])
+        for c in pilha:
+            visivel &= fitz.Rect(c["scissor"])
+        if visivel.is_empty or visivel.width <= 0.01 or visivel.height <= 0.01:
+            continue  # escondido por inteiro pela máscara
+        d = dict(x)
+        d["_original"] = fitz.Rect(x["rect"])
+        d["rect"] = visivel
+        # só guarda as máscaras que realmente cortam alguma coisa do desenho
+        d["_clips"] = tuple(
+            c for c in pilha
+            if not (d["_original"] in fitz.Rect(c["scissor"]) and _e_retangulo(c))
+        )
+        saida.append(d)
+    _cache[chave] = saida
+    return saida
+
+
+def elemento(d, dx, dy, defs=None):
+    """<path> do desenho, dentro de um <g clip-path> para cada máscara."""
+    svg = _caminho_svg(d, dx, dy)
+    for c in reversed(d.get("_clips", ())):
+        cid = "%s_%s_%s" % (c["_id"], num(dx).replace(".", "p"), num(dy).replace(".", "p"))
+        if defs is not None and cid not in defs:
+            regra = ' clip-rule="evenodd"' if c.get("even_odd") else ""
+            defs[cid] = '<clipPath id="%s"><path d="%s"%s/></clipPath>' % (cid, caminho(c, dx, dy), regra)
+        svg = '<g clip-path="url(#%s)">%s</g>' % (cid, svg)
+    return svg
+
+
+def _caminho_svg(d, dx, dy):
     attrs = ['d="%s"' % caminho(d, dx, dy)]
     t = d["type"]
     r = d["rect"]
@@ -123,10 +192,11 @@ def cruza(r, zona):
     return not (r.x1 <= zona[0] or r.x0 >= zona[2] or r.y1 <= zona[1] or r.y0 >= zona[3])
 
 
-def salvar(nome, largura, altura, corpo):
+def salvar(nome, largura, altura, corpo, defs=None):
     os.makedirs(DESTINO, exist_ok=True)
-    svg = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %s %s" width="%s" height="%s">%s</svg>'
-           % (num(largura), num(altura), num(largura), num(altura), "".join(corpo)))
+    defs_svg = "<defs>%s</defs>" % "".join(defs.values()) if defs else ""
+    svg = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %s %s" width="%s" height="%s">%s%s</svg>'
+           % (num(largura), num(altura), num(largura), num(altura), defs_svg, "".join(corpo)))
     with open(os.path.join(DESTINO, nome), "w", encoding="utf-8") as f:
         f.write(svg)
     print("%-28s %6.1f KB" % (nome, len(svg) / 1024))
@@ -135,31 +205,31 @@ def salvar(nome, largura, altura, corpo):
 def fundo(pagina, nome, tirar=(), manter=None, pular=()):
     """Prancheta inteira, sem os caminhos contidos nas zonas `tirar` nem os
     de índice em `pular`. `manter(i, d)` pode forçar a permanência."""
-    corpo = []
-    for i, d in enumerate(pagina.get_drawings()):
+    corpo, defs = [], {}
+    for i, d in enumerate(desenhos(pagina)):
         r = d["rect"]
         if i in pular:
             continue
         if manter and manter(i, d):
-            corpo.append(elemento(d, 0, 0))
+            corpo.append(elemento(d, 0, 0, defs))
             continue
         if any(dentro(r, z) for z in tirar):
             continue
-        corpo.append(elemento(d, 0, 0))
-    salvar(nome, 1080, 1920, corpo)
+        corpo.append(elemento(d, 0, 0, defs))
+    salvar(nome, 1080, 1920, corpo, defs)
 
 
 def peca(pagina, nome, zona, filtro=None, margem=0):
     """Só o que cabe inteiro em `zona`, recortado no tamanho da zona."""
-    corpo = []
+    corpo, defs = [], {}
     x0, y0 = zona[0] - margem, zona[1] - margem
-    for i, d in enumerate(pagina.get_drawings()):
+    for i, d in enumerate(desenhos(pagina)):
         if not dentro(d["rect"], zona):
             continue
         if filtro and not filtro(i, d):
             continue
-        corpo.append(elemento(d, x0, y0))
-    salvar(nome, zona[2] - zona[0] + 2 * margem, zona[3] - zona[1] + 2 * margem, corpo)
+        corpo.append(elemento(d, x0, y0, defs))
+    salvar(nome, zona[2] - zona[0] + 2 * margem, zona[3] - zona[1] + 2 * margem, corpo, defs)
 
 
 def decoracao(pagina, prefixo, tirar):
@@ -168,7 +238,7 @@ def decoracao(pagina, prefixo, tirar):
     Devolve os índices usados (para o fundo pular) e a lista de peças com
     a posição na prancheta."""
     grupos = []
-    for i, d in enumerate(pagina.get_drawings()):
+    for i, d in enumerate(desenhos(pagina)):
         r = d["rect"]
         if r.width >= 1079 or any(dentro(r, z) for z in tirar):
             continue  # faixa do degradê, conteúdo, logos ou título
@@ -189,12 +259,14 @@ def decoracao(pagina, prefixo, tirar):
                 saida.append(g)
         grupos = saida
 
-    desenhos = pagina.get_drawings()
+    lista = desenhos(pagina)
     pecas, usados = [], set()
     for n, (x0, y0, x1, y1, idx) in enumerate(sorted(grupos, key=lambda g: (g[1], g[0]))):
         nome = "deco-%s-%d.svg" % (prefixo, n + 1)
         idx = sorted(idx)
-        salvar(nome, x1 - x0, y1 - y0, [elemento(desenhos[i], x0, y0) for i in idx])
+        defs = {}
+        corpo = [elemento(lista[i], x0, y0, defs) for i in idx]
+        salvar(nome, x1 - x0, y1 - y0, corpo, defs)
         usados.update(idx)
         pecas.append({"src": nome, "x": round(x0, 1), "y": round(y0, 1),
                       "w": round(x1 - x0, 1), "h": round(y1 - y0, 1)})
@@ -237,10 +309,14 @@ def main(caminho_ai):
     fundo(doc[ABERTURA], "fundo-abertura.svg", ZONAS[ABERTURA], painel)
     # sem o balão de chamas do canto: ele só existe na aba do ranking geral
     # e ficaria cortado atrás da lista do dia
-    fundo(doc[RANK_GERAL], "fundo-ranking.svg", ZONAS[RANK_DIA] + [(860, 1500, 1400, 1800)], painel)
+    fundo(doc[RANK_GERAL], "fundo-ranking.svg", ZONAS[RANK_DIA] + [(860, 1500, 1400, 1740)], painel)
     fundo(doc[CADASTRO], "fundo-cadastro.svg", ZONAS[CADASTRO], painel)
     fundo(doc[REGRAS], "fundo-regras.svg", ZONAS[REGRAS], painel)
-    fundo(doc[RESULTADO], "fundo-resultado.svg", ZONAS[RESULTADO], painel)
+    # Na faixa dos botões, o X do canto encosta no "VER RANKING": os
+    # quadradinhos dele (pixel da arte, < 40px) ficam; só a forma dos
+    # botões sai, porque o HTML desenha os botões por cima.
+    fundo(doc[RESULTADO], "fundo-resultado.svg", ZONAS[RESULTADO],
+          lambda i, d: painel(i, d) or (d["rect"].y0 >= 1700 and d["rect"].width < 40))
     # Acerto e erro: setas e X saem do fundo e viram peças soltas, que o
     # feedback anima (setas sobem no acerto, X balançam no erro).
     logos_titulo = (80, 55, 1000, 360)
@@ -294,8 +370,14 @@ def main(caminho_ai):
     peca(doc[ERRADO], "selo-pontos-errado.svg", (400, 698, 683, 785))
     peca(doc[CERTO], "btn-toque.svg", (278, 1720, 802, 1795))
 
+    # Balão com chamas do canto do ranking geral (prancheta 2). Sai do fundo
+    # porque só aparece nessa aba; a parte que passa da borda da prancheta
+    # é cortada pelo próprio palco.
+    peca(doc[RANK_GERAL], "baloes-fogo.svg", (860, 1500, 1400, 1740),
+         lambda i, d: d["rect"].width < 1079 and not painel(i, d))
+
     for nome in sorted(os.listdir(DESTINO)):
-        if nome.endswith(".svg") and (nome.startswith("fundo") or nome == "titulo-grande.svg"):
+        if nome.endswith(".svg") and (nome.startswith("fundo") or nome in ("titulo-grande.svg", "baloes-fogo.svg")):
             rasterizar(nome)
 
 

@@ -115,6 +115,15 @@ set "CODIGO=!ERRORLEVEL!"
 
 if exist "%PARAR%" goto fim
 
+rem Codigo 3 = run.py achou outro totem ja rodando nesta maquina (o .bat
+rem foi aberto duas vezes). Reabrir so empilharia janelas: encerra este.
+if "!CODIGO!"=="3" (
+    echo [AVISO] O quiz ja esta aberto nesta maquina. Esta janela vai fechar.
+    echo [%DATE% %TIME%] Outro totem ja rodando - esta copia encerrou>> "%LOG%"
+    call :esperar 5
+    exit /b 0
+)
+
 set /a TENTATIVAS+=1
 echo [%DATE% %TIME%] run.py encerrou com codigo !CODIGO! - reinicio #!TENTATIVAS!>> "%LOG%"
 echo [WATCHDOG] O quiz encerrou (codigo !CODIGO!). Reiniciando... (#!TENTATIVAS!)

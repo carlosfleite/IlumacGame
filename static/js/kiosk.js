@@ -7,12 +7,21 @@
 (function () {
   "use strict";
 
-  function escalar() {
-    var e = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
-    document.documentElement.style.setProperty("--escala", String(e));
+  // A escala vem do CSS (--escala em style.css). Só um navegador antigo,
+  // sem tan()/atan2() no CSS, cai aqui — e aí o cálculo vai por JS,
+  // refeito em qualquer sinal de mudança de tamanho.
+  var cssCalcula = window.CSS && CSS.supports &&
+    CSS.supports("width", "calc(tan(atan2(1px, 1px)) * 1px)");
+  if (!cssCalcula) {
+    var escalar = function () {
+      var e = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+      document.documentElement.style.setProperty("--escala", String(e));
+    };
+    escalar();
+    window.addEventListener("resize", escalar);
+    window.addEventListener("orientationchange", escalar);
+    setInterval(escalar, 1000);
   }
-  escalar();
-  window.addEventListener("resize", escalar);
 
   /**
    * Reduz a fonte de um texto de uma linha até caber na largura da
