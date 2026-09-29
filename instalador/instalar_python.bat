@@ -39,7 +39,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "try { Expand-Archive -LiteralPath 'instalador\python-embed.zip' -DestinationPath 'python-embed' -Force -ErrorAction Stop; exit 0 } catch { Write-Host ('   motivo: ' + $_.Exception.Message); exit 1 }"
 
 if errorlevel 1 goto falhou
+
+rem O Expand-Archive pode "dar certo" e mesmo assim faltar arquivo: um
+rem antivirus que apaga so a DLL depois de extrair (caso real ja visto
+rem numa maquina nova) nao faz o PowerShell retornar erro nenhum. Sem
+rem conferir python311.dll tambem, o jogo ficava marcado como instalado
+rem com um Python que nao roda - so quebrava na hora de abrir de verdade.
 if not exist "python-embed\python.exe" goto falhou
+if not exist "python-embed\python311.dll" goto falhou
 echo [OK] Python do totem instalado nesta maquina.
 echo.
 exit /b 0
@@ -50,6 +57,9 @@ if exist "python-embed" rmdir /s /q "python-embed"
 echo.
 echo [ERRO] Nao consegui instalar o Python do jogo.
 echo Confira se o arquivo instalador\python-embed.zip veio inteiro
-echo ^(baixe o .zip do jogo de novo, se precisar^) e se ha espaco no disco.
+echo ^(baixe o .zip do jogo de novo, se precisar^), se ha espaco no disco
+echo e se o antivirus desta maquina nao apagou algum arquivo da pasta
+echo "python-embed" logo depois da instalacao ^(confira o historico de
+echo protecao/itens em quarentena dele^).
 echo.
 exit /b 1

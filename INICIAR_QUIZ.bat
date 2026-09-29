@@ -25,17 +25,26 @@ rem ===========================================================
 set "PY=python-embed\python.exe"
 set "ZIP_INSTALADOR=instalador\python-embed.zip"
 
-if not exist "%PY%" if exist "%ZIP_INSTALADOR%" (
+rem python.exe sozinho nao garante que o Python funciona: ja aconteceu
+rem de um antivirus apagar so a python311.dll depois da instalacao,
+rem deixando o .exe la mas incapaz de abrir. Por isso as duas condicoes.
+set "PY_OK="
+if exist "%PY%" if exist "python-embed\python311.dll" set "PY_OK=1"
+
+if not defined PY_OK if exist "%ZIP_INSTALADOR%" (
     call instalador\instalar_python.bat
-    if not exist "%PY%" (
+    set "PY_OK="
+    if exist "%PY%" if exist "python-embed\python311.dll" set "PY_OK=1"
+    if not defined PY_OK (
         pause
         exit /b 1
     )
 )
 
-rem Sem python-embed\ nem o instalador\python-embed.zip: so sobra o modo
-rem de desenvolvimento (.venv + Python do sistema instalado na maquina).
-if not exist "%PY%" set "PY=.venv\Scripts\python.exe"
+rem Sem python-embed\ funcionando nem o instalador\python-embed.zip: so
+rem sobra o modo de desenvolvimento (.venv + Python do sistema instalado
+rem na maquina).
+if not defined PY_OK set "PY=.venv\Scripts\python.exe"
 set "LOGDIR=logs"
 set "LOG=%LOGDIR%\watchdog.log"
 set "PARAR=PARAR.flag"
