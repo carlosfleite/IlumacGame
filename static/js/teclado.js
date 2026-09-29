@@ -153,9 +153,9 @@
     if (!campo) return;
     var estilo = getComputedStyle(campo);
     var pos = campo.selectionStart;
-    // type=email não expõe selectionStart no Chromium (fica null); nesse
-    // caso o toque no teclado sempre escreve/apaga no fim do texto (ver
-    // selecao()), então o cursor também fica no fim.
+    // Nenhum dos três campos deveria cair aqui hoje (todos type=text/tel,
+    // que expõem selectionStart), mas mantém a rede de segurança: sem
+    // posição para consultar, cursor e digitação vão para o fim.
     if (pos === null || pos === undefined) pos = campo.value.length;
 
     var esquerda = (parseFloat(estilo.borderLeftWidth) || 0) +
@@ -252,9 +252,10 @@
 
   /**
    * Posicao do cursor, quando o campo deixa consultar.
-   * input[type=email] nao expoe selectionStart no Chromium: devolve null e
-   * setSelectionRange levanta erro. Nesse caso a digitacao vai para o fim,
-   * que e o comportamento normal de quem digita num totem.
+   * Alguns tipos de input (type=number, por exemplo — nao usado aqui) nao
+   * expoem selectionStart e levantam erro em setSelectionRange; text e tel,
+   * os tipos dos tres campos do cadastro, sempre expoem. Mantido como rede
+   * de seguranca: sem posicao pra consultar, a digitacao vai para o fim.
    */
   function selecao(el) {
     try {
@@ -268,7 +269,7 @@
   }
 
   function posicionar(el, pos) {
-    try { el.setSelectionRange(pos, pos); } catch (e) { /* type=email */ }
+    try { el.setSelectionRange(pos, pos); } catch (e) { /* ver selecao() */ }
   }
 
   function inserir(texto) {
@@ -283,9 +284,8 @@
     posicionar(campo, sel.ini + texto.length);
     disparar(campo);
     ajustarMaiuscula();
-    // Chamada direta, não só via selectionchange: em type=email o
-    // Chromium nem sempre dispara esse evento (setSelectionRange falha
-    // silenciosamente ali, ver posicionar()).
+    // Chamada direta, não só via selectionchange: mais confiável do que
+    // depender só do evento disparando a tempo.
     atualizarCursor();
   }
 
@@ -338,7 +338,7 @@
   function ajustarMaiuscula() {
     if (!campo) return;
     var antes = maiuscula;
-    if (campo.type === "email") {
+    if (campo.id === "email") {
       maiuscula = false;
     } else if (campo.id === "nome") {
       var v = campo.value;
@@ -360,7 +360,7 @@
   function abrir(el) {
     campo = el;
     modo = el.type === "tel" ? "numero" : "texto";
-    maiuscula = el.type !== "email";
+    maiuscula = el.id !== "email";
     ajustarMaiuscula();
     desenhar();
 

@@ -23,7 +23,11 @@
 
       <label class="campo" id="campo-email">
         <span class="sr">E-mail</span>
-        <input type="email" name="email" id="email" required autocomplete="email"
+        <!-- type=text, não email: o formulário já é novalidate (validação
+             de verdade é JS/servidor, não a nativa do navegador), e em
+             type=email o Chromium nem expõe selectionStart — o toque no
+             meio do endereço pra apagar uma letra sempre caía no fim. -->
+        <input type="text" name="email" id="email" required autocomplete="email"
                enterkeyhint="next" inputmode="email" placeholder="seuemail@exemplo.com"
                autocapitalize="off" spellcheck="false" maxlength="120">
         <span class="dica" id="dica-email" hidden></span>
