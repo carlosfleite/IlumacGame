@@ -359,6 +359,26 @@ a { color: inherit; text-decoration: none; }
 
 .campo.invalido input { border-color: var(--vermelho-vivo); box-shadow: inset 0 0 0 3px var(--vermelho-vivo); }
 
+/* Cursor de texto (teclado.js). Os campos são readOnly de propósito, para
+   bloquear o teclado físico/do Windows — e por isso o Chromium não desenha
+   o cursor piscando nativo, mesmo com foco e selectionStart corretos. Esta
+   barra é desenhada e posicionada à mão para o jogador ver onde o próximo
+   toque no teclado do jogo vai escrever ou apagar. */
+.campo-cursor {
+  position: absolute;
+  z-index: 5;
+  width: 3px;
+  background: var(--vermelho);
+  pointer-events: none;
+  animation: campo-cursor-piscar 1s step-end infinite;
+}
+
+.campo-cursor[hidden] { display: none; }
+
+@keyframes campo-cursor-piscar {
+  50%, 100% { opacity: 0; }
+}
+
 /* dica de erro: na faixa livre entre um campo e o próximo */
 .campo .dica {
   position: absolute;

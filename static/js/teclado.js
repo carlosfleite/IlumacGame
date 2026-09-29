@@ -97,6 +97,62 @@
   var maiuscula = true;
   var fecharTimer = null;
 
+  // ---------------------------------------------------------------------
+  // Cursor de texto
+  // ---------------------------------------------------------------------
+  // Os campos são readOnly (bloqueia teclado físico/do Windows) e, com
+  // isso, o Chromium não desenha o cursor nativo — mesmo focado e com
+  // selectionStart certo. Desenhamos um em cima do campo, medindo o texto
+  // com canvas para achar a posição em pixels, igual o navegador faria.
+
+  var cursor = document.createElement("span");
+  cursor.className = "campo-cursor";
+  cursor.hidden = true;
+
+  var canvasMedida = document.createElement("canvas");
+  var ctxMedida = canvasMedida.getContext("2d");
+
+  function medirLargura(el, texto) {
+    var estilo = getComputedStyle(el);
+    ctxMedida.font = estilo.fontStyle + " " + estilo.fontWeight + " " +
+      estilo.fontSize + " " + estilo.fontFamily;
+    return ctxMedida.measureText(texto).width;
+  }
+
+  function atualizarCursor() {
+    if (!campo) return;
+    var estilo = getComputedStyle(campo);
+    var pos = campo.selectionStart;
+    // type=email não expõe selectionStart no Chromium (fica null); nesse
+    // caso o toque no teclado sempre escreve/apaga no fim do texto (ver
+    // selecao()), então o cursor também fica no fim.
+    if (pos === null || pos === undefined) pos = campo.value.length;
+
+    var esquerda = (parseFloat(estilo.borderLeftWidth) || 0) +
+      (parseFloat(estilo.paddingLeft) || 0) +
+      medirLargura(campo, campo.value.slice(0, pos)) -
+      campo.scrollLeft;
+    var altura = parseFloat(estilo.fontSize) * 1.2;
+
+    cursor.style.left = esquerda + "px";
+    cursor.style.top = ((campo.clientHeight - altura) / 2) + "px";
+    cursor.style.height = altura + "px";
+    cursor.hidden = false;
+
+    // Reinicia o piscar a cada movimento — igual o cursor de verdade,
+    // que fica aceso um instante toda vez que ele se mexe.
+    cursor.style.animation = "none";
+    void cursor.offsetWidth;
+    cursor.style.animation = "";
+  }
+
+  // Cobre tanto o toque nas teclas do jogo (inserir/apagar) quanto o
+  // toque direto no campo para reposicionar o cursor no meio do texto —
+  // os dois mexem em selectionStart, e selectionchange dispara pros dois.
+  document.addEventListener("selectionchange", function () {
+    if (campo && document.activeElement === campo) atualizarCursor();
+  });
+
   var caixa = document.createElement("div");
   caixa.className = "teclado";
   caixa.setAttribute("role", "group");
@@ -197,6 +253,10 @@
     posicionar(campo, sel.ini + texto.length);
     disparar(campo);
     ajustarMaiuscula();
+    // Chamada direta, não só via selectionchange: em type=email o
+    // Chromium nem sempre dispara esse evento (setSelectionRange falha
+    // silenciosamente ali, ver posicionar()).
+    atualizarCursor();
   }
 
   function apagar() {
@@ -211,6 +271,7 @@
     posicionar(campo, ini);
     disparar(campo);
     ajustarMaiuscula();
+    atualizarCursor();
   }
 
   function proximo() {
@@ -273,6 +334,10 @@
     ajustarMaiuscula();
     desenhar();
 
+    // O cursor é um só, reaproveitado: muda de campo junto com o foco.
+    el.parentElement.appendChild(cursor);
+    atualizarCursor();
+
     caixa.hidden = false;
     document.body.classList.add("com-teclado");
     medir();
@@ -284,6 +349,7 @@
 
   function fechar() {
     campo = null;
+    cursor.hidden = true;
     caixa.hidden = true;
     document.body.classList.remove("com-teclado");
     document.body.style.removeProperty("--teclado-h");
