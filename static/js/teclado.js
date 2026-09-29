@@ -119,6 +119,36 @@
     return ctxMedida.measureText(texto).width;
   }
 
+  /**
+   * Em qual índice do texto cai um toque, pelo x em coordenadas de tela.
+   *
+   * Campo readOnly: o Chromium não reposiciona o cursor pelo clique como
+   * faria num campo normal — o toque no meio de "CARLOS" leva o cursor
+   * pro FIM do texto, não pro ponto tocado. Sem isso, dava pra digitar
+   * mas não dava pra apagar uma letra do meio sem apagar tudo depois
+   * dela também. Por isso medimos a posição à mão, igual medimos pra
+   * desenhar o cursor.
+   */
+  function indicePeloToque(el, clienteX) {
+    var estilo = getComputedStyle(el);
+    var rect = el.getBoundingClientRect();
+    // .tela inteira encolhe/cresce por transform: scale (--escala); rect é
+    // em pixels de tela (pós-escala), offsetWidth não muda com a escala.
+    var fatorEscala = rect.width / el.offsetWidth || 1;
+    var base = (parseFloat(estilo.borderLeftWidth) || 0) +
+      (parseFloat(estilo.paddingLeft) || 0) - el.scrollLeft;
+    var alvo = (clienteX - rect.left) / fatorEscala - base;
+
+    var texto = el.value;
+    var melhorIndice = 0;
+    var melhorDist = Math.abs(alvo);
+    for (var i = 1; i <= texto.length; i++) {
+      var dist = Math.abs(medirLargura(el, texto.slice(0, i)) - alvo);
+      if (dist <= melhorDist) { melhorDist = dist; melhorIndice = i; }
+    }
+    return melhorIndice;
+  }
+
   function atualizarCursor() {
     if (!campo) return;
     var estilo = getComputedStyle(campo);
@@ -374,6 +404,15 @@
     el.addEventListener("focus", function () {
       if (fecharTimer) { clearTimeout(fecharTimer); fecharTimer = null; }
       abrir(el);
+    });
+
+    // Toque direto no campo, no meio do texto: reposiciona o cursor no
+    // ponto tocado (ver indicePeloToque). O evento "click" chega depois
+    // do "focus" mesmo no primeiro toque do campo, então já vale de
+    // cara — não só em toques seguintes com o campo já aberto.
+    el.addEventListener("click", function (ev) {
+      posicionar(el, indicePeloToque(el, ev.clientX));
+      atualizarCursor();
     });
 
     el.addEventListener("blur", function () {
