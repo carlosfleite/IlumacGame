@@ -140,9 +140,17 @@ def api_totem_encerrar():
     with open(parar_flag, "w", encoding="ascii") as arquivo:
         arquivo.write("encerrado pelo brasao\n")
 
-    # Dá tempo para a resposta HTTP chegar à janela. Quando o processo sai,
-    # o .bat encontra PARAR.flag e encerra o watchdog em vez de reiniciar.
-    timer = threading.Timer(0.5, lambda: os._exit(0))
+    # Dá tempo para a resposta HTTP chegar à janela antes do processo
+    # sumir (medido em ~15ms de ida e volta em 127.0.0.1 — 150ms é folga
+    # de sobra). Quando o processo sai, o .bat encontra PARAR.flag e
+    # encerra o watchdog em vez de reiniciar.
+    #
+    # Era 0.5s antes de medir: os 350ms a mais não voltavam pra nada,
+    # só somavam ao tempo até a tela apagar. O grosso do que se sente
+    # como demora nesse gesto (~2s, medido com toque real no totem) é o
+    # Windows liberando a janela do WebView2 depois que o processo já
+    # morreu — isso está fora do nosso controle e não muda com o timer.
+    timer = threading.Timer(0.15, lambda: os._exit(0))
     timer.daemon = True
     timer.start()
     return jsonify({"ok": True})
