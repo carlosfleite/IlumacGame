@@ -1242,12 +1242,19 @@ a { color: inherit; text-decoration: none; }
   background: var(--ouro);
 }
 
-/* ranking geral: as linhas do .ai são 90% das do ranking do dia */
+/* ranking geral: as linhas do .ai são 90% das do ranking do dia.
+   height: auto + overflow: visible funcionava enquanto o geral mostrava
+   só pódio + 4 linhas fixas — com até 10 nomes agora (LINHAS_GERAL em
+   ranking.js), a lista cresce mais que isso e atropela o botão "Novo
+   participante", que fica numa posição fixa mais abaixo na prancheta.
+   Em vez de esticar, rola dentro de uma altura fixa — igual ao ranking
+   do dia — parando antes do botão. */
 .ranking-lista.lista-geral {
   top: 1046px;
   left: 172px;
-  height: auto;
-  overflow: visible;
+  height: 700px;
+  overflow-x: hidden;
+  overflow-y: auto;
   transform: scale(0.9);
   transform-origin: 0 0;
 }
