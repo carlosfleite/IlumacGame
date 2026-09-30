@@ -182,8 +182,26 @@
         if (escopo === "dia") {
           renderLista(rows, participanteAtual());
         } else {
-          renderPodio(rows.slice(0, 3));
-          renderLista(rows.slice(3, 3 + LINHAS_GERAL));
+          var pid = participanteAtual();
+          var topo = rows.slice(0, 3);
+          renderPodio(topo);
+
+          var linhas = rows.slice(3, 3 + LINHAS_GERAL);
+          // Quem acabou de jogar espera se ver no geral, mesmo fora do
+          // pódio + 4 linhas — sem pontuação alta nos 3 dias de feira,
+          // simplesmente não entrava na janela fixa e sumia da tela,
+          // parecendo bug. Se não apareceu no pódio nem nessas 4 linhas,
+          // gruda a própria linha no fim, com a posição real.
+          var apareceu = topo.concat(linhas).some(function (r) {
+            return pid && Number(r.participante_id) === pid;
+          });
+          if (pid && !apareceu) {
+            var minha = rows.filter(function (r) {
+              return Number(r.participante_id) === pid;
+            })[0];
+            if (minha) linhas = linhas.concat([minha]);
+          }
+          renderLista(linhas, pid);
         }
       })
       .catch(function (err) {
