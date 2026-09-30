@@ -42,14 +42,6 @@
         <!-- setas (acerto) e X (erro) do mockup, animados pelo CSS -->
         <div class="fb-deco" id="fb-deco" aria-hidden="true"></div>
         <div id="fb-card">
-          <!-- Primeiro no DOM = fica por baixo dos outros elementos na
-               pilha (nenhum tem z-index, então quem vem depois cobre
-               quem vem antes). Puxa o toque pra qualquer área vazia da
-               tela — topo, bordas, embaixo do mascote — sem cobrir a
-               caixa de resposta, que fica por cima e "tampa" o botão
-               bem ali, protegendo a leitura (ver comentário no CSS). -->
-          <button type="button" class="px feedback-tap" id="feedback-continuar">Toque para continuar</button>
-
           <p id="feedback-msg" class="px feedback-msg"></p>
           <p id="feedback-pontos" class="px feedback-pontos"></p>
 
@@ -59,6 +51,11 @@
           </div>
 
           <img class="mascote fb-mascote" id="fb-mascote" src="/static/img/mockup/mascote.svg" alt="">
+
+          <!-- Só a faixa abaixo do mascote é clicável (ver comentário
+               no CSS de .feedback-tap) — não precisa mais vir antes dos
+               outros elementos no DOM, já que não se sobrepõe a eles. -->
+          <button type="button" class="px feedback-tap" id="feedback-continuar">Toque para continuar</button>
         </div>
       </div>
     </div>

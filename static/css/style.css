@@ -939,20 +939,25 @@ a { color: inherit; text-decoration: none; }
    clicável — só que aí a área ficou fina demais (uma linha só), fácil
    de errar num toque de verdade.
 
-   Meio-termo: o botão cobre a tela quase inteira (inset: 0), mas fica
-   ANTES dos outros elementos no HTML — sem z-index em nenhum deles, quem
-   vem depois no DOM desenha por cima. A caixa da resposta (.fb-resposta)
-   tampa o botão exatamente onde ela está, então um toque ali cai nela
-   (sem efeito) e protege a leitura; em qualquer área vazia — topo,
-   bordas, embaixo do mascote — o toque cai direto no botão. O texto
-   visível continua só embaixo, na mesma posição de sempre; o
-   padding-top é só o que empurra a palavra pra lá dentro da área
-   clicável inteira. */
+   Testei cobrir a tela quase inteira (inset: 0, só protegendo a caixa
+   de resposta) e voltou o problema original: qualquer toque incidental
+   — perto do mascote, por exemplo — já pulava a tela, exatamente o que
+   a trava existe pra evitar.
+
+   Meio-termo final: só a faixa de baixo, começando depois do mascote
+   (top: 1533px — o mascote termina em 1512.7px) até o fim da tela.
+   Continua bem maior que uma linha de texto (quase 400px de altura,
+   largura inteira), mas não inclui o mascote nem a resposta — só o
+   espaço vazio abaixo de tudo, onde só existe o texto "toque para
+   continuar" mesmo. */
 .feedback-tap {
   display: block;
   position: absolute;
-  inset: 0;
-  padding: 1788px 0 0;
+  left: 0;
+  right: 0;
+  top: 1533px;
+  bottom: 0;
+  padding: 255px 0 0;
   margin: 0;
   border: 0;
   appearance: none;
