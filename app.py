@@ -30,6 +30,17 @@ app.register_blueprint(admin_bp)
 DOMINIOS_EMAIL = ('gmail.com', 'outlook.com', 'outlook.com.br', 'hotmail.com', 'hotmail.com.br', 'live.com', 'yahoo.com', 'yahoo.com.br', 'icloud.com', 'me.com', 'aol.com', 'proton.me', 'protonmail.com', 'uol.com.br', 'bol.com.br', 'terra.com.br')
 log = logging.getLogger(__name__)
 
+# Referencia a janela do pywebview, se o run.py registrar uma (ver
+# registrar_janela() e a rota /api/totem/encerrar). None no modo navegador
+# (python app.py direto), onde nao ha janela nenhuma pra fechar.
+_janela = None
+
+
+def registrar_janela(janela):
+    """Chamado pelo run.py logo apos criar a janela do totem."""
+    global _janela
+    _janela = janela
+
 
 @app.errorhandler(Exception)
 def _erro_json(exc):
@@ -140,17 +151,24 @@ def api_totem_encerrar():
     with open(parar_flag, "w", encoding="ascii") as arquivo:
         arquivo.write("encerrado pelo brasao\n")
 
-    # Dá tempo para a resposta HTTP chegar à janela antes do processo
-    # sumir (medido em ~15ms de ida e volta em 127.0.0.1 — 150ms é folga
-    # de sobra). Quando o processo sai, o .bat encontra PARAR.flag e
-    # encerra o watchdog em vez de reiniciar.
+    # window.destroy() primeiro: fecha a janela pelo próprio pywebview
+    # (thread-safe, é o jeito documentado de fechar a partir de uma rota
+    # Flask) e deixa o run.py sair sozinho, de forma limpa, quando
+    # webview.start() retornar. Bem mais rápido do que só matar o
+    # processo e esperar o Windows perceber que a janela do WebView2
+    # ficou orfã — medido no totem real, ~2s só nessa espera do SO.
     #
-    # Era 0.5s antes de medir: os 350ms a mais não voltavam pra nada,
-    # só somavam ao tempo até a tela apagar. O grosso do que se sente
-    # como demora nesse gesto (~2s, medido com toque real no totem) é o
-    # Windows liberando a janela do WebView2 depois que o processo já
-    # morreu — isso está fora do nosso controle e não muda com o timer.
-    timer = threading.Timer(0.15, lambda: os._exit(0))
+    # os._exit(0) continua como rede de segurança, atrasado o bastante
+    # pra dar tempo do destroy() fazer efeito primeiro: cobre tanto um
+    # destroy() que trave por algum motivo quanto o modo navegador/dev
+    # (sem janela registrada, _janela é None).
+    if _janela is not None:
+        try:
+            _janela.destroy()
+        except Exception:
+            log.exception("window.destroy() falhou ao encerrar pelo brasão")
+
+    timer = threading.Timer(2.0, lambda: os._exit(0))
     timer.daemon = True
     timer.start()
     return jsonify({"ok": True})

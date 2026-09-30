@@ -237,15 +237,20 @@ a { color: inherit; text-decoration: none; }
    Abertura  (prancheta 1)
    ========================================================================== */
 
-/* Hotspot invisível sobre o brasão do logo ILUMAC. O gesto de saída é
-   configurado no kiosk.js e só funciona no modo totem. */
+/* Hotspot invisível sobre o logo ILUMAC completo (brasão + a palavra
+   "ILUMAC"), medido nos pixels brancos do próprio fundo-abertura.png:
+   88,84 até 291,137. Cobre só o escudo até 2026-09-30 — a palavra ficava
+   de fora, então um toque um pouco à direita do ícone não contava, o
+   que dificultava acertar os dois toques rápidos do gesto de saída. O
+   gesto de saída em si é configurado no kiosk.js e só funciona no modo
+   totem. */
 .ab-sair {
   position: absolute;
   z-index: 5;
   left: 78px;
-  top: 72px;
-  width: 64px;
-  height: 74px;
+  top: 68px;
+  width: 225px;
+  height: 82px;
   padding: 0;
   border: 0;
   background: transparent;

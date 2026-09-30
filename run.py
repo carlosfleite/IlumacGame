@@ -27,7 +27,7 @@ import urllib.request
 import flask.cli
 import webview
 
-from app import create_app
+from app import create_app, registrar_janela
 from database import backup_periodico, fazer_backup
 
 HOST = "127.0.0.1"
@@ -312,7 +312,7 @@ def main():
 
     # frameless=True remove a barra de título: sem botão de fechar e sem
     # arrastar a janela para fora da tela cheia.
-    webview.create_window(
+    janela = webview.create_window(
         title="Quiz SDAI — Ilumac Fire Show 2026",
         url=URL_JANELA,
         fullscreen=True,
@@ -321,6 +321,10 @@ def main():
         confirm_close=False,
         text_select=False,
     )
+    # A rota /api/totem/encerrar (gesto do brasão, em app.py) usa isso pra
+    # fechar a janela direto pelo pywebview em vez de só matar o processo
+    # e esperar o Windows perceber — bem mais rápido.
+    registrar_janela(janela)
     try:
         webview.start(gui="edgechromium")
     except Exception:

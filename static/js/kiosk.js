@@ -226,7 +226,11 @@
     botao.addEventListener("click", function (ev) {
       ev.preventDefault();
       var agora = Date.now();
-      if (primeiroToqueEm && agora - primeiroToqueEm <= 650) {
+      // 650ms era curto demais pra acertar de primeira: quem tocasse um
+      // pouco mais devagar via o gesto "não funcionar" e precisava
+      // tentar de novo. 1200ms ainda é dois toques rápidos, não dá pra
+      // confundir com toque acidental, mas sobra folga de verdade.
+      if (primeiroToqueEm && agora - primeiroToqueEm <= 1200) {
         primeiroToqueEm = 0;
         encerrar();
         return;
