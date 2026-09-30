@@ -75,9 +75,10 @@
 
   // Selo fixo de quem achou o Ilumaquinho secreto (5 toques no mascote da
   // abertura — easter-eggs.js). Ao contrário da moedinha rara do ranking,
-  // essa marca vem gravada no participante (banco, via /api/cadastro) e
-  // por isso aparece pra qualquer um vendo o ranking, o dia inteiro —
-  // não só na sessão de quem achou.
+  // essa marca vem gravada no participante (banco, via /api/cadastro), mas
+  // só faz sentido no "Ranking do dia" — o geral acumula os 3 dias da
+  // feira, e não pertence só a hoje. renderPodio nunca chama isso: o
+  // pódio só aparece no escopo geral (ver carregarRanking).
   function seloIlumaquinho(achou, classe) {
     if (!achou) return "";
     return (
@@ -94,7 +95,6 @@
         return (
           '<div class="podio-posto posto-' + r.posicao + '">' +
             icone(r.posicao, "podio-icone") +
-            seloIlumaquinho(r.achou_ilumaquinho, "podio-secreto") +
             '<p class="px podio-nome">' + escapeHtml(nomeCurto(r.nome)) + "</p>" +
             '<p class="px podio-pts">' + pontos(r.pontuacao) + "</p>" +
             '<p class="px podio-tempo">' + fmtMs(r.tempo_total_ms) + "</p>" +
@@ -116,7 +116,7 @@
             (atual ? ' aria-current="true"' : '') + '>' +
             '<span class="rk-barra"></span>' +
             icone(r.posicao, "rk-medalha") +
-            seloIlumaquinho(r.achou_ilumaquinho, "rk-secreto") +
+            (escopoAtual === "dia" ? seloIlumaquinho(r.achou_ilumaquinho, "rk-secreto") : "") +
             '<p class="px rk-nome">' + escapeHtml(nomeCurto(r.nome)) + "</p>" +
             '<p class="px rk-pts">' + pontos(r.pontuacao) + "</p>" +
             (atual ? '<span class="px rk-voce">Você</span>' : '') +
