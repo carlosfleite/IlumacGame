@@ -48,9 +48,10 @@
       .replace(/"/g, "&quot;");
   }
 
-  // No geral, aparecem o pódio e mais 4 linhas, como no mockup. O ranking
-  // do dia recebe até 100 pessoas e rola dentro da própria lista.
-  var LINHAS_GERAL = 4;
+  // No geral, aparecem o pódio e mais linhas até completar 10 nomes no
+  // total. O ranking do dia recebe até 100 pessoas e rola dentro da
+  // própria lista.
+  var LINHAS_GERAL = 7;
 
   var IMG = "/static/img/mockup/";
 
@@ -74,16 +75,29 @@
   }
 
   // Selo fixo de quem achou o Ilumaquinho secreto (5 toques no mascote da
-  // abertura — easter-eggs.js). Ao contrário da moedinha rara do ranking,
-  // essa marca vem gravada no participante (banco, via /api/cadastro), mas
-  // só faz sentido no "Ranking do dia" — o geral acumula os 3 dias da
-  // feira, e não pertence só a hoje. renderPodio nunca chama isso: o
-  // pódio só aparece no escopo geral (ver carregarRanking).
+  // abertura — easter-eggs.js). Vem gravado no participante (banco, via
+  // /api/cadastro), mas só faz sentido no "Ranking do dia" — o geral
+  // acumula os 3 dias da feira, e não pertence só a hoje. renderPodio
+  // nunca chama isso: o pódio só aparece no escopo geral (ver
+  // carregarRanking).
   function seloIlumaquinho(achou, classe) {
     if (!achou) return "";
     return (
       '<span class="' + classe + '" title="Achou o Ilumaquinho secreto">' +
         '<img src="/static/img/ilumaquinho-feliz.png" alt="Ilumaquinho secreto">' +
+      "</span>"
+    );
+  }
+
+  // Selo fixo da Ilumacoin rara do ranking (easter-eggs.js): agora também
+  // vem gravado no participante (POST /api/participante/<id>/achou-moeda),
+  // igual ao Ilumaquinho, em vez de só durar a sessão do navegador — fica
+  // ao lado dele, mesma regra de escopo (só no dia).
+  function seloMoeda(achou, classe) {
+    if (!achou) return "";
+    return (
+      '<span class="' + classe + '" title="Achou a Ilumacoin rara">' +
+        '<img src="/static/img/ILUMACOIN.png" alt="Ilumacoin rara">' +
       "</span>"
     );
   }
@@ -117,6 +131,7 @@
             '<span class="rk-barra"></span>' +
             icone(r.posicao, "rk-medalha") +
             (escopoAtual === "dia" ? seloIlumaquinho(r.achou_ilumaquinho, "rk-secreto") : "") +
+            (escopoAtual === "dia" ? seloMoeda(r.achou_moeda, "rk-moeda") : "") +
             '<p class="px rk-nome">' + escapeHtml(nomeCurto(r.nome)) + "</p>" +
             '<p class="px rk-pts">' + pontos(r.pontuacao) + "</p>" +
             (atual ? '<span class="px rk-voce">Você</span>' : '') +
@@ -188,10 +203,10 @@
 
           var linhas = rows.slice(3, 3 + LINHAS_GERAL);
           // Quem acabou de jogar espera se ver no geral, mesmo fora do
-          // pódio + 4 linhas — sem pontuação alta nos 3 dias de feira,
-          // simplesmente não entrava na janela fixa e sumia da tela,
-          // parecendo bug. Se não apareceu no pódio nem nessas 4 linhas,
-          // gruda a própria linha no fim, com a posição real.
+          // top 10 — sem pontuação alta nos 3 dias de feira, simplesmente
+          // não entrava na janela fixa e sumia da tela, parecendo bug. Se
+          // não apareceu no pódio nem nessas linhas, gruda a própria
+          // linha no fim, com a posição real.
           var apareceu = topo.concat(linhas).some(function (r) {
             return pid && Number(r.participante_id) === pid;
           });

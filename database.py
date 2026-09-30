@@ -91,7 +91,8 @@ CREATE TABLE IF NOT EXISTS participantes (
     cargo TEXT,
     consentimento_lgpd INTEGER NOT NULL DEFAULT 0,
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    achou_ilumaquinho INTEGER NOT NULL DEFAULT 0
+    achou_ilumaquinho INTEGER NOT NULL DEFAULT 0,
+    achou_moeda INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS quiz_perguntas (
@@ -208,6 +209,13 @@ def _migrar(conn):
         log.info("Migrando participantes: adicionando coluna 'achou_ilumaquinho'")
         conn.execute(
             "ALTER TABLE participantes ADD COLUMN achou_ilumaquinho "
+            "INTEGER NOT NULL DEFAULT 0"
+        )
+
+    if "achou_moeda" not in _colunas(conn, "participantes"):
+        log.info("Migrando participantes: adicionando coluna 'achou_moeda'")
+        conn.execute(
+            "ALTER TABLE participantes ADD COLUMN achou_moeda "
             "INTEGER NOT NULL DEFAULT 0"
         )
 

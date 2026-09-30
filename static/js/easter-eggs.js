@@ -182,6 +182,17 @@
         sessionStorage.setItem("egg_ilumacoin_ranking", "1");
         moeda.classList.add("is-encontrada");
         marcarVoceComMoeda();
+        // Grava no participante (igual ao Ilumaquinho) pra virar um selo
+        // fixo no ranking — visível pra qualquer um, o dia inteiro, não só
+        // nesta sessão do navegador. Falha de rede aqui não impede a
+        // pessoa de ver a própria conquista agora (marcarVoceComMoeda já
+        // rodou); só o selo fixo pros outros que não é gravado.
+        var pid = sessionStorage.getItem("participante_id");
+        if (pid) {
+          fetch("/api/participante/" + encodeURIComponent(pid) + "/achou-moeda", {
+            method: "POST",
+          }).catch(function () { /* sem sorte agora, sem selo fixo — ok */ });
+        }
         // Mesmo motivo do easter egg da abertura: o aviso cai bem em cima
         // da moeda (mesmo "top"), então esperamos a animação de "pegar"
         // (0.45s) aparecer antes de cobrir a área com o aviso.

@@ -325,6 +325,30 @@ def api_cadastro():
     return jsonify({"ok": True, "participante_id": participante_id})
 
 
+@app.route("/api/participante/<int:participante_id>/achou-moeda", methods=["POST"])
+def api_achou_moeda(participante_id):
+    """
+    Ilumacoin rara da tela de ranking (easter-eggs.js) — ao contrário do
+    Ilumaquinho, era achada só na sessão do navegador (sessionStorage),
+    então sumia se a pessoa saísse da tela ou voltasse depois. Agora fica
+    gravada no participante, como o Ilumaquinho, pra aparecer junto do
+    selo dele no ranking o dia inteiro. Só sobe, nunca desce, pelo mesmo
+    motivo do achou_ilumaquinho em /api/cadastro.
+    """
+    conn = get_connection()
+    try:
+        cur = conn.execute(
+            "UPDATE participantes SET achou_moeda = 1 WHERE id = ?",
+            (participante_id,),
+        )
+        conn.commit()
+        if cur.rowcount == 0:
+            return jsonify({"ok": False, "erro": "Participante não encontrado."}), 404
+    finally:
+        conn.close()
+    return jsonify({"ok": True})
+
+
 def _sortear_perguntas(rows, quantidade):
     """
     Sorteio uniforme com janela de descanso.
@@ -699,6 +723,7 @@ def api_ranking():
                 best.participante_id,
                 p.nome,
                 p.achou_ilumaquinho,
+                p.achou_moeda,
                 best.pontuacao,
                 best.tempo_total_ms,
                 best.data_hora,
@@ -720,6 +745,7 @@ def api_ranking():
                 "participante_id": row["participante_id"],
                 "nome": row["nome"],
                 "achou_ilumaquinho": bool(row["achou_ilumaquinho"]),
+                "achou_moeda": bool(row["achou_moeda"]),
                 "pontuacao": row["pontuacao"],
                 "tempo_total_ms": row["tempo_total_ms"],
                 "premio_nome": row["premio_nome"] or "",
