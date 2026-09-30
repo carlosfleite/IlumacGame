@@ -31,12 +31,26 @@ if %TAM_PASTA% GTR 130 (
 echo ========================================
 echo  Primeira vez do jogo NESTA maquina.
 echo  Instalando o Python do totem agora...
-echo  ^(100%% local, sem internet - pode levar alguns minutos^)
+echo  ^(100%% local, sem internet^)
 echo ========================================
 echo.
 
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "try { Expand-Archive -LiteralPath 'instalador\python-embed.zip' -DestinationPath 'python-embed' -Force -ErrorAction Stop; exit 0 } catch { Write-Host ('   motivo: ' + $_.Exception.Message); exit 1 }"
+rem O zip tem quase 4 mil arquivos pequenos (o Python inteiro, DLLs e
+rem tudo). Expand-Archive do PowerShell processa arquivo por arquivo e
+rem levava mais de um minuto nisso sozinho - e essa espera "sem dar
+rem sinal de vida" e o que mais parece que o instalador travou. tar.exe
+rem (nativo desde o Windows 10 de 2018) extrai o mesmo zip em segundos.
+rem So cai pro Expand-Archive se por algum motivo o tar nao existir
+rem nesta maquina (Windows bem antigo ou instalacao customizada).
+set "TAR_EXE=%WINDIR%\System32\tar.exe"
+if not exist "python-embed" mkdir "python-embed"
+
+if exist "%TAR_EXE%" (
+    "%TAR_EXE%" -xf "instalador\python-embed.zip" -C "python-embed"
+) else (
+    powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+        "try { Expand-Archive -LiteralPath 'instalador\python-embed.zip' -DestinationPath 'python-embed' -Force -ErrorAction Stop; exit 0 } catch { Write-Host ('   motivo: ' + $_.Exception.Message); exit 1 }"
+)
 
 if errorlevel 1 goto falhou
 
