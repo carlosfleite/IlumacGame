@@ -90,7 +90,8 @@ CREATE TABLE IF NOT EXISTS participantes (
     telefone TEXT,
     cargo TEXT,
     consentimento_lgpd INTEGER NOT NULL DEFAULT 0,
-    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    achou_ilumaquinho INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS quiz_perguntas (
@@ -201,6 +202,13 @@ def _migrar(conn):
         conn.execute(
             "UPDATE quiz_premios SET chave = 'legado-' || id, ativo = 0 "
             "WHERE chave IS NULL"
+        )
+
+    if "achou_ilumaquinho" not in _colunas(conn, "participantes"):
+        log.info("Migrando participantes: adicionando coluna 'achou_ilumaquinho'")
+        conn.execute(
+            "ALTER TABLE participantes ADD COLUMN achou_ilumaquinho "
+            "INTEGER NOT NULL DEFAULT 0"
         )
 
     # UNIQUE só depois do backfill, senão os NULLs antigos atrapalham o upsert.

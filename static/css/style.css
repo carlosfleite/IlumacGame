@@ -1147,6 +1147,21 @@ a { color: inherit; text-decoration: none; }
 
 .podio-icone img { display: block; width: 100%; height: 100%; }
 
+/* Mesmo selo fixo de .rk-secreto (ver comentário lá), versão pro card do
+   pódio — canto superior do card, não sai do fluxo flex dos outros
+   elementos porque .podio-posto já é o container position:absolute. */
+.podio-secreto {
+  position: absolute;
+  z-index: 2;
+  right: 8px;
+  bottom: 10px;
+  width: 42px;
+  height: 42px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+}
+
+.podio-secreto img { display: block; width: 100%; height: 100%; }
+
 /* Número no centro do disco da medalha. --cx/--cy é o centro do disco
    medido na arte pelo contorno (em % da peça, então vale para a medalha grande do pódio
    e a pequena da lista). O Pixellari centraliza o algarismo na largura da
@@ -1275,6 +1290,22 @@ a { color: inherit; text-decoration: none; }
   vertical-align: -6px;
   background: url("/static/img/ILUMACOIN.png") center / contain no-repeat;
 }
+
+/* Selo fixo de quem achou o Ilumaquinho secreto (ranking.js). Vem do
+   banco (participantes.achou_ilumaquinho) — ao contrário da moedinha
+   acima, aparece pra qualquer um vendo o ranking, não só pra sessão de
+   quem achou, e continua lá o dia inteiro. */
+.rk-secreto {
+  position: absolute;
+  z-index: 2;
+  right: 14px;
+  top: 2px;
+  width: 52px;
+  height: 52px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35));
+}
+
+.rk-secreto img { display: block; width: 100%; height: 100%; }
 
 .rk-nome {
   position: absolute;

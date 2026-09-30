@@ -212,6 +212,10 @@
         telefone: campos.telefone.input.value.trim(),
         email: campos.email.input.value.trim(),
         consentimento_lgpd: true,
+        // Achado na tela de abertura (easter-eggs.js), antes de existir
+        // participante_id — viaja pelo sessionStorage até aqui, onde o
+        // cadastro finalmente vira uma linha no banco pra gravar.
+        achou_ilumaquinho: sessionStorage.getItem("egg_ilumaquinho_abertura") === "1",
       }),
     })
       .then(function (res) { return res.json(); })

@@ -256,6 +256,9 @@ def api_cadastro():
     email = (data.get("email") or "").strip().lower()
     telefone = (data.get("telefone") or "").strip()
     consentimento = 1 if data.get("consentimento_lgpd") else 0
+    # Achado na tela de abertura, antes de existir participante_id — o
+    # easter-eggs.js manda essa marca junto do cadastro (ver cadastro.js).
+    achou_ilumaquinho = 1 if data.get("achou_ilumaquinho") else 0
 
     erro, telefone_fmt = _validar_cadastro(nome, telefone, email)
     if erro:
@@ -278,23 +281,27 @@ def api_cadastro():
             # ter sido corrigidos numa nova participação. Sem atualizar, o
             # ranking continuava mostrando os dados antigos e dava a impressão
             # de que o novo cadastro não tinha sido salvo.
+            # achou_ilumaquinho só sobe, nunca desce: se essa mesma pessoa
+            # já tinha achado o segredo numa visita anterior, um recadastro
+            # sem achar de novo não pode tirar o selo dela no ranking.
             conn.execute(
                 """
                 UPDATE participantes
-                SET nome = ?, telefone = ?, consentimento_lgpd = ?
+                SET nome = ?, telefone = ?, consentimento_lgpd = ?,
+                    achou_ilumaquinho = MAX(achou_ilumaquinho, ?)
                 WHERE id = ?
                 """,
-                (nome, telefone_fmt, consentimento, participante_id),
+                (nome, telefone_fmt, consentimento, achou_ilumaquinho, participante_id),
             )
             conn.commit()
         else:
             cur = conn.execute(
                 """
                 INSERT INTO participantes
-                    (nome, email, telefone, consentimento_lgpd)
-                VALUES (?, ?, ?, ?)
+                    (nome, email, telefone, consentimento_lgpd, achou_ilumaquinho)
+                VALUES (?, ?, ?, ?, ?)
                 """,
-                (nome, email, telefone_fmt, consentimento),
+                (nome, email, telefone_fmt, consentimento, achou_ilumaquinho),
             )
             conn.commit()
             participante_id = cur.lastrowid
@@ -677,6 +684,7 @@ def api_ranking():
                 best.id AS tentativa_id,
                 best.participante_id,
                 p.nome,
+                p.achou_ilumaquinho,
                 best.pontuacao,
                 best.tempo_total_ms,
                 best.data_hora,
@@ -697,6 +705,7 @@ def api_ranking():
                 "tentativa_id": row["tentativa_id"],
                 "participante_id": row["participante_id"],
                 "nome": row["nome"],
+                "achou_ilumaquinho": bool(row["achou_ilumaquinho"]),
                 "pontuacao": row["pontuacao"],
                 "tempo_total_ms": row["tempo_total_ms"],
                 "premio_nome": row["premio_nome"] or "",
