@@ -13,7 +13,7 @@
   // depois que a tela termina de entrar.
   var FEEDBACK_MS = 10000;
   var ENTRADA_MS = 250;   // deve casar com a animação reboque-entra no CSS
-  var LIMITE_MS = 20000;  // tempo por pergunta; zerou, conta como erro
+  var LIMITE_MS = 30000;  // tempo por pergunta; zerou, conta como erro
 
   var params = new URLSearchParams(window.location.search);
   var participanteId = parseInt(
