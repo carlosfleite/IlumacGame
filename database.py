@@ -149,15 +149,23 @@ CREATE INDEX IF NOT EXISTS idx_tentativas_participante
 CREATE INDEX IF NOT EXISTS idx_respostas_tentativa
     ON quiz_respostas (tentativa_id);
 
--- Histórico das perguntas já servidas, da mais antiga para a mais nova.
+-- Baralho embaralhado do rodízio de perguntas: um ciclo é uma cópia de
+-- cada pergunta ativa, em ordem aleatória; cada partida "compra" as
+-- próximas do topo (usada=0) e marca como usadas. Isso garante que uma
+-- pergunta só repete depois que TODAS as outras do ciclo já saíram — e,
+-- ao contrário de uma janela de descanso de tamanho fixo, cada ciclo
+-- novo é embaralhado de novo, então os grupos de 5 e a ordem entre eles
+-- não travam sempre na mesma sequência (ver _sortear_perguntas).
 -- Persistido para o rodízio sobreviver a reinícios do totem (watchdog,
 -- reboot diário da feira): sem isso, a mesma pergunta volta a cair logo
 -- após um restart, entregando a resposta para quem está na fila.
-CREATE TABLE IF NOT EXISTS quiz_recentes (
+CREATE TABLE IF NOT EXISTS quiz_baralho (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     pergunta_id INTEGER NOT NULL,
-    usado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    usada INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE INDEX IF NOT EXISTS idx_baralho_usada ON quiz_baralho (usada);
 
 -- Última posição (a/b/c/d) em que a resposta certa de cada pergunta foi
 -- exibida. As alternativas são reembaralhadas a cada partida e nunca

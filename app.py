@@ -69,10 +69,10 @@ _sessoes = {}
 # abandono.
 _SESSAO_TTL_S = 30 * 60
 
-# Serializa o sorteio (leitura + gravação do histórico em quiz_recentes).
-# O histórico em si é persistido no banco: reiniciar o totem não recomeça
-# o rodízio, senão a mesma pergunta volta a cair logo após um restart.
-_recentes_lock = threading.Lock()
+# Serializa o sorteio (leitura + gravação do baralho em quiz_baralho). O
+# baralho em si é persistido no banco: reiniciar o totem não recomeça o
+# rodízio, senão a mesma pergunta volta a cair logo após um restart.
+_baralho_lock = threading.Lock()
 
 
 def _descartar_sessoes_expiradas():
@@ -351,7 +351,7 @@ def api_achou_moeda(participante_id):
 
 def _sortear_perguntas(rows, quantidade):
     """
-    Sorteio uniforme com janela de descanso.
+    Baralho embaralhado persistido (quiz_baralho).
 
     A versão anterior revezava por dificuldade, tirando ~1 pergunta de cada
     grupo por partida. Como os grupos têm tamanhos diferentes (11 a 17
@@ -363,67 +363,123 @@ def _sortear_perguntas(rows, quantidade):
     Só que isso tem 0,03% de chance num sorteio uniforme deste banco
     (C(12,5)/C(52,5)): o remédio custava mais que a doença.
 
-    O que espalha a exposição de verdade aqui é a janela de descanso. Sem
-    ela, nada impede a mesma pergunta de cair em duas partidas seguidas —
-    e no estande as pessoas jogam em fila, uma vendo a tela da outra, então
-    repetir cedo entrega a resposta para quem está esperando.
+    A versão seguinte usava uma janela de descanso de tamanho fixo
+    (N - quantidade) em vez de um baralho: uma pergunta ficava "travada"
+    até N-quantidade outras aparecerem. Isso evitava repetir cedo demais,
+    mas tinha um efeito colateral só visível simulando várias partidas
+    seguidas: quando o banco tem exatamente N perguntas e quantidade por
+    partida, a janela sempre estabiliza em exatamente `quantidade`
+    disponíveis por vez — ou seja, sem folga nenhuma pra sortear, os MESMOS
+    5 grupos de perguntas se formavam sempre, na MESMA ordem, ciclo após
+    ciclo, pro resto da feira. Cada pergunta só repetia depois que todas as
+    outras rotacionavam (como devia ser), mas de um jeito 100% previsível.
+
+    Este baralho resolve os dois problemas: cada ciclo é uma cópia de toda
+    pergunta ativa, embaralhada do zero: nenhuma pergunta repete antes de
+    todas as outras do ciclo aparecerem (mesma garantia de antes), mas a
+    composição de cada grupo de `quantidade` e a ordem dos grupos mudam a
+    cada ciclo novo — sem padrão fixo se repetindo a cada 10 partidas.
+
+    Falta um detalhe pra isso não vazar pela "costura" entre um ciclo e o
+    próximo: um embaralhamento novo é independente do anterior, então nada
+    impede a última pergunta usada no fim de um ciclo de cair logo nas
+    primeiras posições do ciclo seguinte — voltando 1 ou 2 partidas depois
+    de ter saído, quase tão ruim quanto repetir na mesma. Por isso, ao
+    montar um baralho novo, quem apareceu nas últimas rodadas é empurrado
+    pra fora das primeiras posições dele.
     """
+    ids_ativos = [row["id"] for row in rows]
     por_id = {row["id"]: row for row in rows}
+    escolhidas_ids = []
+    usadas_neste_sorteio = set()
 
-    # Mantém em descanso o maior número possível sem impedir a próxima
-    # rodada. Com 50 perguntas e 5 por partida, as últimas 45 ficam
-    # bloqueadas: as 5 restantes fecham um ciclo completo de 10 partidas e
-    # só então as primeiras podem voltar. Se o total não for múltiplo do
-    # tamanho da rodada (por exemplo, 49), o mesmo cálculo maximiza o
-    # intervalo, embora seja matematicamente inevitável repetir uma pergunta
-    # para completar a décima partida.
-    janela = max(0, len(rows) - quantidade)
-
-    with _recentes_lock:
+    with _baralho_lock:
         conn = get_connection()
         try:
-            # Mais recentes primeiro. IDs que não estão mais no banco ativo
-            # são ignorados naturalmente por não constarem em por_id.
-            recentes = [
-                r["pergunta_id"] for r in conn.execute(
-                    "SELECT pergunta_id FROM quiz_recentes ORDER BY id DESC LIMIT ?",
-                    (janela,),
-                )
-            ]
-            descansando = set(recentes)
-            disponiveis = [row for row in rows if row["id"] not in descansando]
-            ids_disponiveis = {row["id"] for row in disponiveis}
-
-            # Banco pequeno demais para a janela: libera as mais antigas.
-            if len(disponiveis) < quantidade:
-                faltam = quantidade - len(disponiveis)
-                for pid in reversed(recentes):  # da mais antiga para a mais nova
-                    if faltam <= 0:
+            def consumir_topo():
+                # Topo do baralho (usada=0), na ordem em que foi
+                # embaralhado. pergunta_id que não está mais ativa (foi
+                # desativada no meio do ciclo) é descartada aqui mesmo:
+                # não conta pra esta partida nem trava o baralho.
+                topo = conn.execute(
+                    "SELECT id, pergunta_id FROM quiz_baralho "
+                    "WHERE usada = 0 ORDER BY id"
+                ).fetchall()
+                consumidos = []
+                for linha in topo:
+                    if len(escolhidas_ids) >= quantidade:
                         break
-                    if pid in por_id and pid not in ids_disponiveis:
-                        disponiveis.append(por_id[pid])
-                        ids_disponiveis.add(pid)
-                        faltam -= 1
+                    consumidos.append(linha["id"])
+                    pid = linha["pergunta_id"]
+                    if pid in por_id and pid not in usadas_neste_sorteio:
+                        escolhidas_ids.append(pid)
+                        usadas_neste_sorteio.add(pid)
+                if consumidos:
+                    marcador = ",".join("?" * len(consumidos))
+                    conn.execute(
+                        "UPDATE quiz_baralho SET usada = 1 WHERE id IN (%s)"
+                        % marcador,
+                        consumidos,
+                    )
 
-            selecionadas = random.sample(
-                disponiveis, min(quantidade, len(disponiveis))
-            )
+            consumir_topo()
+            # Baralho não tinha o suficiente: fecha o ciclo e embaralha um
+            # novo do zero, com toda pergunta ativa de agora. O grupo desta
+            # partida pode acabar misturando o fim de um ciclo com o
+            # começo do próximo — inevitável quando o total de perguntas
+            # não é múltiplo exato de `quantidade`.
+            while len(escolhidas_ids) < quantidade:
+                # Janela protegida contra a costura entre ciclos: cobre
+                # esta partida (o que já foi escolhido do ciclo anterior)
+                # mais as duas rodadas anteriores a ela — nem esse fim de
+                # ciclo nem o começo do novo repetem uma pergunta usada há
+                # pouco tempo.
+                janela_protegida = quantidade * 3
+                usadas_recentes = conn.execute(
+                    "SELECT pergunta_id FROM quiz_baralho WHERE usada = 1 "
+                    "ORDER BY id DESC LIMIT ?",
+                    (janela_protegida,),
+                ).fetchall()
+                proibidas = usadas_neste_sorteio | {
+                    r["pergunta_id"] for r in usadas_recentes
+                }
 
-            conn.executemany(
-                "INSERT INTO quiz_recentes (pergunta_id) VALUES (?)",
-                [(row["id"],) for row in selecionadas],
-            )
-            # Mantém a tabela enxuta — o suficiente para cobrir a janela máxima.
+                novo_baralho = list(ids_ativos)
+                random.shuffle(novo_baralho)
+                limite = min(janela_protegida, len(novo_baralho))
+                for i in range(limite):
+                    if novo_baralho[i] not in proibidas:
+                        continue
+                    for k in range(i + 1, len(novo_baralho)):
+                        if novo_baralho[k] not in proibidas:
+                            novo_baralho[i], novo_baralho[k] = (
+                                novo_baralho[k],
+                                novo_baralho[i],
+                            )
+                            break
+                    # Se não sobrou nenhuma carta "livre" pra trocar (banco
+                    # muito pequeno perto de janela_protegida), deixa como
+                    # embaralhou — melhor repetir cedo do que travar.
+
+                conn.executemany(
+                    "INSERT INTO quiz_baralho (pergunta_id) VALUES (?)",
+                    [(pid,) for pid in novo_baralho],
+                )
+                consumir_topo()
+
+            # Mantém a tabela enxuta — só precisa reconstruir o baralho
+            # atual, não o histórico inteiro da feira.
             conn.execute(
-                "DELETE FROM quiz_recentes WHERE id NOT IN "
-                "(SELECT id FROM quiz_recentes ORDER BY id DESC LIMIT ?)",
-                (max(quantidade * 12, 120),),
+                "DELETE FROM quiz_baralho WHERE usada = 1 AND id NOT IN "
+                "(SELECT id FROM quiz_baralho WHERE usada = 1 "
+                " ORDER BY id DESC LIMIT ?)",
+                (max(len(ids_ativos) * 3, 150),),
             )
             conn.commit()
         finally:
             conn.close()
 
-    return selecionadas
+    return [por_id[pid] for pid in escolhidas_ids]
 
 
 def _embaralhar_alternativas(row, pos_proibida=None):
