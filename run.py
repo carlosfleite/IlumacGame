@@ -27,7 +27,7 @@ import urllib.request
 import flask.cli
 import webview
 
-from app import create_app, registrar_janela
+from app import create_app, registrar_fechamento_navegador, registrar_janela
 from database import backup_periodico, fazer_backup
 
 HOST = "127.0.0.1"
@@ -48,6 +48,7 @@ URL_JANELA = URL + "?kiosk=1"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_DIR = os.path.join(BASE_DIR, "logs")
+PERFIL_NAVEGADOR = os.path.join(LOG_DIR, "perfil-navegador")
 
 # Código de saída que o INICIAR_QUIZ.bat entende como "já tem um totem
 # rodando nesta máquina": ele encerra em vez de reabrir em loop.
@@ -258,8 +259,14 @@ def _abrir_no_navegador():
         time.sleep(60)  # evita reabrir em loop apertado
         sys.exit(1)
 
-    perfil = os.path.join(LOG_DIR, "perfil-navegador")
+    perfil = PERFIL_NAVEGADOR
+    _fechar_navegador_quiosque()
+    # A rota do brasão (app.py) fecha esta janela antes de encerrar: sem
+    # isso, no modo navegador o Edge ficava aberto em tela cheia com o
+    # servidor já morto, e ninguém no estande conseguia sair dele.
+    registrar_fechamento_navegador(_fechar_navegador_quiosque)
     logging.warning("Abrindo o jogo em modo quiosque no navegador: %s", exe)
+    inicio = time.time()
     processo = subprocess.Popen([
         exe,
         "--kiosk", URL_JANELA,
@@ -272,6 +279,44 @@ def _abrir_no_navegador():
         "--overscroll-history-navigation=0",
     ])
     processo.wait()
+    if time.time() - inicio < 5:
+        # Fechou na hora: o navegador entregou a URL a outra janela e
+        # saiu. Espera antes de devolver ao watchdog, para nunca virar um
+        # loop de reaberturas a cada 5 s.
+        logging.warning("O navegador fechou logo ao abrir; aguardando 30 s antes de tentar de novo")
+        time.sleep(30)
+
+
+def _fechar_navegador_quiosque():
+    """
+    Fecha os processos do Edge/Chrome que usam o perfil do quiosque (e só
+    esse perfil — nunca o navegador pessoal de quem estiver na máquina).
+
+    Por que antes de abrir: se o run.py cair e a janela do navegador ficar
+    aberta, um navegador novo com o mesmo perfil só entregaria a URL à
+    janela antiga e fecharia na hora; processo.wait() voltaria na mesma
+    hora e o watchdog reabriria sem parar, a cada 5 s. Medido no
+    cronômetro, que usa o mesmo esquema de perfil.
+    """
+    if os.name != "nt":
+        return
+    script = (
+        "Get-CimInstance Win32_Process -Filter \"Name='msedge.exe' or Name='chrome.exe'\" | "
+        "Where-Object { $_.CommandLine -and $_.CommandLine.Contains($env:QUIZ_PERFIL) } | "
+        "ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue; 'x' }"
+    )
+    try:
+        resultado = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", script],
+            capture_output=True, text=True, timeout=20,
+            env=dict(os.environ, QUIZ_PERFIL=PERFIL_NAVEGADOR),
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        if resultado.stdout.strip():
+            logging.warning("Fechei um navegador do quiosque que tinha ficado aberto")
+            time.sleep(1)
+    except Exception:
+        logging.exception("Nao consegui verificar se ficou navegador do quiosque aberto")
 
 
 def main():

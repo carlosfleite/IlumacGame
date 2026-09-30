@@ -34,10 +34,31 @@ log = logging.getLogger(__name__)
 _janela = None
 
 
+# No plano B (sem WebView2) a janela e o Edge/Chrome em quiosque, um
+# processo separado: o run.py registra aqui a funcao que o fecha, para o
+# brasao nao deixar o navegador aberto com o servidor ja morto.
+_fechar_navegador = None
+
+
 def registrar_janela(janela):
     """Chamado pelo run.py logo apos criar a janela do totem."""
     global _janela
     _janela = janela
+
+
+def registrar_fechamento_navegador(funcao):
+    """Chamado pelo run.py quando o jogo abre no navegador (plano B)."""
+    global _fechar_navegador
+    _fechar_navegador = funcao
+
+
+def _encerrar_processo():
+    if _fechar_navegador is not None:
+        try:
+            _fechar_navegador()
+        except Exception:
+            log.exception("Falha ao fechar o navegador do quiosque pelo brasão")
+    os._exit(0)
 
 
 @app.errorhandler(Exception)
@@ -166,7 +187,9 @@ def api_totem_encerrar():
         except Exception:
             log.exception("window.destroy() falhou ao encerrar pelo brasão")
 
-    timer = threading.Timer(2.0, lambda: os._exit(0))
+    # No modo navegador, _encerrar_processo fecha o Edge/Chrome do quiosque
+    # antes de sair (sem isso ele ficava aberto em tela cheia).
+    timer = threading.Timer(2.0, _encerrar_processo)
     timer.daemon = True
     timer.start()
     return jsonify({"ok": True})
