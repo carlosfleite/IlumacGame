@@ -11,7 +11,6 @@
   "use strict";
 
   var form = document.getElementById("form-cadastro");
-  var dominiosPermitidos = JSON.parse(form.dataset.dominiosEmail);
   var erroEl = document.getElementById("erro-cadastro");
   var btn = document.getElementById("btn-cadastrar");
 
@@ -125,7 +124,6 @@
     if (!/^[A-Za-z0-9.-]+$/.test(dominio)) return "Domínio com caractere inválido.";
 
     if (local.length > 64 || /^\.|\.$/.test(local) || local.indexOf("..") !== -1) return "E-mail inválido.";
-    if (dominiosPermitidos.indexOf(dominio) === -1) return "Use um e-mail pessoal de um provedor permitido, como Gmail, Outlook ou Yahoo.";
 
     var tld = dominio.split(".").pop();
     if (!/^[A-Za-z]{2,}$/.test(tld)) return "Terminação do e-mail inválida.";

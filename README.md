@@ -85,7 +85,7 @@ Abra `http://127.0.0.1:5000/`.
 
 ## Cadastro offline
 
-O servidor e o formulário usam a mesma lista de domínios em `DOMINIOS_EMAIL`, no `app.py`. E-mails corporativos, subdomínios e domínios fora dessa lista são rejeitados. A validação confere formato e domínio permitido; não confirma existência da caixa ou propriedade do endereço. Cadastros anteriores são preservados.
+O servidor e o formulário usam a mesma validação de formato de e-mail (`_RE_EMAIL` no `app.py`, `validarEmail` no `cadastro.js`): precisa de um único `@`, domínio com ponto e terminação de 2+ letras. Não existe mais lista de domínios permitidos — e-mails corporativos e qualquer domínio bem formado passam, sem precisar cadastrar cada empresa que for à feira. A validação confere só o formato; não confirma existência da caixa ou propriedade do endereço. Cadastros anteriores são preservados.
 
 ## O que ajustar depois
 
