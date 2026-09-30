@@ -12,21 +12,30 @@ rem O Windows nao aceita caminho de arquivo com mais de 260 letras, e o
 rem arquivo mais fundo do Python do jogo tem 110 (mais "python-embed\").
 rem Com a pasta do jogo num caminho longo (dentro de outras pastas, no
 rem OneDrive...), a instalacao quebra no meio. Melhor avisar antes.
+rem
+rem ATENCAO: nunca escreva %PASTA_JOGO% (ou outro caminho) SEM ASPAS dentro
+rem de um bloco "if (...)". Pasta com parenteses no nome, como
+rem "IlumacGame(versaoFinal)", fecha o bloco antes da hora: o cmd da erro
+rem de sintaxe e a janela some sem mostrar nada (caso real no cronometro).
 set "PASTA_JOGO=%CD%"
 set "TAM_PASTA=0"
 for /f %%n in ('powershell -NoProfile -Command "$env:PASTA_JOGO.Length"') do set "TAM_PASTA=%%n"
-if %TAM_PASTA% GTR 130 (
-    echo.
-    echo [ERRO] A pasta do jogo esta num caminho longo demais ^(%TAM_PASTA% letras^):
-    echo   %PASTA_JOGO%
-    echo.
-    echo O Windows nao consegue instalar o jogo tao "fundo" nas pastas.
-    echo Mova a pasta do jogo para um lugar curto, por exemplo:
-    echo   C:\IlumacGame
-    echo e de dois cliques de novo neste arquivo.
-    echo.
-    exit /b 2
-)
+if %TAM_PASTA% GTR 130 goto caminho_longo
+goto extrair
+
+:caminho_longo
+echo.
+echo [ERRO] A pasta do jogo esta num caminho longo demais (%TAM_PASTA% letras):
+echo   "%PASTA_JOGO%"
+echo.
+echo O Windows nao consegue instalar o jogo tao "fundo" nas pastas.
+echo Mova a pasta do jogo para um lugar curto, por exemplo:
+echo   C:\IlumacGame
+echo e de dois cliques de novo neste arquivo.
+echo.
+exit /b 2
+
+:extrair
 
 echo ========================================
 echo  Primeira vez do jogo NESTA maquina.

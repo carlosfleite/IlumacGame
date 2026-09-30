@@ -35,7 +35,7 @@ if exist "%ATALHO%" if /i "%ALVO_ATUAL%"=="%ALVO%" (
 
 if exist "%ATALHO%" (
     echo O Windows abria o quiz de outra pasta:
-    echo   %ALVO_ATUAL%
+    echo   "%ALVO_ATUAL%"
     echo Passando a abrir desta pasta...
 )
 
@@ -50,7 +50,7 @@ if exist "%ATALHO%" (
     echo [OK] Pronto: o quiz vai abrir sozinho sempre que este computador ligar.
 ) else (
     echo [ERRO] Nao consegui criar o atalho em:
-    echo   %ATALHO%
+    echo   "%ATALHO%"
 )
 
 :fim
