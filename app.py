@@ -201,6 +201,8 @@ def pagina_ranking():
 # ---------------------------------------------------------------------------
 
 _RE_NOME = re.compile(r"^[A-Za-zÀ-ÖØ-öø-ÿ' .-]+$")
+_RE_VOGAL = re.compile(r"[aeiouáéíóúâêîôûãõàAEIOUÁÉÍÓÚÂÊÎÔÛÃÕÀ]")
+_RE_CONSOANTES_SEGUIDAS = re.compile(r"[bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]{4,}")
 _RE_EMAIL = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$")
 
 
@@ -220,17 +222,29 @@ def _validar_cadastro(nome, telefone, email):
     partes = [p for p in nome.split(" ") if p]
     if len(partes) < 2:
         return "Informe nome e sobrenome.", None
+    # Cada parte precisa ter 2+ letras (espelha cadastro.js) — só exigir
+    # que nem todas sejam curtas deixava passar uma inicial como
+    # sobrenome (ex.: "Duds L").
     curtas = [p for p in partes if len(p) < 2]
-    if len(curtas) == len(partes):
+    if curtas:
         return "Informe nome e sobrenome.", None
     if not _RE_NOME.match(nome):
         return "Use apenas letras no nome.", None
+    # Nome digitado sem sentido (tipo "offgtrdes"): sem vogal nenhuma numa
+    # parte, ou 4+ consoantes seguidas — ninguém tem nome assim de verdade.
+    sem_vogal = any(not _RE_VOGAL.search(p) for p in partes)
+    if sem_vogal or _RE_CONSOANTES_SEGUIDAS.search(nome):
+        return "Informe um nome válido.", None
 
     digitos = re.sub(r"\D", "", telefone or "")
     if len(digitos) < 10 or len(digitos) > 11:
         return "Telefone inválido — use DDD + número.", None
     if not 11 <= int(digitos[:2]) <= 99:
         return "DDD inválido.", None
+    # "(11) 11111-1111" passava no formato mas é óbvio que não é número
+    # de ninguém — mesmo dígito repetido do começo ao fim, sem o DDD.
+    if len(set(digitos[2:])) == 1:
+        return "Telefone inválido.", None
 
     if not email:
         return "E-mail é obrigatório.", None

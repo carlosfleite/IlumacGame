@@ -81,10 +81,20 @@
       return p.length > 0;
     });
     if (partes.length < 2) return "Informe nome e sobrenome.";
+    // Cada parte precisa ter 2+ letras — "Duds L" passava antes porque só
+    // rejeitava quando TODAS as partes eram curtas, então uma inicial
+    // sozinha como sobrenome colava.
     var curtas = partes.filter(function (p) { return p.length < 2; });
-    if (curtas.length === partes.length) return "Informe nome e sobrenome.";
+    if (curtas.length > 0) return "Informe nome e sobrenome.";
     if (!/^[A-Za-zÀ-ÖØ-öø-ÿ' .-]+$/.test(nome)) {
       return "Use apenas letras no nome.";
+    }
+    // Nome digitado sem sentido (tipo "offgtrdes"): sem vogal nenhuma numa
+    // parte, ou 4+ consoantes seguidas — ninguém tem nome assim de verdade.
+    var VOGAL = /[aeiouáéíóúâêîôûãõàAEIOUÁÉÍÓÚÂÊÎÔÛÃÕÀ]/;
+    var semVogal = partes.some(function (p) { return !VOGAL.test(p); });
+    if (semVogal || /[bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]{4,}/.test(nome)) {
+      return "Informe um nome válido.";
     }
     return null;
   }
@@ -96,6 +106,9 @@
     if (d.length < 10) return "Telefone incompleto — use DDD + número.";
     var ddd = parseInt(d.slice(0, 2), 10);
     if (ddd < 11 || ddd > 99) return "DDD inválido.";
+    // "(11) 11111-1111" passava no formato mas é óbvio que não é número
+    // de ninguém — mesmo dígito repetido do começo ao fim, sem o DDD.
+    if (/^(\d)\1+$/.test(d.slice(2))) return "Telefone inválido.";
     return null;
   }
 

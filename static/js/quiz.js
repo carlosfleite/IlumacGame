@@ -7,7 +7,11 @@
 (function () {
   "use strict";
 
-  var FEEDBACK_MS = 2600; // contado só depois que a tela termina de entrar
+  // Reserva por inatividade: a tela de feedback é pra ficar travada até
+  // a pessoa tocar em "Toque para continuar" — isso só existe pra não
+  // prender alguém ali pra sempre se ninguém interagir. Contado só
+  // depois que a tela termina de entrar.
+  var FEEDBACK_MS = 10000;
   var ENTRADA_MS = 250;   // deve casar com a animação reboque-entra no CSS
   var LIMITE_MS = 20000;  // tempo por pergunta; zerou, conta como erro
 
@@ -39,6 +43,7 @@
   var fbRespRotulo = document.getElementById("fb-resposta-rotulo");
   var fbRespTexto = document.getElementById("feedback-detalhe");
   var fbMascote = document.getElementById("fb-mascote");
+  var fbContinuar = document.getElementById("feedback-continuar");
 
   var perguntas = [];
   var indice = 0;
@@ -295,7 +300,11 @@
     }
   }
 
-  overlay.addEventListener("click", continuarAposFeedback);
+  // Só esse botão avança — não o overlay inteiro (ver comentário no CSS
+  // de .feedback-tap). Toque não muda o tempo já registrado nem a
+  // resposta já gravada: isso já aconteceu antes do feedback aparecer,
+  // em responder(); aqui só decide quando a tela sai da frente.
+  fbContinuar.addEventListener("click", continuarAposFeedback);
 
   // ---------------------------------------------------------------------
 
